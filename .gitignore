@@ -41,8 +41,9 @@ out/
 .vscode/
 .claude/
 .kiro/
+.devin/
 nul
-prompts/
+/prompts/
 .idea/
 *.swp
 *.swo

@@ -13,6 +13,7 @@ services/
   compliance/         AI evaluation engine — runs evaluators, manages frameworks (port 8001)
   prompts/            RL-based prompt optimization & generation (port 8002)
   documents/          Template & compliance report generation (port 8003)
+  tests/              Test execution & orchestration service (port 8004) — not the pytest suite
   analytics/          Metrics aggregation & dashboard data (port 8005)
   shared/             Shared DB, Redis, exception, and type utilities used by all services
 plugins/
@@ -35,6 +36,40 @@ frontend/src/
 ```
 
 Non-obvious: `gateway/` mounts both `./services` and `./shared` as volumes, so it can import from `services.shared.*` at runtime without installing them as packages.
+
+---
+
+## Context Hierarchy (read this first)
+
+This root file holds project-wide conventions, commands, security rules and navigation. Each major area (one container/service, shared library, or extension point) has its own `AGENTS.md` with: purpose, layout, interfaces (ports, endpoints, consumers), area rules, **Verification** (which tests to write and run), decisions/known issues, and a change log.
+
+**Rules for agents:**
+1. Before editing, read this file **and** the `AGENTS.md` of every area you touch.
+2. On conflict, the area file wins for area-specific conventions. The Security Rules below can **never** be overridden.
+3. Run the tests listed in the area file's **Verification** section. `tests/AGENTS.md` has the change → tests matrix.
+4. When you change an area's behavior, interfaces, architecture or conventions, update that area's `AGENTS.md` in the same change, including a dated **Change Log** line. Don't log trivial edits.
+5. New AGENTS.md files go only at the root of a new major area, not in every subdirectory.
+
+| Area | File |
+|---|---|
+| API gateway (8000) | `gateway/AGENTS.md` |
+| Frontend (3000 / 5173) | `frontend/AGENTS.md` |
+| Compliance service (8001) | `services/compliance/AGENTS.md` |
+| Prompts service (8002) | `services/prompts/AGENTS.md` |
+| Documents service (8003) | `services/documents/AGENTS.md` |
+| Test execution service (8004) | `services/tests/AGENTS.md` |
+| Analytics service (8005) | `services/analytics/AGENTS.md` |
+| Backend shared library | `services/shared/AGENTS.md` |
+| Unified AI API | `shared/AGENTS.md` |
+| Evaluator plugins | `plugins/AGENTS.md` |
+| Database schema | `infrastructure/AGENTS.md` |
+| Pytest suite | `tests/AGENTS.md` |
+
+`scripts/` (one-off admin scripts) and `docs/` (reference docs, which may be stale; check them against the code) are covered by this file.
+
+## Active Plans
+
+- `plan.md` — evaluator overhaul (OWASP LLM/Agentic, ATLAS, NIST, EU AI Act probes as plugins). Affects `plugins/` and `services/compliance/`. Tick its checkboxes and add to its Change Log as phases land.
 
 ---
 
@@ -111,7 +146,7 @@ python scripts/validate_implementation.py  # Smoke-check service wiring
 6. **Async everywhere in Python.** All database and Redis operations must use `async/await`. Do not use synchronous DB or blocking I/O in service handlers.
 7. **Tests required for behavior changes.** Any new route, evaluator logic, or business rule needs a corresponding test in `tests/unit/`. Integration tests for any new service-to-service interaction.
 8. **React: hooks and context, not prop drilling.** New state shared across more than two components goes into a context in `frontend/src/contexts/`.
-9. **No unsolicited markdown files.** Do not create `.md` files (READMEs, changelogs, notes, summaries, analysis docs) unless explicitly asked. Write code; communicate in your response.
+9. **No unsolicited markdown files.** Do not create `.md` files (READMEs, changelogs, notes, summaries, analysis docs) unless explicitly asked. Exceptions: maintaining existing `AGENTS.md` files and `plan.md` per the Context Hierarchy rules. Write code; communicate in your response.
 
 ---
 
@@ -168,5 +203,6 @@ A task is **done** when ALL of the following are true:
 - [ ] No secrets, `.env` values, or hardcoded credentials are present in any changed file.
 - [ ] New compliance evaluators are implemented as plugins under `plugins/evaluators/`, not inline service code.
 - [ ] Structured logging (`structlog`) is used for any new log statements — no bare `print()`.
+- [ ] The `AGENTS.md` of each touched area is updated if behavior, interfaces or conventions changed (with a Change Log line).
 - [ ] The PR description explains *what* changed, *why*, and *how to test it manually*.
 - [ ] The branch is off a recent `main` and has no unresolved merge conflicts.

@@ -1,0 +1,34 @@
+# AGENTS.md — shared/ (Unified AI API + platform types)
+
+> Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Not to be confused with `services/shared/` (backend service utilities).
+
+## Purpose
+Model-agnostic LLM access layer used by all services: one interface over OpenAI, Anthropic, Google, HuggingFace, and local models. Plus root-level platform types.
+
+## Layout
+- `unified_api/base.py` — `ModelConfig`, `ModelRequest` (`prompt`, `system_prompt`, `messages`), `ModelResponse`, `BaseModelProvider` (`generate`, `agenerate`, `stream`, `astream`, `list_models`)
+- `unified_api/api.py` — facade (`generate` / `agenerate`); `registry.py` — `ProviderRegistry` auto-discovery; `config.py` — env-based key lookup
+- `unified_api/providers/` — `openai`, `anthropic`, `google`, `huggingface`, `local`, `predetermined_responses` (canned responses for cost-free testing)
+- `platform_types.py` — shared type definitions
+
+## Interfaces
+- Imported by compliance, prompts, and other services (mounted into containers). Full guide: `docs/UNIFIED_AI_API.md`.
+
+## Rules
+- Adding a provider = a new `BaseModelProvider` subclass in `providers/`, auto-registered by the registry. Don't special-case providers in callers.
+- Provider-specific parameters go in `ModelConfig.provider_options`, not new top-level fields.
+- **No hardcoded model lists.** Rely on the provider's `list_models()`.
+- API keys come from config or env. Never log keys or full requests.
+- No native tool/function calling exists. Agentic evals use a simulated protocol (`/plan.md`). Adding tool calling is an API change for every provider.
+
+## Verification
+- Offline: `pytest tests/unit/test_unified_api.py -v`
+- Real providers (needs keys in env, costs money): `pytest tests/integration/test_unified_api_providers.py -v`
+- Use the `predetermined_responses` provider for tests that shouldn't spend inference credits.
+
+## Decisions & Known Issues
+- 2025: removed hardcoded model names from providers and the DB in favor of `list_models()`.
+
+## Change Log
+- 2026-11-11 — AGENTS.md created (baseline).
