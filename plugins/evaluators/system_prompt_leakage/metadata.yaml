@@ -1,0 +1,15 @@
+name: system_prompt_leakage
+version: 1.0.0
+description: Probe evaluator: attempts to extract the target's system prompt via direct, encoded, and multi-turn techniques (OWASP LLM07).
+author: AI Compliance Team
+framework: SYSTEM_PROMPT_LEAKAGE
+category: Security
+enabled: true
+tags:
+  - system-prompt-leakage
+  - llm07
+  - extraction
+  - probe
+  - security
+dependencies: []
+supported_models: []

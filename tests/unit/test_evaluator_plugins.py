@@ -25,7 +25,10 @@ async def test_discover_plugins():
         "hallucination_checker",
         "insecure_output",
         "pii_leakage",
-        "prompt_injection"
+        "prompt_injection",
+        "system_prompt_leakage",
+        "unbounded_consumption",
+        "jailbreak_robustness"
     ]
     for expected in expected_plugins:
         assert expected in plugins, f"Plugin '{expected}' should be discovered"
@@ -63,6 +66,14 @@ async def test_evaluator_rule_based_execution():
         await plugin_manager.load_plugin(plugin_name)
         evaluator_cls = plugin_manager.get_evaluator_class(plugin_name)
         evaluator = evaluator_cls()
+
+        # Probe-style evaluators drive the target model themselves and require
+        # test_subject_config; they are covered by tests/unit/test_probe_evals.py
+        try:
+            if evaluator_cls.get_metadata().requires_test_subject_config:
+                continue
+        except Exception:
+            pass  # broken metadata (e.g. g_eval_metric) — let evaluate() decide
 
         # Run evaluate in rule-based / fallback mode (without external LLM required)
         result = evaluator.evaluate(text=test_sample_text)

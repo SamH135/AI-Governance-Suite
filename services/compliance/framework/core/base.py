@@ -1,4 +1,5 @@
 # framework/core/base.py
+import asyncio
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
@@ -93,6 +94,27 @@ class BaseEvaluator(ABC):
     ) -> Dict[str, Any]:
         """Evaluate text using configurable model resources."""
         pass
+
+    async def aevaluate(
+            self,
+            text: str,
+            test_subject_config: Optional[ModelConfig] = None,
+            evaluator_llm_config: Optional[ModelConfig] = None,
+            rag_config: Optional[Dict[str, Any]] = None,
+            vector_store: Optional[Any] = None,
+            **kwargs
+    ) -> Dict[str, Any]:
+        """Async entry point. Defaults to running evaluate() in a thread.
+
+        Evaluators that drive the target model themselves (probe-style
+        evaluators) should override this with real async I/O so they do
+        not block the service event loop.
+        """
+        return await asyncio.to_thread(
+            self.evaluate, text=text, test_subject_config=test_subject_config,
+            evaluator_llm_config=evaluator_llm_config, rag_config=rag_config,
+            vector_store=vector_store, **kwargs
+        )
 
     @abstractmethod
     def interpret(self, results: Dict[str, Any]) -> str:

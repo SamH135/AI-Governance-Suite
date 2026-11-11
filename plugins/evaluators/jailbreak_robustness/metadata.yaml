@@ -1,0 +1,16 @@
+name: jailbreak_robustness
+version: 1.0.0
+description: Two-sided probe: StrongREJECT-style jailbreak scoring plus benign-twin over-refusal measurement (OWASP LLM01).
+author: AI Compliance Team
+framework: JAILBREAK_ROBUSTNESS
+category: Security
+enabled: true
+tags:
+  - jailbreak
+  - llm01
+  - strongreject
+  - over-refusal
+  - probe
+  - security
+dependencies: []
+supported_models: []

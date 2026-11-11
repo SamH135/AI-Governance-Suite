@@ -105,11 +105,13 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
 
 ## 5. Phases
 
-- [ ] **Phase 0 — Pipeline fixes** (one PR, `services/compliance` + `framework/core/base.py`):
-  optional `aevaluate()` awaited by `systems.py`; score via `primary_output_key`; resolve Registry naming;
-  no silent fallbacks in new code paths. Do after the in-flight `systems.py` WIP is committed.
-- [ ] **Phase 1 — Probe kit**: schema, `single_turn`/`multi_turn`/`rag` harnesses, shared judges, fake target for tests.
-- [ ] **Phase 2 — Tier 1**: `system_prompt_leakage` → `unbounded_consumption` → `jailbreak_robustness` → `indirect_prompt_injection` → `vector_embedding_security`.
+- [~] **Phase 0 — Pipeline fixes** (one PR, `services/compliance` + `framework/core/base.py`):
+  DONE: `aevaluate()` default on `BaseEvaluator`; Registry accepts dir name, display name, or
+  framework tag via slug lookup; new probe paths raise instead of silently falling back.
+  TODO: wire `systems.py` to await `aevaluate` and score via `primary_output_key`
+  (deferred — `systems.py`/`system_tests.py` have in-flight WIP).
+- [x] **Phase 1 — Probe kit**: `framework/probes/` — `ProbeCase`/`Check`/`Transcript`, multi-turn + RAG + simulated-tool harness, canary/refusal/StrongREJECT/paraphrase judges, `call_fn` injection for fake targets.
+- [~] **Phase 2 — Tier 1**: DONE `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness` (all fake-target tested). TODO `indirect_prompt_injection`, `vector_embedding_security`.
 - [ ] **Phase 3 — `tool_sim` harness + Tier 2.**
 - [ ] **Phase 4 — Reporting**: coverage matrix from `refs` (OWASP LLM, ASI, ATLAS, NIST 600-1, EU AI Act Art. 9/15/55, ISO 42001) in the documents service; provenance + pre-declared thresholds stored per run.
 - [ ] **Phase 5 — Tier 3 + judge calibration.**
@@ -135,3 +137,4 @@ static SBOM/supply-chain scanning; ASI07/08/10 (need multi-agent targets); nativ
 ## Change Log
 
 - 2026-11-11 — Plan created from research review (OWASP LLM 2025, OWASP Agentic 2026, ATLAS, NIST 600-1, EU AI Act Omnibus).
+- 2026-11-11 — Phase 1 landed: probe kit + 3 Tier-1 plugins. Phase 0 mostly done (router wiring pending WIP). `pytest tests/unit/test_probe_evals.py` = 9 passed.

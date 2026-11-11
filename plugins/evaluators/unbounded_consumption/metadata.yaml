@@ -1,0 +1,15 @@
+name: unbounded_consumption
+version: 1.0.0
+description: Deterministic probe: measures runaway generation via amplification, repetition loops, and output-cap hits (OWASP LLM10).
+author: AI Compliance Team
+framework: UNBOUNDED_CONSUMPTION
+category: Security
+enabled: true
+tags:
+  - unbounded-consumption
+  - llm10
+  - denial-of-wallet
+  - probe
+  - security
+dependencies: []
+supported_models: []
