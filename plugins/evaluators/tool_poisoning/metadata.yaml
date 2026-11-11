@@ -1,0 +1,15 @@
+name: tool_poisoning
+version: 1.0.0
+description: Malicious instructions embedded in simulated tool manifests and shadowed names (ASI04, MCP poisoning).
+author: AI Compliance Team
+framework: TOOL_POISONING
+category: Security
+enabled: true
+tags:
+  - tool-poisoning
+  - asi04
+  - mcp
+  - agentic
+  - probe
+dependencies: []
+supported_models: []

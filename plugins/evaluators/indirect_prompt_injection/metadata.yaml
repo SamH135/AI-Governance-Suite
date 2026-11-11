@@ -1,0 +1,15 @@
+name: indirect_prompt_injection
+version: 1.0.0
+description: Attack payloads via retrieved docs, tool results, and emails; checks execution, exfil renders, and tool abuse (LLM01/ASI01).
+author: AI Compliance Team
+framework: INDIRECT_PROMPT_INJECTION
+category: Security
+enabled: true
+tags:
+  - indirect-prompt-injection
+  - llm01
+  - asi01
+  - probe
+  - security
+dependencies: []
+supported_models: []

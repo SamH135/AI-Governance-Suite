@@ -105,14 +105,16 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
 
 ## 5. Phases
 
-- [~] **Phase 0 — Pipeline fixes** (one PR, `services/compliance` + `framework/core/base.py`):
-  DONE: `aevaluate()` default on `BaseEvaluator`; Registry accepts dir name, display name, or
-  framework tag via slug lookup; new probe paths raise instead of silently falling back.
-  TODO: wire `systems.py` to await `aevaluate` and score via `primary_output_key`
-  (deferred — `systems.py`/`system_tests.py` have in-flight WIP).
+- [x] **Phase 0 — Pipeline fixes**: `aevaluate()` added and now awaited by `systems.py`;
+  Registry slug lookup (dir/display/tag names); `_calculate_overall_score` reads nested
+  `result` + `primary_output_key` (was scoring the wrapper dict → always 0); per-plugin
+  discovery error isolation; no silent fallbacks in probe paths.
 - [x] **Phase 1 — Probe kit**: `framework/probes/` — `ProbeCase`/`Check`/`Transcript`, multi-turn + RAG + simulated-tool harness, canary/refusal/StrongREJECT/paraphrase judges, `call_fn` injection for fake targets.
-- [~] **Phase 2 — Tier 1**: DONE `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness` (all fake-target tested). TODO `indirect_prompt_injection`, `vector_embedding_security`.
-- [ ] **Phase 3 — `tool_sim` harness + Tier 2.**
+- [x] **Phase 2 — Tier 1**: all 5 shipped. `vector_embedding_security` is fixture-simulated (live Milvus is a follow-up).
+- [x] **Phase 3 — `tool_sim` + Tier 2**: harness was built in Phase 1. Plugins shipped:
+  `tool_misuse`, `tool_poisoning`, `memory_poisoning` (conversation-scoped, persistent
+  store pending), `multi_turn_escalation` (scripted, adaptive attacker pending),
+  `excessive_agency` v3 (behavioral probe attached to existing passive evaluator).
 - [ ] **Phase 4 — Reporting**: coverage matrix from `refs` (OWASP LLM, ASI, ATLAS, NIST 600-1, EU AI Act Art. 9/15/55, ISO 42001) in the documents service; provenance + pre-declared thresholds stored per run.
 - [ ] **Phase 5 — Tier 3 + judge calibration.**
 
@@ -138,3 +140,4 @@ static SBOM/supply-chain scanning; ASI07/08/10 (need multi-agent targets); nativ
 
 - 2026-11-11 — Plan created from research review (OWASP LLM 2025, OWASP Agentic 2026, ATLAS, NIST 600-1, EU AI Act Omnibus).
 - 2026-11-11 — Phase 1 landed: probe kit + 3 Tier-1 plugins. Phase 0 mostly done (router wiring pending WIP). `pytest tests/unit/test_probe_evals.py` = 9 passed.
+- 2026-11-11 — Phases 0, 2, 3 complete: 17 plugins total (10 probe). `test_probe_evals.py` = 17 passed. Live-verified vs gemini-3.1-flash-lite: leakage 93.3% attack success, indirect-injection resistance 100, tool safety 90 (ran wipe_database on direct user request — ASI09). Remaining: Phase 4 reporting, Phase 5 breadth/calibration.

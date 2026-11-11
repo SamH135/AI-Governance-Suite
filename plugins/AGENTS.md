@@ -13,7 +13,8 @@ The extension point for compliance checks. Every new evaluator is a plugin here 
   - `metadata.yaml` — `name`, `version`, `framework`, `category`, `tags`, `config_schema`
 - Current plugins:
   - Passive (judge the response text): `example_plugin`, `excessive_agency`, `g_eval_metric`, `generic_compliance`, `hallucination_checker`, `insecure_output`, `pii_leakage`, `prompt_injection`
-  - Probe (drive the target model, `requires_test_subject_config=True`): `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness`
+  - Probe (drive the target model, `requires_test_subject_config=True`): `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness`, `indirect_prompt_injection`, `vector_embedding_security`, `tool_misuse`, `tool_poisoning`, `memory_poisoning`, `multi_turn_escalation`
+  - Hybrid: `excessive_agency` is passive by default and adds an `agentic_probe` block when `test_subject_config` is provided
 - `cases/*.json` — probe corpora (`ProbeCase` dicts loaded via `framework/probes.load_cases`)
 - `configs/` — plugin config examples (placeholder values only)
 
@@ -41,3 +42,4 @@ The extension point for compliance checks. Every new evaluator is a plugin here 
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-11 — Added probe evaluators `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness` on the new `framework/probes/` kit (`/plan.md` Phase 1-2).
+- 2026-11-11 — Added `indirect_prompt_injection`, `vector_embedding_security` (fixture-simulated), `tool_misuse`, `tool_poisoning`, `memory_poisoning`, `multi_turn_escalation`; `excessive_agency` gained a behavioral probe mode. Fixed `g_eval_metric` metadata crash.

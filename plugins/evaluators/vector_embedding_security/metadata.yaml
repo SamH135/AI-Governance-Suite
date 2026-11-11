@@ -1,0 +1,15 @@
+name: vector_embedding_security
+version: 1.0.0
+description: Fixture-simulated retrieval: poisoned chunks and cross-tenant canary docs (LLM08).
+author: AI Compliance Team
+framework: VECTOR_EMBEDDING_SECURITY
+category: Security
+enabled: true
+tags:
+  - vector-embedding
+  - llm08
+  - rag-poisoning
+  - probe
+  - security
+dependencies: []
+supported_models: []

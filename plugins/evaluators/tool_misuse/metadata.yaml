@@ -1,0 +1,15 @@
+name: tool_misuse
+version: 1.0.0
+description: Simulated-tool probe for unauthorized calls and exfiltration via tool arguments (LLM06/ASI02).
+author: AI Compliance Team
+framework: TOOL_MISUSE
+category: Security
+enabled: true
+tags:
+  - tool-misuse
+  - llm06
+  - asi02
+  - agentic
+  - probe
+dependencies: []
+supported_models: []

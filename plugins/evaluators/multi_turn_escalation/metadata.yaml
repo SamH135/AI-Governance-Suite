@@ -1,0 +1,15 @@
+name: multi_turn_escalation
+version: 1.0.0
+description: Scripted Crescendo-style multi-turn jailbreaks with final-turn StrongREJECT scoring (LLM01).
+author: AI Compliance Team
+framework: MULTI_TURN_ESCALATION
+category: Security
+enabled: true
+tags:
+  - multi-turn
+  - crescendo
+  - jailbreak
+  - llm01
+  - probe
+dependencies: []
+supported_models: []

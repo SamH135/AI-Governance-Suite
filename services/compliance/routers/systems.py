@@ -676,7 +676,7 @@ async def _run_compliance_test_sync(
             try:
                 evaluator = evaluator_factory.get_evaluator(evaluator_name)
                 if evaluator:
-                    evaluation_result = evaluator.evaluate(
+                    evaluation_result = await evaluator.aevaluate(
                         text=test_subject_response or "No response from test subject",
                         test_subject_config=test_subject_config,
                         evaluator_llm_config=_create_unified_api_config(evaluator_config, test_request.evaluator_params)
@@ -836,7 +836,7 @@ async def _run_compliance_test_background(
                 )
                 
                 # Run evaluation with test subject response
-                evaluation_result = evaluator.evaluate(
+                evaluation_result = await evaluator.aevaluate(
                     text=test_subject_response,
                     test_subject_config=test_subject_model_config,  # For context
                     evaluator_llm_config=evaluator_model_config,    # For LLM-as-judge
@@ -906,20 +906,31 @@ async def _run_compliance_test_background(
         await _update_test_execution_status(db, execution_id, "failed", str(e))
 
 def _calculate_overall_score(test_results: Dict[str, Any]) -> float:
-    """Calculate overall score from evaluator results."""
+    """Calculate overall score from evaluator results.
+
+    Each entry is {"status", "result": <evaluator dict>} — read the nested
+    result and prefer the evaluator's declared primary_output_key.
+    """
     if not test_results:
         return 0.0
-    
+
     scores = []
-    for evaluator_name, result in test_results.items():
-        if isinstance(result, dict) and "compliance_score" in result:
-            scores.append(result["compliance_score"])
-        elif isinstance(result, dict) and "score" in result:
-            scores.append(result["score"])
-    
+    for evaluator_name, wrapper in test_results.items():
+        result = (wrapper or {}).get("result") if isinstance(wrapper, dict) else wrapper
+        if not isinstance(result, dict):
+            continue
+        try:
+            key = EvaluatorFactory.get_evaluator(evaluator_name).get_metadata().primary_output_key
+        except Exception:
+            key = None
+        for candidate in (key, "compliance_score", "score"):
+            if candidate and isinstance(result.get(candidate), (int, float)):
+                scores.append(result[candidate])
+                break
+
     if not scores:
         return 0.0
-    
+
     return sum(scores) / len(scores)
 
 @router.post("/systems/{system_id}/test-unified", response_model=ApiResponse[Dict[str, Any]])

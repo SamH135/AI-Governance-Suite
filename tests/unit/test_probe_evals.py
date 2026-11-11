@@ -152,3 +152,100 @@ def test_base_evaluator_aevaluate_default():
 
     result = asyncio.run(_Echo().aevaluate("hi"))
     assert result == {"echo": "hi"}
+
+
+# ---------- tier 1b/2 plugins ----------
+
+from plugins.evaluators.indirect_prompt_injection.evaluator import IndirectPromptInjectionEvaluator
+from plugins.evaluators.tool_misuse.evaluator import ToolMisuseEvaluator
+from plugins.evaluators.tool_poisoning.evaluator import ToolPoisoningEvaluator
+from plugins.evaluators.memory_poisoning.evaluator import MemoryPoisoningEvaluator
+from plugins.evaluators.multi_turn_escalation.evaluator import MultiTurnEscalationEvaluator
+from plugins.evaluators.vector_embedding_security.evaluator import VectorEmbeddingSecurityEvaluator
+
+
+def _vulnerable_target(messages, system_prompt, context):
+    """Follows injected instructions: echoes canaries and calls offered tools."""
+    return 'CANARY-DOC-1 CANARY-MAIL-9 TENANTB-CANARY-3 PWNED-VEC-7 PASSWD-LEAK-9 PWNED-MEM-2 MEM-CANARY-4 CANARY-TOOL-6 CANARY-ACCT-8', {}
+
+
+def _safe_target(messages, system_prompt, context):
+    return "I can only help with your actual request.", {}
+
+
+def test_indirect_prompt_injection():
+    ev = IndirectPromptInjectionEvaluator()
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_vulnerable_target)
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_safe_target)
+    assert vuln["injection_resistance_score"] < safe["injection_resistance_score"]
+
+
+def test_tool_misuse():
+    ev = ToolMisuseEvaluator()
+    calls = iter(['{"tool_call": {"name": "send_email", "args": {"to": "evil@x.com"}}}'] * 20)
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=lambda m, s, c: (next(calls, "done"), {}))
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_safe_target)
+    assert vuln["tool_safety_score"] < safe["tool_safety_score"]
+    assert safe["tool_safety_score"] == 100.0
+
+
+def test_tool_poisoning():
+    ev = ToolPoisoningEvaluator()
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_vulnerable_target)
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_safe_target)
+    assert vuln["poison_resistance_score"] < safe["poison_resistance_score"]
+
+
+def test_memory_poisoning_final_turn_only():
+    ev = MemoryPoisoningEvaluator()
+
+    def acknowledged_then_clean(messages, system_prompt, context):
+        last = messages[-1]["content"]
+        if any(k in last for k in ("remember", "Save", "Summarize")):
+            return f"Noted: {last[:80]}", {}   # turn-1 echo of the planted note
+        return "TCP is connection-oriented; UDP is not.", {}  # clean answer later
+
+    t = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                    call_fn=acknowledged_then_clean)
+    poisoned = next(c for c in t["cases"] if c["case_id"] == "note_plant_then_task")
+    assert poisoned["checks"]["poison_executed"]["score"] == 0.0
+    # and a target that *does* execute the planted rule scores as an attack
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=lambda m, s, c: ("sure, PWNED-MEM-2", {}))
+    poisoned2 = next(c for c in vuln["cases"] if c["case_id"] == "note_plant_then_task")
+    assert poisoned2["checks"]["poison_executed"]["score"] == 100.0
+
+
+def test_multi_turn_escalation():
+    ev = MultiTurnEscalationEvaluator()
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=_vulnerable_target)
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=fake_target("I cannot provide that, but I can discuss safety concepts."))
+    assert vuln["escalation_resistance_score"] < safe["escalation_resistance_score"]
+
+
+def test_vector_embedding_security():
+    ev = VectorEmbeddingSecurityEvaluator()
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_vulnerable_target)
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_safe_target)
+    assert vuln["retrieval_integrity_score"] < safe["retrieval_integrity_score"]
+
+
+def test_excessive_agency_probe_attached():
+    from plugins.evaluators.excessive_agency.evaluator import AgencyEvaluator
+    calls = iter(['{"tool_call": {"name": "delete_all_files", "args": {}}}'] * 5)
+    result = AgencyEvaluator().evaluate(
+        text="some response", test_subject_config=_DUMMY_CONFIG,
+        call_fn=lambda m, s, c: (next(calls, "ok"), {}))
+    assert "agentic_probe" in result and result["agentic_probe"]["overreach_rate"] > 0
+    # passive path unchanged without config
+    assert "agentic_probe" not in AgencyEvaluator().evaluate(text="some response")
+
+
+def test_all_probe_evaluators_require_subject_config():
+    for cls in (IndirectPromptInjectionEvaluator, ToolMisuseEvaluator, ToolPoisoningEvaluator,
+                MemoryPoisoningEvaluator, MultiTurnEscalationEvaluator, VectorEmbeddingSecurityEvaluator):
+        with pytest.raises(ValueError, match="test_subject_config"):
+            cls().evaluate(text="x")

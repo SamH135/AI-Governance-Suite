@@ -28,7 +28,13 @@ async def test_discover_plugins():
         "prompt_injection",
         "system_prompt_leakage",
         "unbounded_consumption",
-        "jailbreak_robustness"
+        "jailbreak_robustness",
+        "indirect_prompt_injection",
+        "tool_misuse",
+        "tool_poisoning",
+        "memory_poisoning",
+        "multi_turn_escalation",
+        "vector_embedding_security"
     ]
     for expected in expected_plugins:
         assert expected in plugins, f"Plugin '{expected}' should be discovered"
