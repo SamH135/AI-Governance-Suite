@@ -1,0 +1,36 @@
+name: excessive_agency
+version: 2.0.0
+description: Evaluates AI outputs for excessive agency, inappropriate capability claims, unauthorized action execution, and self-awareness using keyword/regex logic and Claude LLM risk assessment.
+author: AI Compliance Team
+framework: EXCESSIVE_AGENCY
+category: Safety & Governance
+enabled: true
+tags:
+  - agency
+  - safety
+  - boundaries
+  - capabilities
+  - self-awareness
+  - action-detection
+  - claude-default
+dependencies: []
+supported_models:
+  - claude-3-5-sonnet
+  - claude-3-haiku-20240307
+  - claude-3-sonnet-20240229
+  - gpt-4
+min_platform_version: 1.0.0
+
+config_schema:
+  type: object
+  properties:
+    default_model:
+      type: string
+      default: "claude-3-5-sonnet"
+      description: Default LLM judge model provider (Claude default)
+    agency_threshold:
+      type: number
+      minimum: 0
+      maximum: 100
+      default: 20
+      description: Agency score threshold for moderate/high risk alert

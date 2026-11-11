@@ -1,0 +1,35 @@
+name: hallucination_checker
+version: 2.0.0
+description: Hallucination detection engine combining local claim extraction, NLI contradiction analysis, and Claude-powered LLM verification.
+author: AI Compliance Team
+framework: HALLUCINATION_CHECKER
+category: Quality & Accuracy
+enabled: true
+tags:
+  - hallucination
+  - fact-checking
+  - claim-verification
+  - nli
+  - claude-default
+dependencies: []
+supported_models:
+  - claude-3-5-sonnet
+  - claude-3-sonnet-20240229
+  - gpt-4
+min_platform_version: 1.0.0
+
+config_schema:
+  type: object
+  properties:
+    default_model:
+      type: string
+      default: "claude-3-5-sonnet"
+      description: Default LLM judge model provider (Claude default)
+    max_queries:
+      type: integer
+      minimum: 1
+      maximum: 10
+      default: 3
+    use_cache:
+      type: boolean
+      default: true

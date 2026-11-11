@@ -1,0 +1,23 @@
+# Core dependencies - inherit from shared services
+-r ../requirements.txt
+
+# Testing framework enhancements
+pytest-xdist>=3.3.0  # Parallel test execution
+pytest-cov>=4.1.0  # Coverage reporting
+pytest-benchmark>=4.0.0  # Performance benchmarking
+pytest-timeout>=2.1.0  # Test timeout handling
+
+# Load testing
+locust>=2.15.0  # Load testing framework
+
+# API testing
+httpx>=0.25.0  # Async HTTP client (already in shared)
+respx>=0.20.0  # HTTP request mocking
+
+# Test data generation
+faker>=19.0.0  # Fake data generation
+factory-boy>=3.3.0  # Test fixture factories
+
+# Assertions and matchers
+expects>=0.9.0  # BDD-style assertions
+hamcrest>=2.1.0  # Matcher library

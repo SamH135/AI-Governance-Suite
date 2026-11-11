@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Know Your Customer Documentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+        .section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Know Your Customer Documentation</h1>
+    <p><strong>Framework:</strong> KYC</p>
+    <p><strong>Description:</strong> KYC process documentation for AI-driven identity verification</p>
+    
+    <div class="section">
+        <h2>Customer Identification</h2>
+        <p>{{ data.customer_identification | default("Content for Customer Identification section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Verification Process</h2>
+        <p>{{ data.verification_process | default("Content for Verification Process section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Risk Assessment</h2>
+        <p>{{ data.risk_assessment | default("Content for Risk Assessment section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Ongoing Monitoring</h2>
+        <p>{{ data.ongoing_monitoring | default("Content for Ongoing Monitoring section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Documentation Requirements</h2>
+        <p>{{ data.documentation_requirements | default("Content for Documentation Requirements section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Escalation Procedures</h2>
+        <p>{{ data.escalation_procedures | default("Content for Escalation Procedures section will be populated here.") }}</p>
+    </div>
+    
+</body>
+</html>

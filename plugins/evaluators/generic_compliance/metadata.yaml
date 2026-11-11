@@ -1,0 +1,36 @@
+name: generic_compliance
+version: 2.0.0
+description: Evaluates responses for regulatory & ethical compliance using rule-based pattern matching, LLM-enhanced analysis (Claude default), and optional RAG context.
+author: AI Compliance Team
+framework: GENERIC_COMPLIANCE
+category: Compliance
+enabled: true
+tags:
+  - compliance
+  - regulations
+  - gdpr
+  - hipaa
+  - ethics
+  - rag
+  - claude-default
+dependencies: []
+supported_models:
+  - claude-3-5-sonnet
+  - claude-3-haiku-20240307
+  - claude-3-sonnet-20240229
+  - gpt-4
+min_platform_version: 1.0.0
+
+config_schema:
+  type: object
+  properties:
+    default_model:
+      type: string
+      default: "claude-3-5-sonnet"
+      description: Default LLM judge model provider (Claude default)
+    pass_threshold:
+      type: number
+      minimum: 0
+      maximum: 100
+      default: 70
+      description: Score threshold for compliance pass

@@ -1,0 +1,20 @@
+# Core dependencies - inherit from shared services
+-r ../requirements.txt
+
+# Document generation specific libraries
+reportlab>=4.0.0  # PDF generation
+weasyprint>=60.0  # HTML to PDF conversion
+docxtpl>=0.16.0  # Advanced Word document templating
+
+# File format conversions
+pandoc>=2.0.0  # Universal document converter (requires pandoc binary)
+
+# Template engines beyond Jinja2
+mako>=1.2.0  # Alternative template engine
+
+# Document parsing enhancements
+beautifulsoup4>=4.12.0  # HTML/XML parsing
+lxml>=4.9.0  # XML processing
+
+# File handling
+pathlib2>=2.3.0  # Enhanced path operations

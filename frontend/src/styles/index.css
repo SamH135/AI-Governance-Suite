@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: Inter, system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-neutral-50 text-neutral-900;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700;
+  }
+  
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2;
+  }
+  
+  .input {
+    @apply block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:ring-brand-500 focus:border-brand-500 placeholder-neutral-400;
+  }
+  
+  /* Ensure select elements have space for the dropdown arrow (Tailwind Forms adds the arrow as background) */
+  select.input {
+    @apply appearance-none pr-10; /* prevent native arrow overlap and add right padding */
+    background-position: right 0.75rem center; /* ensure arrow sits inside the padded area */
+    background-repeat: no-repeat;
+  }
+
+  /* Also fix selects not using the shared `input` class */
+  select:not([multiple]) {
+    @apply pr-10; /* make room for the arrow */
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+  }
+  
+  .status-success {
+    @apply bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-error {
+    @apply bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-warning {
+    @apply bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-info {
+    @apply bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .page-header {
+    @apply mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700;
+  }
+}

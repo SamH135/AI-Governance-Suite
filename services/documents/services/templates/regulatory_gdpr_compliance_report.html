@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GDPR Compliance Assessment</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+        .section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>GDPR Compliance Assessment</h1>
+    <p><strong>Framework:</strong> GDPR</p>
+    <p><strong>Description:</strong> General Data Protection Regulation compliance for AI systems</p>
+    
+    <div class="section">
+        <h2>Lawful Basis</h2>
+        <p>{{ data.lawful_basis | default("Content for Lawful Basis section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Data Protection Principles</h2>
+        <p>{{ data.data_protection_principles | default("Content for Data Protection Principles section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Individual Rights</h2>
+        <p>{{ data.individual_rights | default("Content for Individual Rights section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Privacy By Design</h2>
+        <p>{{ data.privacy_by_design | default("Content for Privacy By Design section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Data Protection Impact Assessment</h2>
+        <p>{{ data.data_protection_impact_assessment | default("Content for Data Protection Impact Assessment section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Breach Notification</h2>
+        <p>{{ data.breach_notification | default("Content for Breach Notification section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>International Transfers</h2>
+        <p>{{ data.international_transfers | default("Content for International Transfers section will be populated here.") }}</p>
+    </div>
+    
+</body>
+</html>

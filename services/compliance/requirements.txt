@@ -1,0 +1,22 @@
+# Core dependencies - inherit from shared services
+-r ../requirements.txt
+
+# Compliance-specific AI/ML libraries
+# Additional transformers models for compliance evaluation
+accelerate>=0.20.0  # For model optimization and GPU acceleration
+
+# Quantization support for local models
+bitsandbytes>=0.41.0  # For 8-bit and 4-bit quantization
+
+# Additional evaluation metrics
+evaluate>=0.4.0  # Hugging Face evaluation library
+
+# Plugin system dependencies
+pluggy>=1.2.0  # Plugin framework
+importlib-metadata>=6.0.0  # Dynamic imports
+
+# Enhanced local model support
+safetensors>=0.3.0  # Safe tensor serialization
+
+# Optional GPU monitoring (if not in shared)
+# nvidia-ml-py3>=11.0.0  # NVIDIA GPU monitoring

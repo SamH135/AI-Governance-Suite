@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clinical Decision Support Documentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+        .section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Clinical Decision Support Documentation</h1>
+    <p><strong>Framework:</strong> Clinical AI</p>
+    <p><strong>Description:</strong> Documentation for AI-based clinical decision support systems</p>
+    
+    <div class="section">
+        <h2>Clinical Purpose</h2>
+        <p>{{ data.clinical_purpose | default("Content for Clinical Purpose section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Evidence Basis</h2>
+        <p>{{ data.evidence_basis | default("Content for Evidence Basis section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Algorithm Description</h2>
+        <p>{{ data.algorithm_description | default("Content for Algorithm Description section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Performance Metrics</h2>
+        <p>{{ data.performance_metrics | default("Content for Performance Metrics section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Clinical Validation</h2>
+        <p>{{ data.clinical_validation | default("Content for Clinical Validation section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>User Interface</h2>
+        <p>{{ data.user_interface | default("Content for User Interface section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Safety Monitoring</h2>
+        <p>{{ data.safety_monitoring | default("Content for Safety Monitoring section will be populated here.") }}</p>
+    </div>
+    
+</body>
+</html>

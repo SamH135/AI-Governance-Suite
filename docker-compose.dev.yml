@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Development overrides for the gateway
+  gateway:
+    environment:
+      - PYTHON_ENV=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./gateway:/app
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+
+  # Development overrides for frontend
+  frontend:
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  # Development overrides for services
+  compliance-service:
+    environment:
+      - PYTHON_ENV=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    command: ["python", "-m", "uvicorn", "services.compliance.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  prompt-service:
+    environment:
+      - PYTHON_ENV=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    command: ["python", "-m", "uvicorn", "services.prompts.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  document-service:
+    environment:
+      - PYTHON_ENV=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    command: ["python", "-m", "uvicorn", "services.documents.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  test-service:
+    environment:
+      - PYTHON_ENV=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    command: ["python", "-m", "uvicorn", "services.tests.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

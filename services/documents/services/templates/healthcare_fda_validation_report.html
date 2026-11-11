@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FDA Software Validation Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+        .section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>FDA Software Validation Report</h1>
+    <p><strong>Framework:</strong> FDA 21 CFR Part 820</p>
+    <p><strong>Description:</strong> FDA validation documentation for medical AI software</p>
+    
+    <div class="section">
+        <h2>Software Classification</h2>
+        <p>{{ data.software_classification | default("Content for Software Classification section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Risk Analysis</h2>
+        <p>{{ data.risk_analysis | default("Content for Risk Analysis section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Verification Testing</h2>
+        <p>{{ data.verification_testing | default("Content for Verification Testing section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Validation Testing</h2>
+        <p>{{ data.validation_testing | default("Content for Validation Testing section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Clinical Evaluation</h2>
+        <p>{{ data.clinical_evaluation | default("Content for Clinical Evaluation section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Post Market Surveillance</h2>
+        <p>{{ data.post_market_surveillance | default("Content for Post Market Surveillance section will be populated here.") }}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Change Control</h2>
+        <p>{{ data.change_control | default("Content for Change Control section will be populated here.") }}</p>
+    </div>
+    
+</body>
+</html>

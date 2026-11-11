@@ -1,0 +1,40 @@
+name: g_eval_metric
+version: 2.0.0
+description: Production-quality G-Eval implementation with weighted scoring, Chain-of-Thought reasoning, rubrics, and strict/continuous evaluation modes.
+author: AI Compliance Team
+framework: G_EVAL
+category: Quality Assessment
+enabled: true
+tags:
+  - g-eval
+  - llm-judge
+  - chain-of-thought
+  - weighted-scoring
+  - rubrics
+  - claude-default
+dependencies: []
+supported_models:
+  - claude-3-5-sonnet
+  - claude-3-sonnet-20240229
+  - claude-3-opus-20240229
+  - gpt-4
+  - gpt-4o
+min_platform_version: 1.0.0
+
+config_schema:
+  type: object
+  properties:
+    default_model:
+      type: string
+      default: "claude-3-5-sonnet"
+      description: Default LLM judge model provider (Claude default)
+    threshold:
+      type: number
+      minimum: 0
+      maximum: 1
+      default: 0.5
+      description: Passing score threshold
+    strict_mode:
+      type: boolean
+      default: false
+      description: Enforce binary strict evaluation (0 or 1)

@@ -1,0 +1,278 @@
+version: '3.8'
+
+services:
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000
+    depends_on:
+      - gateway
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - ai-compliance-network
+
+  # API Gateway (Python FastAPI)
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHON_ENV=development
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_HOURS=24
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - API_KEY_ENCRYPTION_KEY=${API_KEY_ENCRYPTION_KEY}
+      - ANALYTICS_SERVICE_URL=http://analytics-service:8000
+      - COMPLIANCE_SERVICE_URL=http://compliance-service:8000
+      - PROMPTS_SERVICE_URL=http://prompt-service:8000
+      - DOCUMENTS_SERVICE_URL=http://document-service:8000
+      - TESTS_SERVICE_URL=http://test-service:8000
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./gateway:/app
+      - ./shared:/app/shared
+      - ./services:/app/services
+    networks:
+      - ai-compliance-network
+
+  # Compliance Testing Service
+  compliance-service:
+    build:
+      context: .
+      dockerfile: services/compliance/Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHON_ENV=production
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
+      - REDIS_URL=redis://redis:6379/0
+      - MILVUS_HOST=milvus
+      - MILVUS_PORT=19530
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+    depends_on:
+      - postgres
+      - redis
+      - milvus
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    networks:
+      - ai-compliance-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Prompt Generation Service
+  prompt-service:
+    build:
+      context: .
+      dockerfile: services/prompts/Dockerfile
+    ports:
+      - "8002:8000"
+    environment:
+      - PYTHON_ENV=development
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
+      - REDIS_URL=redis://redis:6379/0
+      - MILVUS_HOST=milvus
+      - MILVUS_PORT=19530
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+    depends_on:
+      - postgres
+      - redis
+      - milvus
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    networks:
+      - ai-compliance-network
+
+  # Documentation Service
+  document-service:
+    build:
+      context: .
+      dockerfile: services/documents/Dockerfile
+    ports:
+      - "8003:8000"
+    environment:
+      - PYTHON_ENV=development
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - FILE_STORAGE_PATH=/app/storage
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+      - document_storage:/app/storage
+    networks:
+      - ai-compliance-network
+
+  # Test Execution Service
+  test-service:
+    build:
+      context: .
+      dockerfile: services/tests/Dockerfile
+    ports:
+      - "8004:8000"
+    environment:
+      - PYTHON_ENV=development
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    networks:
+      - ai-compliance-network
+
+  # Analytics Service
+  analytics-service:
+    build:
+      context: .
+      dockerfile: services/analytics/Dockerfile
+    ports:
+      - "8005:8000"
+    environment:
+      - PYTHON_ENV=development
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./services:/app/services
+      - ./shared:/app/shared
+    networks:
+      - ai-compliance-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ai_compliance
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ai_compliance"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-compliance-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai-compliance-network
+
+  # Milvus Vector Database
+  milvus:
+    image: milvusdb/milvus:v2.3.0
+    command: ["milvus", "run", "standalone"]
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    environment:
+      - ETCD_ENDPOINTS=etcd:2379
+      - MINIO_ADDRESS=minio:9000
+    volumes:
+      - milvus_data:/var/lib/milvus
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - ai-compliance-network
+
+  # Etcd for Milvus
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - etcd_data:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - ai-compliance-network
+
+  # MinIO for Milvus
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: minio server /data --console-address ":9001"
+    networks:
+      - ai-compliance-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  milvus_data:
+  etcd_data:
+  minio_data:
+  document_storage:
+
+networks:
+  ai-compliance-network:
+    driver: bridge

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ai_compliance
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ai_compliance"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-compliance-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai-compliance-network
+
+  # API Gateway (Python FastAPI)
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHON_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/ai_compliance
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_HOURS=24
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./gateway:/app
+      - ./shared:/app/shared
+    networks:
+      - ai-compliance-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  ai-compliance-network:
+    driver: bridge

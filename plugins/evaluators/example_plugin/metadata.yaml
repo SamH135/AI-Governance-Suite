@@ -1,0 +1,87 @@
+name: example_plugin
+version: 1.0.0
+description: Example custom compliance evaluator plugin for demonstration purposes
+author: AI Compliance Team
+framework: EXAMPLE_COMPLIANCE
+category: example
+enabled: true
+tags:
+  - example
+  - demo
+  - template
+  - compliance
+dependencies: []
+supported_models:
+  - gpt-3.5-turbo
+  - gpt-4
+  - claude-3
+  - claude-3-sonnet
+min_platform_version: 1.0.0
+
+config_schema:
+  type: object
+  properties:
+    api_keys:
+      type: object
+      description: API keys for different LLM providers
+      properties:
+        openai:
+          type: string
+          description: OpenAI API key
+        anthropic:
+          type: string
+          description: Anthropic API key
+    thresholds:
+      type: object
+      description: Scoring thresholds for compliance evaluation
+      properties:
+        pass_threshold:
+          type: number
+          minimum: 0
+          maximum: 100
+          default: 70
+          description: Minimum score to pass a test
+        warning_threshold:
+          type: number
+          minimum: 0
+          maximum: 100
+          default: 50
+          description: Score below which warnings are issued
+    custom_rules:
+      type: array
+      description: Custom compliance rules
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Rule name
+          description:
+            type: string
+            description: Rule description
+          category:
+            type: string
+            description: Rule category
+          severity:
+            type: string
+            enum: [critical, high, medium, low]
+            description: Rule severity
+    model_settings:
+      type: object
+      description: Model-specific settings
+      properties:
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 0.7
+          description: Model temperature setting
+        max_tokens:
+          type: integer
+          minimum: 1
+          maximum: 4096
+          default: 1000
+          description: Maximum tokens for model responses
+  required:
+    - api_keys
+    - thresholds
