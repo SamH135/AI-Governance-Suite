@@ -45,7 +45,7 @@ New compliance evaluators are implemented as plugins under `plugins/evaluators/`
 - Base evaluator class with standardized interface
 - Automatic plugin discovery and validation
 
-> **Note:** Evaluator coverage is a work in progress — not every evaluator referenced by the platform is implemented or included in this repository yet. The plugin system is the intended extension point: drop a custom evaluator into `plugins/evaluators/` and it's discovered automatically.
+> **Note:** Evaluator coverage is a work in progress — not every evaluator referenced by the platform is implemented or included in this repository yet. The plugin system is the intended extension point: drop a custom evaluator into `plugins/evaluators/` and it's discovered automatically. Adversarial/red-team prompt corpora used for safety evaluation are likewise not shipped with the repo — plug in your own prompt sets or standard jailbreak benchmarks.
 
 ## Technology Stack
 

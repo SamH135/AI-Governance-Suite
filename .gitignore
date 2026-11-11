@@ -42,6 +42,7 @@ out/
 .claude/
 .kiro/
 nul
+prompts/
 .idea/
 *.swp
 *.swo
