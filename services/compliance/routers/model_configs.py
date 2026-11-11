@@ -21,7 +21,7 @@ router = APIRouter()
 @router.get("/models", response_model=ApiResponse[List[AIModelConfigResponse]])
 async def get_model_configs(
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get all AI model configurations for the current user."""
     logger.info("Getting model configurations", user_id=current_user.user_id)
@@ -48,10 +48,7 @@ async def get_model_configs(
                 "api_key": "***HIDDEN***" if config.api_key else None,  # Hide API key for security
                 "temperature": config.temperature,
                 "max_tokens": config.max_tokens,
-                "top_p": config.top_p,
-                "frequency_penalty": config.frequency_penalty,
-                "presence_penalty": config.presence_penalty,
-                "timeout": config.timeout,
+                                "timeout": config.timeout,
                 "enabled": config.enabled,
                 "tags": config.tags or [],
                 "created_at": config.created_at,
@@ -78,7 +75,7 @@ async def get_model_configs(
 async def get_model_config(
     config_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific AI model configuration by ID."""
     logger.info("Getting model configuration", config_id=config_id, user_id=current_user.user_id)
@@ -107,10 +104,7 @@ async def get_model_config(
             "api_key": config.api_key,  # Return actual API key for editing
             "temperature": config.temperature,
             "max_tokens": config.max_tokens,
-            "top_p": config.top_p,
-            "frequency_penalty": config.frequency_penalty,
-            "presence_penalty": config.presence_penalty,
-            "timeout": config.timeout,
+                        "timeout": config.timeout,
             "enabled": config.enabled,
             "tags": config.tags or [],
             "created_at": config.created_at,
@@ -141,7 +135,7 @@ async def get_model_config(
 async def create_model_config(
     config_data: AIModelConfigCreate,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create a new AI model configuration."""
     logger.info("Creating model configuration", name=config_data.name, user_id=current_user.user_id)
@@ -156,9 +150,6 @@ async def create_model_config(
             api_key=config_data.api_key,
             temperature=config_data.temperature,
             max_tokens=config_data.max_tokens,
-            top_p=getattr(config_data, 'top_p', 1.0),
-            frequency_penalty=getattr(config_data, 'frequency_penalty', 0.0),
-            presence_penalty=getattr(config_data, 'presence_penalty', 0.0),
             timeout=getattr(config_data, 'timeout', 30),
             enabled=getattr(config_data, 'enabled', True),
             tags=getattr(config_data, 'tags', []),
@@ -180,10 +171,7 @@ async def create_model_config(
             "api_key": "***HIDDEN***",  # Hide API key in response
             "temperature": config.temperature,
             "max_tokens": config.max_tokens,
-            "top_p": config.top_p,
-            "frequency_penalty": config.frequency_penalty,
-            "presence_penalty": config.presence_penalty,
-            "timeout": config.timeout,
+                        "timeout": config.timeout,
             "enabled": config.enabled,
             "tags": config.tags or [],
             "created_at": config.created_at,
@@ -210,7 +198,7 @@ async def update_model_config(
     config_id: int,
     config_data: AIModelConfigUpdate,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Update an AI model configuration."""
     logger.info("Updating model configuration", config_id=config_id, user_id=current_user.user_id)
@@ -248,10 +236,7 @@ async def update_model_config(
             "api_key": "***HIDDEN***",  # Hide API key in response
             "temperature": config.temperature,
             "max_tokens": config.max_tokens,
-            "top_p": config.top_p,
-            "frequency_penalty": config.frequency_penalty,
-            "presence_penalty": config.presence_penalty,
-            "timeout": config.timeout,
+                        "timeout": config.timeout,
             "enabled": config.enabled,
             "tags": config.tags or [],
             "created_at": config.created_at,
@@ -282,7 +267,7 @@ async def update_model_config(
 async def delete_model_config(
     config_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Delete an AI model configuration."""
     logger.info("Deleting model configuration", config_id=config_id, user_id=current_user.user_id)

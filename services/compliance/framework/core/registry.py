@@ -78,9 +78,12 @@ class Registry:
         try:
             from ...services.evaluators.plugin_manager import plugin_manager
             for plugin_name, plugin_inst in plugin_manager.loaded_plugins.items():
-                eval_cls = plugin_inst.get_evaluator_class()
-                if eval_cls:
-                    cls.register_evaluator(eval_cls, alias=plugin_name)
+                try:
+                    eval_cls = plugin_inst.get_evaluator_class()
+                    if eval_cls:
+                        cls.register_evaluator(eval_cls, alias=plugin_name)
+                except Exception as e:
+                    logger.warning(f"Failed to register plugin evaluator {plugin_name}: {e}")
         except Exception as plugin_err:
             logger.debug(f"Plugin auto-discovery check skipped: {plugin_err}")
 

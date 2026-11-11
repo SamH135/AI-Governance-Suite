@@ -257,8 +257,7 @@ class GEvalEvaluator(BaseEvaluator):
             ],
             risk_thresholds={"high": 0.8, "medium": 0.6, "low": 0.4},
             capabilities=[
-                EvaluatorCapability.LLM_ENHANCED,
-                EvaluatorCapability.GENERAL_TEXT_ANALYSIS
+                EvaluatorCapability.LLM_ENHANCED
             ],
             llm_requirements=LLMRequirements(
                 requirement_level=ModelRequirement.REQUIRED,

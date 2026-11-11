@@ -165,7 +165,7 @@ class GeneratedPrompt(Base):
     category_id = Column(Integer, ForeignKey("prompt_categories.category_id"))
     system_id = Column(Integer, ForeignKey("ai_systems.system_id"))
     text = Column(Text, nullable=False)
-    prompt_metadata = Column(JSON)
+    prompt_metadata = Column("metadata", JSON)
     thinking_trace = Column(JSON)
     approval_status = Column(String(50), default="pending")
     feedback_score = Column(DECIMAL(3, 2))
@@ -222,6 +222,22 @@ class ComplianceReport(Base):
     status = Column(String(50), default="draft")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     created_by = Column(Integer, ForeignKey("users.user_id"))
+
+class UserAPIKey(Base):
+    """User-managed provider API keys (encrypted at rest). Mirrors init.sql."""
+    __tablename__ = "user_api_keys"
+
+    id = Column(String(64), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    provider = Column(String(50), nullable=False)
+    encrypted_key = Column(Text, nullable=False)
+    name = Column(String(255))
+    description = Column(Text)
+    status = Column(String(20), default="active")
+    expires_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
 
 class AIModelConfig(Base):
     __tablename__ = "ai_model_configs"
