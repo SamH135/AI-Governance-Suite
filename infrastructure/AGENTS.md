@@ -25,3 +25,4 @@ Database schema and infra setup for the docker-compose stack.
 
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
+- 2026-11-11 — Added `./plugins:/app/plugins` volume to compliance-service in docker-compose.yml — plugin evaluators were unreachable in-container without it.

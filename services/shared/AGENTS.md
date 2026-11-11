@@ -33,3 +33,4 @@ Code used by two or more backend services (root rule 3). Not a container. It's i
 
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
+- 2026-11-11 — Added `UserAPIKey` ORM class: `AIModelConfig.api_key_id` FK referenced `user_api_keys` with no mapped class, breaking all model-config writes.

@@ -45,3 +45,4 @@ Evaluation engine: AI systems + model configs CRUD, runs compliance tests agains
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline). Evaluator overhaul planned in `/plan.md`.
 - 2026-11-11 — Phase 0 (partial) + Phase 1 landed: `aevaluate`, Registry slug lookup, `framework/probes/` kit, 3 probe plugins. `test_probe_evals.py` = 9 passed.
+- 2026-11-11 — Live-tested all 3 probes vs gemini-3.1-flash-lite via `/api/systems/{id}/test-unified`: leakage attack_success 93.3%, consumption 81.9, jailbreak robustness 87.5. Fixed en route: `./plugins` volume mount was missing from docker-compose (no plugin could ever load in-container); `model_configs.py` referenced nonexistent `top_p`/penalty fields; `UserAPIKey` ORM class was missing for the `api_key_id` FK. Plugins must be POSTed to `/plugins/{name}/load` after every service restart — nothing loads them at startup.
