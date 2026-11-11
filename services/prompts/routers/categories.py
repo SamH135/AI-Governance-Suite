@@ -21,7 +21,7 @@ router = APIRouter()
 async def get_categories(
     framework: str = None,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get all prompt categories."""
     
@@ -42,7 +42,7 @@ async def get_categories(
 async def get_category(
     category_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific prompt category."""
     
@@ -63,7 +63,7 @@ async def get_category(
 async def create_category(
     category_data: PromptCategoryBase,
     current_user: UserResponse = Depends(require_admin),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create a new prompt category (admin only)."""
     

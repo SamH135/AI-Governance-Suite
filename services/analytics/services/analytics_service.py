@@ -100,31 +100,34 @@ class AnalyticsService:
                 start_date = end_date - timedelta(days=30)
                 
             # Build base query
-            query = session.query(TestResult).filter(
-                TestResult.created_at >= start_date,
-                TestResult.created_at <= end_date
-            )
-            
-            # Filter by system if specified
+            query = """
+                SELECT tr.passed, tr.details
+                FROM test_results tr
+                JOIN tests t ON tr.test_id = t.test_id
+                JOIN ai_systems s ON t.system_id = s.system_id
+                WHERE s.user_id = :user_id
+                AND tr.created_at >= :start_date
+                AND tr.created_at <= :end_date
+            """
+            params = {"user_id": user_id, "start_date": start_date, "end_date": end_date}
             if system_id:
-                query = query.join(Model).join(AISystem).filter(AISystem.id == system_id)
-            else:
-                query = query.join(Model).join(AISystem).filter(AISystem.user_id == user_id)
-                
-            results = await query.all()
-            
+                query += " AND s.system_id = :system_id"
+                params["system_id"] = system_id
+
+            results = (await session.execute(text(query), params)).mappings().fetchall()
+
             # Analyze results
             total_tests = len(results)
-            passed_tests = len([r for r in results if r.overall_score >= 0.7])
+            passed_tests = len([r for r in results if r["passed"]])
             failed_tests = total_tests - passed_tests
-            
+
             # Calculate compliance by category
             compliance_by_category = {}
             risk_levels = {"low": 0, "medium": 0, "high": 0, "critical": 0}
-            
+
             for result in results:
-                if result.results:
-                    for category, data in result.results.items():
+                if result["details"]:
+                    for category, data in result["details"].items():
                         if category not in compliance_by_category:
                             compliance_by_category[category] = []
                         compliance_by_category[category].append(data.get("score", 0))
@@ -159,30 +162,37 @@ class AnalyticsService:
     async def get_test_analytics(self, user_id: int, test_id: Optional[int] = None) -> Dict[str, Any]:
         """Get detailed test analytics."""
         async with db_manager.get_session() as session:
-            query = session.query(TestResult)
-            
+            query = """
+                SELECT tr.result_id, tr.score, tr.created_at
+                FROM test_results tr
+                JOIN tests t ON tr.test_id = t.test_id
+                JOIN ai_systems s ON t.system_id = s.system_id
+            """
+            params = {}
             if test_id:
-                query = query.filter(TestResult.id == test_id)
+                query += " WHERE tr.test_id = :test_id"
+                params["test_id"] = test_id
             else:
                 # Get tests for user's systems
-                query = query.join(Model).join(AISystem).filter(AISystem.user_id == user_id)
-                
-            results = await query.all()
-            
+                query += " WHERE s.user_id = :user_id"
+                params["user_id"] = user_id
+
+            results = (await session.execute(text(query), params)).mappings().fetchall()
+
             if not results:
                 raise PlatformError("No test results found", "NOT_FOUND", 404)
-                
+
             # Analyze performance over time
             performance_timeline = []
-            for result in sorted(results, key=lambda x: x.created_at):
+            for result in sorted(results, key=lambda x: x["created_at"]):
                 performance_timeline.append({
-                    "timestamp": result.created_at.isoformat(),
-                    "overall_score": result.overall_score,
-                    "test_id": result.id
+                    "timestamp": result["created_at"].isoformat(),
+                    "overall_score": result["score"],
+                    "test_id": result["result_id"]
                 })
-                
+
             # Calculate statistics
-            scores = [r.overall_score for r in results if r.overall_score is not None]
+            scores = [float(r["score"]) for r in results if r["score"] is not None]
             
             analytics = {
                 "total_tests": len(results),
@@ -205,8 +215,8 @@ class AnalyticsService:
             text("""
                 SELECT COUNT(*) 
                 FROM test_results tr
-                JOIN models m ON tr.model_id = m.id
-                JOIN ai_systems s ON m.system_id = s.id
+                JOIN models m ON tr.model_id = m.model_id
+                JOIN ai_systems s ON m.system_id = s.system_id
                 WHERE s.user_id = :user_id 
                 AND tr.created_at >= :start_date 
                 AND tr.created_at <= :end_date
@@ -229,7 +239,7 @@ class AnalyticsService:
             text("""
                 SELECT COUNT(*) 
                 FROM models m
-                JOIN ai_systems s ON m.system_id = s.id
+                JOIN ai_systems s ON m.system_id = s.system_id
                 WHERE s.user_id = :user_id
             """),
             {"user_id": user_id}
@@ -241,14 +251,14 @@ class AnalyticsService:
         """Get average compliance score for user in date range."""
         result = await session.execute(
             text("""
-                SELECT AVG(tr.overall_score) 
+                SELECT AVG(tr.score) 
                 FROM test_results tr
-                JOIN models m ON tr.model_id = m.id
-                JOIN ai_systems s ON m.system_id = s.id
+                JOIN models m ON tr.model_id = m.model_id
+                JOIN ai_systems s ON m.system_id = s.system_id
                 WHERE s.user_id = :user_id 
                 AND tr.created_at >= :start_date 
                 AND tr.created_at <= :end_date
-                AND tr.overall_score IS NOT NULL
+                AND tr.score IS NOT NULL
             """),
             {"user_id": user_id, "start_date": start_date, "end_date": end_date}
         )
@@ -261,8 +271,8 @@ class AnalyticsService:
             text("""
                 SELECT DATE(tr.created_at) as test_date, COUNT(*) as test_count
                 FROM test_results tr
-                JOIN models m ON tr.model_id = m.id
-                JOIN ai_systems s ON m.system_id = s.id
+                JOIN models m ON tr.model_id = m.model_id
+                JOIN ai_systems s ON m.system_id = s.system_id
                 WHERE s.user_id = :user_id 
                 AND tr.created_at >= :start_date 
                 AND tr.created_at <= :end_date
@@ -279,14 +289,14 @@ class AnalyticsService:
         """Get compliance score trends over time."""
         result = await session.execute(
             text("""
-                SELECT DATE(tr.created_at) as test_date, AVG(tr.overall_score) as avg_score
+                SELECT DATE(tr.created_at) as test_date, AVG(tr.score) as avg_score
                 FROM test_results tr
-                JOIN models m ON tr.model_id = m.id
-                JOIN ai_systems s ON m.system_id = s.id
+                JOIN models m ON tr.model_id = m.model_id
+                JOIN ai_systems s ON m.system_id = s.system_id
                 WHERE s.user_id = :user_id 
                 AND tr.created_at >= :start_date 
                 AND tr.created_at <= :end_date
-                AND tr.overall_score IS NOT NULL
+                AND tr.score IS NOT NULL
                 GROUP BY DATE(tr.created_at)
                 ORDER BY test_date
             """),

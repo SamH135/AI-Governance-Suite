@@ -65,7 +65,7 @@ def verify_token(token: str) -> dict:
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ) -> UserResponse:
     """Get the current authenticated user."""
     token = credentials.credentials

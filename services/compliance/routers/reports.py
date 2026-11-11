@@ -24,7 +24,7 @@ async def create_compliance_report(
     report_data: ComplianceReportCreate,
     background_tasks: BackgroundTasks,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create a new compliance report."""
     
@@ -80,7 +80,7 @@ async def get_compliance_reports(
     page: int = 1,
     per_page: int = 20,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get compliance reports for the current user."""
     
@@ -129,7 +129,7 @@ async def get_compliance_reports(
 async def get_compliance_report(
     report_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific compliance report."""
     
@@ -156,7 +156,7 @@ async def update_report_status(
     report_id: int,
     status: str,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Update the status of a compliance report."""
     
@@ -202,7 +202,7 @@ async def update_report_status(
 async def get_compliance_analytics(
     days: int = 30,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get compliance analytics summary for the user's systems."""
     

@@ -1,6 +1,7 @@
 """Shared database utilities and models."""
 
 import os
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
@@ -50,11 +51,12 @@ class DatabaseManager:
             await self.engine.dispose()
             logger.info("Database connection closed")
             
+    @asynccontextmanager
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
         """Get database session."""
         if not self.async_session:
             raise RuntimeError("Database not initialized")
-            
+
         async with self.async_session() as session:
             try:
                 yield session
@@ -63,6 +65,11 @@ class DatabaseManager:
                 raise
             finally:
                 await session.close()
+
+    async def get_session_gen(self) -> AsyncGenerator[AsyncSession, None]:
+        """Session dependency for FastAPI Depends — needs an async generator."""
+        async with self.get_session() as session:
+            yield session
 
 # Global database manager instance
 db_manager = DatabaseManager()

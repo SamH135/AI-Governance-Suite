@@ -731,14 +731,14 @@ class AdvancedRAGService:
             if MILVUS_AVAILABLE:
                 milvus_config = {
                     "collection_name": "compliance_docs_milvus",
-                    "host": "localhost",
-                    "port": "19530",
+                    "host": os.getenv("MILVUS_HOST", "localhost"),
+                    "port": os.getenv("MILVUS_PORT", "19530"),
                     "dimension": 384
                 }
                 self.vector_stores["milvus"] = MilvusVectorStore(milvus_config)
             
             # Initialize all available vector stores
-            for store_name, store in self.vector_stores.items():
+            for store_name, store in list(self.vector_stores.items()):
                 try:
                     await store.initialize()
                     logger.info("Vector store initialized", store=store_name)

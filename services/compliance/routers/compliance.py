@@ -25,7 +25,7 @@ async def create_compliance_test(
     test_data: TestCreate,
     background_tasks: BackgroundTasks,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create a new compliance test."""
     
@@ -75,7 +75,7 @@ async def get_compliance_tests(
     system_id: Optional[int] = None,
     status: Optional[str] = None,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get compliance tests for the current user."""
     
@@ -98,7 +98,7 @@ async def get_compliance_tests(
 async def get_compliance_test(
     test_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific compliance test."""
     
@@ -122,7 +122,7 @@ async def get_compliance_test(
 async def get_test_results(
     test_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get results for a specific compliance test."""
     
@@ -155,7 +155,7 @@ async def run_compliance_test_endpoint(
     test_id: int,
     background_tasks: BackgroundTasks,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Re-run a compliance test."""
     
@@ -195,7 +195,7 @@ async def evaluate_compliance(
     framework: str,
     test_config: dict,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Perform immediate compliance evaluation."""
     

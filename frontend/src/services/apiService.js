@@ -124,41 +124,19 @@ export const systemsService = {
   async runTest(systemId, testConfig) {
     logger.info(`Running test on system ${systemId} with config: ${JSON.stringify(testConfig)}`, 'apiService.js', 'runTest');
     
-    const framework = testConfig.evaluators?.[0] || testConfig.framework || 'generic_compliance';
-    const testPrompt = testConfig.test_prompts || testConfig.testPrompts || testConfig.text || 'Test input for compliance evaluation';
-    
     try {
-      // Direct evaluator test via Gateway proxy to compliance service
-      const response = await api.post(`/compliance/evaluators/test/${encodeURIComponent(framework)}`, {
-        text: testPrompt,
-        llm_config: testConfig.llm_config || {
-          provider: testConfig.provider || 'local',
-          model_id: testConfig.model_id || 'local-mock'
-        }
-      });
-      
+      // Use the unified test endpoint that implements the full workflow:
+      // 1. Send prompt to test subject model
+      // 2. Evaluate response with evaluator model
+      const response = await api.post(`/compliance/systems/${systemId}/test-unified`, testConfig);
       const payload = response.data?.data ?? response.data;
-      return {
-        testId: 'eval_' + Date.now(),
-        status: 'completed',
-        message: `Compliance evaluation for ${framework} completed`,
-        systemId: systemId,
-        started_at: new Date().toISOString(),
-        result: payload
-      };
-    } catch (e1) {
-      logger.warn(`Direct evaluator call failed (${e1.message}), trying system-based endpoint`, 'apiService.js', 'runTest');
-      try {
-        const response = await api.post(`/compliance/systems/${systemId}/test`, testConfig);
-        const payload = response.data?.data ?? response.data;
-        if (payload && !payload.testId && payload.test_id) {
-          payload.testId = String(payload.test_id);
-        }
-        return payload;
-      } catch (e2) {
-        logger.error(`System test execution failed: ${e2.message}`, 'apiService.js', 'runTest');
-        throw e2;
+      if (payload && !payload.testId && payload.test_id) {
+        payload.testId = String(payload.test_id);
       }
+      return payload;
+    } catch (e) {
+      logger.error(`System test execution failed: ${e.message}`, 'apiService.js', 'runTest');
+      throw e;
     }
   }
 };

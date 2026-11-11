@@ -22,7 +22,7 @@ async def create_feedback(
     prompt_id: int,
     feedback_data: PromptFeedbackCreate,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create feedback for a prompt."""
     
@@ -77,7 +77,7 @@ async def create_feedback(
 async def get_prompt_feedback(
     prompt_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get all feedback for a prompt."""
     

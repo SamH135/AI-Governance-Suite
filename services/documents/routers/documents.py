@@ -27,7 +27,7 @@ async def generate_document(
     background_tasks: BackgroundTasks,
     enhance_with_llm: bool = True,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Generate a new document from template."""
     
@@ -100,7 +100,7 @@ async def get_documents(
     page: int = 1,
     per_page: int = 20,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get generated documents for the current user."""
     
@@ -151,7 +151,7 @@ async def get_documents(
 async def get_document(
     document_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific generated document."""
     
@@ -177,7 +177,7 @@ async def get_document(
 async def download_document(
     document_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Download a generated document file."""
     
@@ -223,7 +223,7 @@ async def update_document_status(
     document_id: int,
     status: str,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Update the status of a generated document."""
     
@@ -269,7 +269,7 @@ async def update_document_status(
 async def delete_document(
     document_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Delete a generated document."""
     

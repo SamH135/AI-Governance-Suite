@@ -52,7 +52,11 @@ class RedisClient:
         if not self.redis:
             raise RuntimeError("Redis not initialized")
         return await self.redis.set(key, value, ex=ttl)
-        
+
+    async def setex(self, key: str, ttl: int, value: str) -> bool:
+        """Set a value with expiry (redis-py SETEX signature)."""
+        return await self.set(key, value, ttl=ttl)
+
     async def delete(self, key: str) -> int:
         """Delete a key from Redis."""
         if not self.redis:

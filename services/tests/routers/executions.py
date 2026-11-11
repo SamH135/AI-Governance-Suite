@@ -24,7 +24,7 @@ async def create_test_execution(
     execution_data: TestExecutionCreate,
     background_tasks: BackgroundTasks,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create and start a new test execution."""
     
@@ -78,7 +78,7 @@ async def get_test_executions(
     page: int = 1,
     per_page: int = 20,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get test executions for the current user."""
     
@@ -125,7 +125,7 @@ async def get_test_executions(
 async def get_test_execution(
     execution_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific test execution."""
     
@@ -151,7 +151,7 @@ async def get_test_execution(
 async def get_test_execution_status(
     execution_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get status and progress of a test execution (for WebSocket updates)."""
     
@@ -193,7 +193,7 @@ async def get_test_execution_status(
 async def get_execution_status(
     execution_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get real-time status of a test execution."""
     
@@ -232,7 +232,7 @@ async def get_execution_status(
 async def cancel_test_execution(
     execution_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Cancel a running test execution."""
     

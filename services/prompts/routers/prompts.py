@@ -26,7 +26,7 @@ async def generate_prompts(
     request: PromptGenerationRequest,
     background_tasks: BackgroundTasks,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Generate new prompts using J1 model."""
     
@@ -129,7 +129,7 @@ async def generate_prompts_with_saved_keys(
     background_tasks: BackgroundTasks,
     req: Request,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session),
+    db: AsyncSession = Depends(db_manager.get_session_gen),
     auth_manager = Depends(setup_unified_api_auth_dependency)
 ):
     """Generate new prompts using J1 model with saved API keys."""
@@ -244,7 +244,7 @@ async def get_prompts(
     page: int = 1,
     per_page: int = 20,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get generated prompts for the current user."""
     
@@ -289,7 +289,7 @@ async def get_prompts(
 async def get_prompt(
     prompt_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific generated prompt."""
     
@@ -315,7 +315,7 @@ async def optimize_prompt(
     feedback: dict,
     optimization_goals: List[str] = None,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Optimize an existing prompt based on feedback."""
     
@@ -385,7 +385,7 @@ async def optimize_prompt(
 async def get_thinking_trace(
     prompt_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get the thinking trace analysis for a prompt."""
     
@@ -421,7 +421,7 @@ async def update_prompt_approval(
     prompt_id: int,
     approval_status: str,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Update the approval status of a prompt."""
     
@@ -468,7 +468,7 @@ async def optimize_prompt_with_rl(
     max_iterations: int = 15,
     target_reward: float = 0.85,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Optimize an existing prompt using reinforcement learning."""
     
@@ -583,7 +583,7 @@ async def get_rl_optimization_stats(
 async def get_rl_optimization_analysis(
     prompt_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get detailed RL optimization analysis for a prompt."""
     
@@ -654,7 +654,7 @@ async def get_rl_optimization_analysis(
 async def delete_prompt(
     prompt_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Delete a generated prompt."""
     

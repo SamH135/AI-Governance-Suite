@@ -107,73 +107,91 @@ const TestResultsPage = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // If testId is provided, start polling the backend for this specific test
+        // If testId is provided, check for results from navigation state or session storage
         if (testId) {
-          const urlParams = new URLSearchParams(location.search);
-          const systemIdFromQuery = urlParams.get('systemId');
-          const systemIdFromState = location.state?.systemId;
-          const systemId = systemIdFromQuery || systemIdFromState;
-
-          setSpecificTest((prev) => ({
-            ...prev,
-            testId: testId,
-            status: prev?.status || 'running',
-            message: 'Test is currently running. Results will appear here once completed.',
-            startTime: prev?.startTime || new Date().toISOString()
-          }));
-
-          // If we don't have a systemId we cannot poll backend; keep the running state visible
-          if (!systemId) {
+          // First check if result was passed in navigation state (synchronous execution)
+          if (location.state?.result) {
+            const backendResult = location.state.result;
+            
+            // Transform backend response to frontend expected format
+            const transformedResult = {
+              test_subject_prompt: backendResult.test_prompts,
+              test_subject_response: backendResult.test_subject_response,
+              compliance_score: backendResult.evaluator_results?.[Object.keys(backendResult.evaluator_results)[0]]?.result?.compliance_score,
+              compliance_status: backendResult.evaluator_results?.[Object.keys(backendResult.evaluator_results)[0]]?.result?.compliance_status,
+              violations: backendResult.evaluator_results?.[Object.keys(backendResult.evaluator_results)[0]]?.result?.violations,
+              violations_count: backendResult.evaluator_results?.[Object.keys(backendResult.evaluator_results)[0]]?.result?.violations_count,
+              explanation: backendResult.evaluator_results?.[Object.keys(backendResult.evaluator_results)[0]]?.result?.explanation,
+              method: backendResult.evaluator_results?.[Object.keys(backendResult.evaluator_results)[0]]?.result?.method,
+              llm_model: backendResult.evaluator_model?.model_id,
+              llm_provider: backendResult.evaluator_model?.provider,
+              processing_time: backendResult.evaluator_results?.[Object.keys(backendResult.evaluator_results)[0]]?.result?.processing_time
+            };
+            
+            setSpecificTest({
+              testId: testId,
+              status: backendResult.status,
+              message: 'Test completed.',
+              startTime: new Date().toISOString(),
+              completedAt: backendResult.completed_at,
+              details: { result: transformedResult }
+            });
             setLoading(false);
             return;
           }
-
-          // Check if this is a direct evaluator result (immediate completion)
-          if (testId.startsWith('eval_')) {
-            // This is a direct evaluator result, check if we have it in session storage
-            const storedResult = sessionStorage.getItem(`test_result_${testId}`);
-            if (storedResult) {
-              const parsedResult = JSON.parse(storedResult);
+          
+          // Check session storage
+          const storedResult = sessionStorage.getItem(`test_result_${testId}`);
+          if (storedResult) {
+            const parsedResult = JSON.parse(storedResult);
+            
+            // Transform if it's the new backend format
+            if (parsedResult.evaluator_results) {
+              const transformedResult = {
+                test_subject_prompt: parsedResult.test_prompts,
+                test_subject_response: parsedResult.test_subject_response,
+                compliance_score: parsedResult.evaluator_results?.[Object.keys(parsedResult.evaluator_results)[0]]?.result?.compliance_score,
+                compliance_status: parsedResult.evaluator_results?.[Object.keys(parsedResult.evaluator_results)[0]]?.result?.compliance_status,
+                violations: parsedResult.evaluator_results?.[Object.keys(parsedResult.evaluator_results)[0]]?.result?.violations,
+                violations_count: parsedResult.evaluator_results?.[Object.keys(parsedResult.evaluator_results)[0]]?.result?.violations_count,
+                explanation: parsedResult.evaluator_results?.[Object.keys(parsedResult.evaluator_results)[0]]?.result?.explanation,
+                method: parsedResult.evaluator_results?.[Object.keys(parsedResult.evaluator_results)[0]]?.result?.method,
+                llm_model: parsedResult.evaluator_model?.model_id,
+                llm_provider: parsedResult.evaluator_model?.provider,
+                processing_time: parsedResult.evaluator_results?.[Object.keys(parsedResult.evaluator_results)[0]]?.result?.processing_time
+              };
+              
+              setSpecificTest({
+                testId: testId,
+                status: parsedResult.status,
+                message: 'Test completed.',
+                startTime: parsedResult.started_at || new Date().toISOString(),
+                completedAt: parsedResult.completed_at,
+                details: { result: transformedResult }
+              });
+            } else {
+              // Old format, use as-is
               setSpecificTest({
                 testId: testId,
                 status: 'completed',
-                message: 'Direct evaluator test completed.',
+                message: 'Test completed.',
                 startTime: parsedResult.started_at || new Date().toISOString(),
                 completedAt: new Date().toISOString(),
                 details: parsedResult
               });
-              setLoading(false);
-              return;
             }
+            setLoading(false);
+            return;
           }
-
-          // Poll every 2.5s until status is not running/pending
-          const poll = async () => {
-            try {
-              const result = await systemsService.getSystemTest(systemId, testId);
-              if (result && result.status && result.status !== 'running' && result.status !== 'pending') {
-                setSpecificTest({
-                  testId: String(result.execution_id || result.test_id || testId),
-                  status: result.status,
-                  message: 'Test completed.',
-                  startTime: result.started_at || new Date().toISOString(),
-                  completedAt: result.completed_at,
-                  details: result
-                });
-                if (pollingRef.current) {
-                  clearInterval(pollingRef.current);
-                }
-              }
-            } catch (e) {
-              // Keep showing running state; backend may not have saved yet
-            }
-          };
-          poll();
-          pollingRef.current = setInterval(poll, 2500);
+          
+          // No result found - show error state
+          setSpecificTest({
+            testId: testId,
+            status: 'failed',
+            message: 'Test result not found. Please run the test again.',
+            startTime: new Date().toISOString()
+          });
           setLoading(false);
-          return () => {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-          };
         }
         
         // Initialize with empty array - results will be populated from API
@@ -187,7 +205,7 @@ const TestResultsPage = () => {
     };
 
     fetchResults();
-  }, [testId, location.search]);
+  }, [testId, location.state]);
 
   const filteredResults = results.filter(result => {
     const matchesSearch = result.system_name.toLowerCase().includes(searchTerm.toLowerCase());

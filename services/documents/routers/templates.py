@@ -25,7 +25,7 @@ async def get_templates(
     template_type: Optional[str] = None,
     is_active: bool = True,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get available document templates."""
     
@@ -48,7 +48,7 @@ async def get_templates(
 async def get_template(
     template_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific document template."""
     
@@ -69,7 +69,7 @@ async def get_template(
 async def create_template(
     template_data: DocumentTemplateBase,
     current_user: UserResponse = Depends(require_admin),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create a new document template (admin only)."""
     
@@ -129,7 +129,7 @@ async def create_custom_template(
     sections: List[str],
     enhance_with_llm: bool = True,
     current_user: UserResponse = Depends(require_admin),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Create a custom template using AI assistance (admin only)."""
     
@@ -178,7 +178,7 @@ async def update_template(
     template_id: int,
     template_data: DocumentTemplateBase,
     current_user: UserResponse = Depends(require_admin),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Update a document template (admin only)."""
     
@@ -231,7 +231,7 @@ async def update_template(
 async def validate_template(
     template_id: int,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Validate a document template."""
     
@@ -266,7 +266,7 @@ async def update_template_status(
     template_id: int,
     is_active: bool,
     current_user: UserResponse = Depends(require_admin),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Update template active status (admin only)."""
     

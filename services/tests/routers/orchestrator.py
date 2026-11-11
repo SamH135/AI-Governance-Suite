@@ -143,7 +143,7 @@ async def get_test_analytics(
     system_id: int = None,
     days: int = 30,
     current_user: UserResponse = Depends(get_current_active_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get test execution analytics and statistics."""
     

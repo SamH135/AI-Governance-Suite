@@ -34,7 +34,7 @@ async def run_system_test(
     test_request: TestExecutionRequest,
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """
     Run compliance test on system using its configured model.
@@ -219,7 +219,7 @@ async def execute_test_with_model(
 async def get_system_tests(
     system_id: int,
     current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get all test results for a system"""
     try:
@@ -282,7 +282,7 @@ async def get_test_result(
     system_id: int,
     test_id: int,
     current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(db_manager.get_session)
+    db: AsyncSession = Depends(db_manager.get_session_gen)
 ):
     """Get a specific test result"""
     try:
