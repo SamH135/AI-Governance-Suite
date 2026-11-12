@@ -132,6 +132,8 @@ logger.info("Application settings loaded successfully", function="main")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    # Dev loopback on any port (vite dev, preview proxies); env allowlist governs real origins
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
