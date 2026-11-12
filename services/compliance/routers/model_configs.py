@@ -148,6 +148,7 @@ async def create_model_config(
             provider=config_data.provider,
             model_id=config_data.model_id,
             api_key=config_data.api_key,
+            api_url=getattr(config_data, 'api_url', None),
             temperature=config_data.temperature,
             max_tokens=config_data.max_tokens,
             timeout=getattr(config_data, 'timeout', 30),

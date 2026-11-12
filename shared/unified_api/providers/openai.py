@@ -70,7 +70,9 @@ class OpenAIProvider(BaseModelProvider):
                 "OpenAI API key is required. Please provide a valid API key."
             )
 
-        if not api_key.startswith('sk-'):
+        # sk- prefix is only enforced for the real OpenAI endpoint; compatible
+        # providers (groq=gsk_, deepseek, vLLM...) use their own key formats.
+        if not self.config.api_url and not api_key.startswith('sk-'):
             raise Exception(
                 f"Invalid OpenAI API key format. Expected format: sk-..., got: {api_key[:10]}..."
             )
