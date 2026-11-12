@@ -48,6 +48,77 @@ async def get_models(
             detail=f"Failed to retrieve model configurations: {str(e)}"
         )
 
+@router.get("/providers", response_model=List[Dict[str, Any]])
+async def get_providers(
+    current_user: dict = Depends(get_current_user),
+    models_service: ModelsService = Depends(get_models_service)
+):
+    """Get available AI providers"""
+    try:
+        logger.info("Getting available AI providers")
+
+        providers = await models_service.get_providers()
+        logger.info(f"Retrieved {len(providers)} available providers")
+
+        return providers
+
+    except Exception as e:
+        logger.error(f"Failed to get AI providers: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve AI providers: {str(e)}"
+        )
+
+@router.get("/providers/{provider_name}/models", response_model=List[Dict[str, Any]])
+async def get_provider_models(
+    provider_name: str,
+    force_refresh: bool = False,
+    current_user: dict = Depends(get_current_user),
+    models_service: ModelsService = Depends(get_models_service)
+):
+    """Get available models from a specific provider, discovering from API if needed"""
+    try:
+        logger.info(f"Getting models for provider {provider_name} (force_refresh={force_refresh})")
+
+        models = await models_service.get_provider_models(provider_name, force_refresh)
+        logger.info(f"Retrieved {len(models)} models for provider {provider_name}")
+
+        return models
+
+    except Exception as e:
+        logger.error(f"Failed to get models for provider {provider_name}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve models for provider {provider_name}: {str(e)}"
+        )
+
+@router.post("/providers/{provider_name}/refresh", response_model=Dict[str, Any])
+async def refresh_provider_models(
+    provider_name: str,
+    current_user: dict = Depends(get_current_user),
+    models_service: ModelsService = Depends(get_models_service)
+):
+    """Force refresh models from a specific provider API"""
+    try:
+        logger.info(f"Force refreshing models for provider {provider_name}")
+
+        models = await models_service.get_provider_models(provider_name, force_refresh=True)
+        logger.info(f"Refreshed {len(models)} models for provider {provider_name}")
+
+        return {
+            "success": True,
+            "provider": provider_name,
+            "models_count": len(models),
+            "message": f"Successfully refreshed {len(models)} models from {provider_name}"
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to refresh models for provider {provider_name}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to refresh models for provider {provider_name}: {str(e)}"
+        )
+
 @router.get("/{config_id}", response_model=AIModelConfigResponse)
 async def get_model(
     config_id: int,
@@ -210,77 +281,6 @@ async def test_model(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to test model configuration: {str(e)}"
-        )
-
-@router.get("/providers/", response_model=List[Dict[str, Any]])
-async def get_providers(
-    current_user: dict = Depends(get_current_user),
-    models_service: ModelsService = Depends(get_models_service)
-):
-    """Get available AI providers"""
-    try:
-        logger.info("Getting available AI providers")
-        
-        providers = await models_service.get_providers()
-        logger.info(f"Retrieved {len(providers)} available providers")
-        
-        return providers
-        
-    except Exception as e:
-        logger.error(f"Failed to get AI providers: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve AI providers: {str(e)}"
-        )
-
-@router.get("/providers/{provider_name}/models", response_model=List[Dict[str, Any]])
-async def get_provider_models(
-    provider_name: str,
-    force_refresh: bool = False,
-    current_user: dict = Depends(get_current_user),
-    models_service: ModelsService = Depends(get_models_service)
-):
-    """Get available models from a specific provider, discovering from API if needed"""
-    try:
-        logger.info(f"Getting models for provider {provider_name} (force_refresh={force_refresh})")
-        
-        models = await models_service.get_provider_models(provider_name, force_refresh)
-        logger.info(f"Retrieved {len(models)} models for provider {provider_name}")
-        
-        return models
-        
-    except Exception as e:
-        logger.error(f"Failed to get models for provider {provider_name}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve models for provider {provider_name}: {str(e)}"
-        )
-
-@router.post("/providers/{provider_name}/refresh", response_model=Dict[str, Any])
-async def refresh_provider_models(
-    provider_name: str,
-    current_user: dict = Depends(get_current_user),
-    models_service: ModelsService = Depends(get_models_service)
-):
-    """Force refresh models from a specific provider API"""
-    try:
-        logger.info(f"Force refreshing models for provider {provider_name}")
-        
-        models = await models_service.get_provider_models(provider_name, force_refresh=True)
-        logger.info(f"Refreshed {len(models)} models for provider {provider_name}")
-        
-        return {
-            "success": True,
-            "provider": provider_name,
-            "models_count": len(models),
-            "message": f"Successfully refreshed {len(models)} models from {provider_name}"
-        }
-        
-    except Exception as e:
-        logger.error(f"Failed to refresh models for provider {provider_name}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to refresh models for provider {provider_name}: {str(e)}"
         )
 
 # Additional endpoints for model management

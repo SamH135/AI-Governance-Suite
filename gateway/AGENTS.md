@@ -36,4 +36,6 @@ Single public entry point. Handles auth (JWT), CORS, routing/proxying to backend
 
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
+- 2026-11-12 — `src/routes/models.py`: provider catalog routes (`/providers`, `/providers/{name}/models`, `/providers/{name}/refresh`) moved above `/{config_id}` — `GET /api/models/providers` was shadowed by `/{config_id}` and 422'd. Literal routes must precede param routes in this file.
+- 2026-11-12 — Endpoint audit findings: prompts/documents/analytics proxies forward the bare `{path}` segment but those services mount routers under their own names (`/prompts`, `/documents`, `/analytics`, `/reports`, `/dashboards`) — most frontend calls to them 500. `forward_request` doesn't follow 307 redirects and maps service 404s to 500.
 - 2026-11-12 — Security upgrade: fastapi 0.104.1 -> 0.162.5 (starlette 1.x, anyio 4). python-jose -> PyJWT (jose had unfixable CVEs; same encode/decode API, `PyJWTError` replaces `JWTError`). `JWT_SECRET` in `src/shared/config.py` is now a required env var — the hardcoded dev default is gone. requests >=2.33, aiohttp >=3.14.4, python-multipart >=0.0.31.
