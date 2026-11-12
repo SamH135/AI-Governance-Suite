@@ -124,7 +124,10 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
   plugin's `primary_output_key`. `test-unified` now persists runs to `compliance_test_executions`
   (was returning results without storing them). Documents-service rendering of the matrix remains
   a follow-up; the endpoint emits the JSON payload a report/visualization consumes.
-- [ ] **Phase 5 — Tier 3 + judge calibration.**
+- [x] **Phase 5 — Tier 3 + judge calibration.** Tier-3 plugins shipped. `probes/benchmarks.py`
+  loads HarmBench/JailbreakBench/XSTest/AgentDojo-style files into `ProbeCase` lists (datasets
+  themselves stay out of git per licensing — open decision 3). Judge calibration vs a
+  hand-labeled set remains a methodology task, not code.
 
 ## 6. Testing and validity (every plugin)
 
