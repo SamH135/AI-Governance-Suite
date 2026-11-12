@@ -361,7 +361,7 @@ const RAGTestPage = () => {
     setQueryLoading(true);
     try {
       // Call RAG service API
-      const response = await api.post('/compliance/rag/query', queryData);
+      const response = await api.post('/prompts/rag/query', queryData);
       setQueryResult(response.data);
     } catch (error) {
       console.error('Query failed:', error);

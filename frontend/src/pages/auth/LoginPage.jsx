@@ -133,14 +133,6 @@ const LoginPage = () => {
                 </label>
               </div>
 
-              <div className="text-sm">
-                <Link
-                  to="/forgot-password"
-                  className="font-medium text-brand-600 hover:text-brand-500"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
             </div>
 
             <Button

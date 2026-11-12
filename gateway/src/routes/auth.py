@@ -35,6 +35,14 @@ class UserRegister(BaseModel):
 class TokenRefresh(BaseModel):
     refresh_token: str
 
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    email: Optional[EmailStr] = None
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=8)
+
 class UserResponse(BaseModel):
     user_id: int
     username: str
@@ -479,3 +487,76 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve user information"
         )
+
+@router.put("/profile", response_model=UserResponse)
+async def update_profile(
+    profile: ProfileUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update current user's profile (full_name, email)"""
+    logger.info("Profile update requested", function="update_profile", user_id=current_user["user_id"])
+
+    updates = profile.model_dump(exclude_none=True)
+    if not updates:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+
+    try:
+        db_pool = get_db_pool()
+        async with db_pool.acquire() as conn:
+            if "email" in updates:
+                existing = await conn.fetchrow(
+                    "SELECT user_id FROM users WHERE email = $1 AND user_id != $2",
+                    updates["email"], current_user["user_id"]
+                )
+                if existing:
+                    raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
+
+            set_clause = ", ".join(f"{k} = ${i}" for i, k in enumerate(updates, start=2))
+            user = await conn.fetchrow(
+                f"""UPDATE users SET {set_clause} WHERE user_id = $1
+                    RETURNING user_id, username, full_name, email, role, created_at, last_login, is_active""",
+                current_user["user_id"], *updates.values()
+            )
+
+        logger.info("Profile updated successfully", function="update_profile", user_id=current_user["user_id"])
+        return UserResponse(**dict(user))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to update profile", function="update_profile", user_id=current_user["user_id"], error=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to update profile")
+
+@router.put("/password")
+async def change_password(
+    body: PasswordChange,
+    current_user: dict = Depends(get_current_user)
+):
+    """Change current user's password after verifying the current one"""
+    logger.info("Password change requested", function="change_password", user_id=current_user["user_id"])
+
+    try:
+        db_pool = get_db_pool()
+        async with db_pool.acquire() as conn:
+            user = await conn.fetchrow(
+                "SELECT password_hash FROM users WHERE user_id = $1",
+                current_user["user_id"]
+            )
+            if not user or not verify_password(body.current_password, user["password_hash"]):
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect")
+
+            await conn.execute(
+                "UPDATE users SET password_hash = $2 WHERE user_id = $1",
+                current_user["user_id"], get_password_hash(body.new_password)
+            )
+
+        # Invalidate existing refresh tokens so new password is required for future sessions
+        redis_client = get_redis_client()
+        await redis_client.delete(f"refresh_token:{current_user['user_id']}")
+
+        logger.info("Password changed successfully", function="change_password", user_id=current_user["user_id"])
+        return {"success": True, "message": "Password updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to change password", function="change_password", user_id=current_user["user_id"], error=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to change password")

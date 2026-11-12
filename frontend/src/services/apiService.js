@@ -151,19 +151,10 @@ export const testingService = {
     );
   },
 
-  async getTestResults(testId) {
-    logger.info(`Fetching test results for ID: ${testId}`, 'apiService.js', 'getTestResults');
-    const response = await apiCallWithRetry(
-      () => api.get(`/compliance/tests/${testId}/results`),
-      'getTestResults'
-    );
-    return response;
-  },
-
   async getTestHistory(systemId) {
     logger.info(`Fetching test history for system ID: ${systemId}`, 'apiService.js', 'getTestHistory');
     const response = await apiCallWithRetry(
-      () => api.get(`/systems/${systemId}/test-history`),
+      () => api.get(`/systems/${systemId}/tests`),
       'getTestHistory'
     );
     return response;
@@ -212,7 +203,7 @@ export const promptsService = {
   async getPrompts() {
     logger.info('Fetching prompts list', 'apiService.js', 'getPrompts');
     try {
-      const response = await api.get('/prompts');
+      const response = await api.get('/prompts/prompts');
       logger.debug(`Retrieved ${response.data?.length || 0} prompts`, 'apiService.js', 'getPrompts');
       return response.data;
     } catch (error) {
@@ -224,7 +215,7 @@ export const promptsService = {
   async getPrompt(id) {
     logger.info(`Fetching prompt with ID: ${id}`, 'apiService.js', 'getPrompt');
     try {
-      const response = await api.get(`/prompts/${id}`);
+      const response = await api.get(`/prompts/prompts/${id}`);
       logger.debug('Prompt retrieved successfully', 'apiService.js', 'getPrompt');
       return response.data;
     } catch (error) {
@@ -233,34 +224,10 @@ export const promptsService = {
     }
   },
 
-  async createPrompt(promptData) {
-    logger.info(`Creating new prompt: ${promptData.title || 'Untitled'}`, 'apiService.js', 'createPrompt');
-    try {
-      const response = await api.post('/prompts', promptData);
-      logger.info('Prompt created successfully', 'apiService.js', 'createPrompt');
-      return response.data;
-    } catch (error) {
-      logger.error(`Failed to create prompt: ${error.message}`, 'apiService.js', 'createPrompt');
-      throw error;
-    }
-  },
-
-  async updatePrompt(id, promptData) {
-    logger.info(`Updating prompt with ID: ${id}`, 'apiService.js', 'updatePrompt');
-    try {
-      const response = await api.put(`/prompts/${id}`, promptData);
-      logger.info('Prompt updated successfully', 'apiService.js', 'updatePrompt');
-      return response.data;
-    } catch (error) {
-      logger.error(`Failed to update prompt: ${error.message}`, 'apiService.js', 'updatePrompt');
-      throw error;
-    }
-  },
-
   async deletePrompt(id) {
     logger.info(`Deleting prompt with ID: ${id}`, 'apiService.js', 'deletePrompt');
     try {
-      const response = await api.delete(`/prompts/${id}`);
+      const response = await api.delete(`/prompts/prompts/${id}`);
       logger.info('Prompt deleted successfully', 'apiService.js', 'deletePrompt');
       return response.data;
     } catch (error) {
@@ -286,7 +253,7 @@ export const documentsService = {
   async getDocuments() {
     logger.info('Fetching documents list', 'apiService.js', 'getDocuments');
     try {
-      const response = await api.get('/documents');
+      const response = await api.get('/documents/documents');
       logger.debug(`Retrieved ${response.data?.length || 0} documents`, 'apiService.js', 'getDocuments');
       return response.data;
     } catch (error) {
@@ -298,7 +265,7 @@ export const documentsService = {
   async getDocument(id) {
     logger.info(`Fetching document with ID: ${id}`, 'apiService.js', 'getDocument');
     try {
-      const response = await api.get(`/documents/${id}`);
+      const response = await api.get(`/documents/documents/${id}`);
       logger.debug('Document retrieved successfully', 'apiService.js', 'getDocument');
       return response.data;
     } catch (error) {
@@ -310,7 +277,7 @@ export const documentsService = {
   async generateDocument(documentData) {
     logger.info(`Generating document: ${documentData.title || 'Untitled'}`, 'apiService.js', 'generateDocument');
     try {
-      const response = await api.post('/documents/generate', documentData);
+      const response = await api.post('/documents/documents/generate', documentData);
       logger.info('Document generated successfully', 'apiService.js', 'generateDocument');
       return response.data;
     } catch (error) {
@@ -343,36 +310,14 @@ export const documentsService = {
     }
   },
 
-  async getDocumentVersions(documentId) {
-    logger.info(`Fetching versions for document ID: ${documentId}`, 'apiService.js', 'getDocumentVersions');
-    try {
-      const response = await api.get(`/documents/${documentId}/versions`);
-      logger.debug(`Retrieved ${response.data?.length || 0} document versions`, 'apiService.js', 'getDocumentVersions');
-      return response.data;
-    } catch (error) {
-      logger.error(`Failed to fetch document versions: ${error.message}`, 'apiService.js', 'getDocumentVersions');
-      throw error;
-    }
-  }
 };
 
 export const analyticsService = {
   async getDashboardMetrics() {
     logger.info('Fetching dashboard metrics', 'apiService.js', 'getDashboardMetrics');
     const response = await apiCallWithRetry(
-      () => api.get('/analytics/dashboard'),
+      () => api.get('/analytics/analytics/dashboard'),
       'getDashboardMetrics'
-    );
-    return response;
-  },
-
-  async getSystemMetrics(systemId, timeRange) {
-    logger.info(`Fetching system metrics for ID: ${systemId}, range: ${timeRange}`, 'apiService.js', 'getSystemMetrics');
-    const response = await apiCallWithRetry(
-      () => api.get(`/analytics/systems/${systemId}/metrics`, {
-        params: { timeRange }
-      }),
-      'getSystemMetrics'
     );
     return response;
   },
@@ -380,7 +325,7 @@ export const analyticsService = {
   async getComplianceMetrics() {
     logger.info('Fetching compliance metrics', 'apiService.js', 'getComplianceMetrics');
     const response = await apiCallWithRetry(
-      () => api.get('/analytics/compliance'),
+      () => api.get('/analytics/reports/compliance'),
       'getComplianceMetrics'
     );
     return response;

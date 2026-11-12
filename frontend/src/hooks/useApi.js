@@ -56,8 +56,8 @@ export const useSystems = () => {
 
 export const useTestResults = () => {
   logger.debug('useTestResults hook called', 'useApi.js', 'useTestResults');
-  return useApi(() => {
+  return useApi((systemId) => {
     logger.debug('useTestResults: Fetching test results data', 'useApi.js', 'useTestResults');
-    return api.get('/compliance/tests').then(response => response.data);
+    return api.get(`/systems/${systemId}/tests`).then(response => response.data);
   });
 };

@@ -180,30 +180,6 @@ export const authService = {
     }
   },
 
-  async forgotPassword(email) {
-    logger.info(`Forgot password API call initiated for email: ${email}`, 'authService.js', 'forgotPassword');
-    try {
-      const response = await api.post('/auth/forgot-password', { email });
-      logger.info('Forgot password API call successful', 'authService.js', 'forgotPassword');
-      return response.data;
-    } catch (error) {
-      logger.error(`Forgot password API call failed: ${error.message}`, 'authService.js', 'forgotPassword');
-      throw error;
-    }
-  },
-
-  async resetPassword(token, password) {
-    logger.info('Password reset API call initiated', 'authService.js', 'resetPassword');
-    try {
-      const response = await api.post('/auth/reset-password', { token, password });
-      logger.info('Password reset API call successful', 'authService.js', 'resetPassword');
-      return response.data;
-    } catch (error) {
-      logger.error(`Password reset API call failed: ${error.message}`, 'authService.js', 'resetPassword');
-      throw error;
-    }
-  },
-
   async refreshToken() {
     logger.debug('Token refresh API call initiated', 'authService.js', 'refreshToken');
     try {

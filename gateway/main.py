@@ -79,7 +79,7 @@ async def lifespan(app: FastAPI):
     
     # Initialize HTTP client
     logger.info("Initializing HTTP client", function="lifespan", component="http_client", timeout=30.0)
-    http_client = httpx.AsyncClient(timeout=30.0)
+    http_client = httpx.AsyncClient(timeout=30.0, follow_redirects=True)
     logger.info("HTTP client initialized successfully", function="lifespan", component="http_client")
     
     # Set HTTP client for WebSocket routes
@@ -147,11 +147,26 @@ async def forward_request(service_url: str, path: str, method: str, **kwargs) ->
     """Forward request to microservice"""
     url = f"{service_url.rstrip('/')}/{path.lstrip('/')}"
     logger.info("Forwarding request to microservice", function="forward_request", service_url=service_url, path=path, method=method, url=url)
-    
+
+    # Strip hop-by-hop headers; a stale Host makes service 307 redirects
+    # point back at the gateway, and content-length must be recomputed.
+    if kwargs.get("headers"):
+        kwargs["headers"] = {
+            k: v for k, v in kwargs["headers"].items()
+            if k.lower() not in ("host", "content-length", "connection", "accept-encoding")
+        }
+
     try:
         response = await http_client.request(method, url, **kwargs)
         logger.info("Received response from microservice", function="forward_request", status_code=response.status_code, url=url)
-        response.raise_for_status()
+
+        if response.status_code >= 400:
+            # Preserve the service's own status/detail instead of masking it as 500
+            try:
+                detail = response.json().get("detail", response.text)
+            except Exception:
+                detail = response.text
+            raise HTTPException(status_code=response.status_code, detail=detail)
         
         # Handle empty responses (like 204 No Content for DELETE operations)
         if response.status_code == 204 or not response.content:
