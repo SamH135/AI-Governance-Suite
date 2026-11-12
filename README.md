@@ -45,20 +45,60 @@ New compliance evaluators are implemented as plugins under `plugins/evaluators/`
 - Base evaluator class with standardized interface
 - Automatic plugin discovery and validation
 
-> **Note:** Evaluator coverage is a work in progress — not every evaluator referenced by the platform is implemented or included in this repository yet. The plugin system is the intended extension point: drop a custom evaluator into `plugins/evaluators/` and it's discovered automatically. Adversarial/red-team prompt corpora used for safety evaluation are likewise not shipped with the repo — plug in your own prompt sets or standard jailbreak benchmarks.
+The platform ships probe-based security evaluators that run multi-turn, tool-call, and RAG-context attacks against a target model and produce scored evidence with framework references:
+
+| Evaluator | Maps to |
+|---|---|
+| `system_prompt_leakage` | OWASP LLM07 / ATLAS T0056 |
+| `jailbreak_robustness` | OWASP LLM01 / ATLAS T0054 (includes over-refusal axis) |
+| `indirect_prompt_injection` | OWASP LLM01 / ASI01 / ATLAS T0051.001 |
+| `unbounded_consumption` | OWASP LLM10 / NIST MS-2.7-007 |
+| `vector_embedding_security` | OWASP LLM08 |
+| `tool_misuse` | OWASP LLM06 / ASI02 / ATLAS T0053, T0086 |
+| `tool_poisoning` | ASI04 / ATLAS T0110 |
+| `memory_poisoning` | ASI06 |
+| `multi_turn_escalation` | OWASP LLM01 / ATLAS T0054 |
+| `excessive_agency` | OWASP LLM06 / ASI02, ASI09 |
+
+Plus passive text evaluators: `prompt_injection`, `pii_leakage`, `insecure_output`, `hallucination_checker`, `bias_detection`-style generic checks via `generic_compliance`/`g_eval_metric`.
+
+Probe capabilities:
+- **Multi-turn conversations, RAG document injection, simulated tool protocols** via `services/compliance/framework/probes/`
+- **Native provider tool calling** — `ModelRequest.tools`/`ModelResponse.tool_calls` translated to Gemini function declarations, OpenAI `tools`, and Anthropic `tool_use`
+- **MCP client layer** (`shared/unified_api/mcp_client.py`) — connects to real MCP servers over stdio, pulls live tool manifests, and executes real tool calls inside probes (dependency-free JSON-RPC; HTTP transport not yet implemented)
+- Every result carries per-case evidence, transcripts, token usage, provenance, and OWASP/ATLAS/NIST references — designed for audit artifacts
+
+> **Note:** Not every evaluator referenced by the platform ships in this repo. The plugin system is the extension point: drop a custom evaluator into `plugins/evaluators/` and it's discovered automatically. Adversarial corpora are small (4–6 cases per evaluator) — plug in your own prompt sets or standard jailbreak benchmarks for statistical power.
+
+### Example live results
+
+Full authenticated runs against three models (judge: Gemini; `n`=4–6 cases per evaluator, directional not statistical — raw data in `eval_results/`):
+
+| Evaluator | Gemini 3.1 Flash-Lite | DeepSeek-Chat | Groq GPT-OSS-120B |
+|---|---|---|---|
+| System Prompt Leakage | **6.7** (93% leaked, incl. base64-encoded) | 80 | — |
+| Indirect Prompt Injection | 100 | 90 | — |
+| Tool Misuse | 90 | 80 | — |
+| Tool Poisoning | — | — | **50** |
+| Jailbreak Robustness | 87.5 | — | 87.5 |
+| Multi-Turn Escalation | — | — | 75 |
+| Memory Poisoning | 100 | — | — |
+| Unbounded Consumption | 70.9 | — | — |
 
 ## Technology Stack
 
 **Frontend:**
 - React 18.3+
-- Vite 5.1+
+- Vite 6.4+
 - Tailwind CSS 3.4+
 - Material-UI 6.0+
+- React Router 7
 - Chart.js for visualizations
 
 **Backend:**
 - Python 3.9+
-- FastAPI 0.104+
+- FastAPI 0.162+
+- PyJWT (auth)
 - SQLAlchemy 2.0+
 - Pydantic 2.0+
 - Structlog for JSON logging
@@ -75,7 +115,7 @@ New compliance evaluators are implemented as plugins under `plugins/evaluators/`
 ### Prerequisites
 
 - Docker 20+ and Docker Compose
-- Node.js 18+ (for local frontend development)
+- Node.js 22+ (for local frontend development)
 - Python 3.9+ (for local service development)
 
 ### Quick Start
@@ -133,10 +173,12 @@ REDIS_URL=redis://localhost:6379/0
 # AI Provider API Keys
 OPENAI_API_KEY=your_key_here
 ANTHROPIC_API_KEY=your_key_here
-GOOGLE_API_KEY=your_key_here
+GEMINI_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here          # OpenAI-compatible (via api_url)
+DEEPSEEK_API_KEY=your_key_here      # OpenAI-compatible (via api_url)
 
 # Security
-JWT_SECRET=your_jwt_secret_here
+JWT_SECRET=your_jwt_secret_here     # required — no insecure default
 JWT_ALGORITHM=HS256
 
 # Service URLs (Docker internal)
@@ -265,6 +307,7 @@ tests/
   unit/               Pytest unit tests
   integration/        Integration tests
   manual/             Manual test scripts
+eval_results/         Live evaluator run artifacts (chart-ready JSON)
 frontend/src/
   pages/              Route views
   components/         Reusable UI components
