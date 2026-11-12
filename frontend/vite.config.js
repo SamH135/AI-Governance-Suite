@@ -19,6 +19,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // shortcut: polling needed for file-watch events on Windows bind mounts
+    // (Docker Desktop + OneDrive don't propagate inotify); remove on native Linux
+    watch: { usePolling: true },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
