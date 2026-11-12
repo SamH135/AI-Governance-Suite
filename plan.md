@@ -118,7 +118,12 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
   `tool_misuse`, `tool_poisoning`, `memory_poisoning` (conversation-scoped, persistent
   store pending), `multi_turn_escalation` (scripted, adaptive attacker pending),
   `excessive_agency` v3 (behavioral probe attached to existing passive evaluator).
-- [ ] **Phase 4 — Reporting**: coverage matrix from `refs` (OWASP LLM, ASI, ATLAS, NIST 600-1, EU AI Act Art. 9/15/55, ISO 42001) in the documents service; provenance + pre-declared thresholds stored per run.
+- [x] **Phase 4 — Reporting**: `GET /api/coverage-matrix` + `GET /api/systems/{id}/coverage-matrix`
+  (compliance) build the control matrix from scanned `refs`/`REFS` across OWASP LLM, ASI, ATLAS,
+  NIST 600-1, EU AI Act, ISO 42001, overlaid with latest per-evaluator scores resolved via each
+  plugin's `primary_output_key`. `test-unified` now persists runs to `compliance_test_executions`
+  (was returning results without storing them). Documents-service rendering of the matrix remains
+  a follow-up; the endpoint emits the JSON payload a report/visualization consumes.
 - [ ] **Phase 5 — Tier 3 + judge calibration.**
 
 ## 6. Testing and validity (every plugin)
@@ -148,3 +153,4 @@ static SBOM/supply-chain scanning; ASI07/08/10 (need multi-agent targets); nativ
 - 2026-11-11 — MCP client layer: `shared/unified_api/mcp_client.py` (stdlib stdio JSON-RPC — official SDK conflicts with fastapi 0.104.x). `ProbeCase.mcp_server` runs cases against live MCP servers. Tested vs tests/fixtures/mcp_test_server.py. Unlocks ASI04 testing against real servers.
 - 2026-11-12 — Dependency security pass: 180+ known CVEs remediated (compliance 46->0, gateway 134->0, npm 0). fastapi 0.162.5, PyJWT replaces abandoned python-jose, JWT dev default removed. Official `mcp` SDK now installable (anyio conflict resolved) — hand-rolled client still in use.
 - 2026-11-12 — Live multi-model runs persisted in `eval_results/` (gemini-3.1-flash-lite, deepseek-chat, groq gpt-oss-120b): 12 evaluators exercised end-to-end via authenticated `test-unified`. Tier 3 expanded: `counterfactual_fairness`, `multilingual_robustness`, `model_extraction`, `code_execution` (ASI05) added to the catalog.
+- 2026-11-12 — Tier-3 plugins shipped (21 total, 22 probe tests + 4 coverage tests). `test_probe_live.py` adds gated live-verification (all 13 probe evals passed vs groq). Phase 4: `framework/coverage.py` + coverage router; `test-unified` persists executions (was fire-and-forget). Platform coverage: 23/39 controls (59%).

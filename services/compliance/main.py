@@ -11,7 +11,7 @@ import uvicorn
 from services.shared.database import db_manager
 from services.shared.redis_client import redis_client
 from services.shared.exceptions import PlatformError
-from services.compliance.routers import compliance, evaluators, reports, local_models, plugins, plugin_generator, models, model_configs, systems, system_tests
+from services.compliance.routers import compliance, evaluators, reports, local_models, plugins, plugin_generator, models, model_configs, systems, system_tests, coverage
 from services.compliance.services.milvus_service import milvus_service
 from services.compliance.framework.core.registry import Registry
 
@@ -179,6 +179,7 @@ app.include_router(models.router, prefix="/api", tags=["models"])  # Legacy unif
 app.include_router(model_configs.router, prefix="/api", tags=["model-configs"])  # Full CRUD model configurations
 app.include_router(systems.router, prefix="/api", tags=["systems"])  # Exposes /api/systems for gateway proxy
 app.include_router(system_tests.router, prefix="/api", tags=["system-tests"])  # System compliance testing endpoints
+app.include_router(coverage.router, prefix="/api", tags=["coverage"])  # Framework coverage matrix
 
 if __name__ == "__main__":
     uvicorn.run(

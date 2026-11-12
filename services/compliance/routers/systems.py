@@ -980,7 +980,41 @@ async def run_system_test_unified(
             current_user.user_id,
             db
         )
-        
+
+        # Persist completed execution — coverage matrix + audit trail read these rows
+        try:
+            eval_results = test_result.get("evaluator_results", {})
+            score = _calculate_overall_score(eval_results)
+            subject = test_result.get("test_subject_model", {})
+            judge = test_result.get("evaluator_model", {})
+            await db.execute(
+                text("""
+                    INSERT INTO compliance_test_executions
+                        (system_id, test_name, test_type, framework, status, config_id,
+                         evaluator_model, evaluator_provider, score, result, details,
+                         started_at, completed_at, created_by)
+                    VALUES (:sid, :name, :type, :fw, 'completed', :cid, :emodel, :eprov,
+                            :score, :res, :details, NOW(), NOW(), :uid)
+                """),
+                {
+                    "sid": system_id,
+                    "name": ",".join(test_request.evaluators)[:100] or "unified-eval",
+                    "type": "unified",
+                    "fw": "probe",
+                    "cid": subject.get("config_id"),
+                    "emodel": judge.get("model_id"),
+                    "eprov": judge.get("provider"),
+                    "score": score,
+                    "res": "passed" if score >= 70 else "failed",
+                    "details": json.dumps(test_result),
+                    "uid": current_user.user_id,
+                }
+            )
+            await db.commit()
+        except Exception as e:
+            # persistence failure must not fail the eval run itself
+            logger.warning("Failed to persist test execution", error=str(e))
+
         return ApiResponse(
             success=True,
             data=test_result,
