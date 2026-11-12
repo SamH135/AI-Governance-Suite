@@ -20,7 +20,7 @@ Model-agnostic LLM access layer used by all services: one interface over OpenAI,
 - Provider-specific parameters go in `ModelConfig.provider_options`, not new top-level fields.
 - **No hardcoded model lists.** Rely on the provider's `list_models()`.
 - API keys come from config or env. Never log keys or full requests.
-- No native tool/function calling exists. Agentic evals use a simulated protocol (`/plan.md`). Adding tool calling is an API change for every provider.
+- Native tool calling uses generic manifests on `ModelRequest.tools` (`{name, description, parameters}`); each provider maps to its own format. Agentic evals can also use the simulated JSON protocol for providers without tool APIs (`native_tools` on `ProbeCase`).
 
 ## Verification
 - Offline: `pytest tests/unit/test_unified_api.py -v`
