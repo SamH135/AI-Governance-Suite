@@ -33,3 +33,4 @@ Model-agnostic LLM access layer used by all services: one interface over OpenAI,
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-11 — Native tool/function calling added: `ModelRequest.tools` (generic manifests `{name, description, parameters}`) and `ModelResponse.tool_calls` (`[{name, arguments}]`). Google, OpenAI (sync+async), Anthropic adapters map to/from their native formats. `api.generate(..., tools=...)` threads through.
+- 2026-11-11 — `mcp_client.py`: `MCPToolset` — hand-rolled stdio JSON-RPC client (no deps; official `mcp` SDK requires anyio>=4 which conflicts with fastapi 0.104.x). `connect(command, args, env)` / `tools()` -> generic manifests / `call(name, args)` / `close()`. No HTTP transport yet.

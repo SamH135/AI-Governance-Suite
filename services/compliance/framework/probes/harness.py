@@ -53,64 +53,87 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
     system_prompt = case.system_prompt
     messages: List[Dict[str, str]] = []
     context = list(case.docs) or None
+    try:
 
-    if case.tools and not case.native_tools:
-        desc = "; ".join(f"{t['name']}: {t.get('description', '')}" for t in case.tools)
-        tool_note = _TOOL_INSTRUCTION.format(desc=desc)
-        system_prompt = f"{system_prompt}\n\n{tool_note}" if system_prompt else tool_note
+        # Live MCP server first: its real tools join the manifest + get real execution
+        mcp = None
+        mcp_tool_names: set = set()
+        effective_tools: List[Dict[str, Any]] = list(case.tools)
+        if case.mcp_server:
+            from shared.unified_api.mcp_client import MCPToolset
+            mcp = MCPToolset().connect(**case.mcp_server)
+            server_manifests = mcp.tools()
+            mcp_tool_names = {t["name"] for t in server_manifests}
+            effective_tools += server_manifests
 
-    # Strip simulated `output` fixtures before sending manifests to the provider
-    native_manifests = (
-        [{k: v for k, v in t.items() if k != "output"} for t in case.tools]
-        if case.native_tools and case.tools else None
-    )
+        if effective_tools and not case.native_tools:
+            desc = "; ".join(f"{t['name']}: {t.get('description', '')}" for t in effective_tools)
+            tool_note = _TOOL_INSTRUCTION.format(desc=desc)
+            system_prompt = f"{system_prompt}\n\n{tool_note}" if system_prompt else tool_note
 
-    for injected in case.tool_outputs:
-        turn = f"[tool result]\n{injected}"
-        messages.append({"role": "user", "content": turn})
-        transcript.turns.append(Turn(role="tool", content=injected))
 
-    for user_msg in case.turns:
-        messages.append({"role": "user", "content": user_msg})
-        transcript.turns.append(Turn(role="user", content=user_msg))
+        # Strip simulated `output` fixtures before sending manifests to the provider
+        native_manifests = (
+            [{k: v for k, v in t.items() if k != "output"} for t in effective_tools]
+            if case.native_tools and effective_tools else None
+        )
 
-        steps = 0
-        while True:
-            start = time.perf_counter()
-            if native_manifests is not None:
-                reply = call_fn(messages, system_prompt, context, tools=native_manifests)
-            else:
-                reply = call_fn(messages, system_prompt, context)
-            text, usage = reply[0], reply[1]
-            native_calls = reply[2] if len(reply) > 2 else None
-            transcript.latency_ms += (time.perf_counter() - start) * 1000
-            for k, v in usage.items():
-                transcript.usage[k] = transcript.usage.get(k, 0) + (v or 0)
+        for injected in case.tool_outputs:
+            turn = f"[tool result]\n{injected}"
+            messages.append({"role": "user", "content": turn})
+            transcript.turns.append(Turn(role="tool", content=injected))
 
-            # shortcut: only the first native tool_call is replayed per step, multi-call loops upgrade if needed
-            if native_manifests is not None:
-                tool_call = (
-                    {"name": tc.get("name"), "args": tc.get("arguments", {})}
-                    for tc in (native_calls or [])
-                )
-                tool_call = next(tool_call, None)
-            else:
-                tool_call = _parse_tool_call(text) if case.tools else None
-            if tool_call is None or steps >= case.max_tool_steps:
-                transcript.turns.append(Turn(role="assistant", content=text))
-                transcript.final_response = text
+        for user_msg in case.turns:
+            messages.append({"role": "user", "content": user_msg})
+            transcript.turns.append(Turn(role="user", content=user_msg))
+
+            steps = 0
+            while True:
+                start = time.perf_counter()
+                if native_manifests is not None:
+                    reply = call_fn(messages, system_prompt, context, tools=native_manifests)
+                else:
+                    reply = call_fn(messages, system_prompt, context)
+                text, usage = reply[0], reply[1]
+                native_calls = reply[2] if len(reply) > 2 else None
+                transcript.latency_ms += (time.perf_counter() - start) * 1000
+                for k, v in usage.items():
+                    transcript.usage[k] = transcript.usage.get(k, 0) + (v or 0)
+
+                # shortcut: only the first native tool_call is replayed per step, multi-call loops upgrade if needed
+                if native_manifests is not None:
+                    tool_call = (
+                        {"name": tc.get("name"), "args": tc.get("arguments", {})}
+                        for tc in (native_calls or [])
+                    )
+                    tool_call = next(tool_call, None)
+                else:
+                    tool_call = _parse_tool_call(text) if effective_tools else None
+                if tool_call is None or steps >= case.max_tool_steps:
+                    transcript.turns.append(Turn(role="assistant", content=text))
+                    transcript.final_response = text
+                    messages.append({"role": "assistant", "content": text})
+                    break
+
+                steps += 1
+                name = tool_call.get("name", "")
+                tool = _find_tool(effective_tools, name)
+                transcript.turns.append(Turn(role="assistant", content=text, tool_call=tool_call))
+                transcript.tool_calls.append(tool_call)
+                if name in mcp_tool_names:
+                    try:
+                        output = mcp.call(name, tool_call.get("args"))
+                    except Exception as e:
+                        output = f"Error: MCP tool call failed: {e}"
+                else:
+                    output = tool.get("output", f"Error: unknown tool '{name}'") if tool else f"Error: unknown tool '{name}'"
                 messages.append({"role": "assistant", "content": text})
-                break
+                messages.append({"role": "user", "content": f"[tool result for {name}]\n{output}"})
+                transcript.turns.append(Turn(role="tool", content=str(output)))
 
-            steps += 1
-            name = tool_call.get("name", "")
-            tool = _find_tool(case.tools, name)
-            transcript.turns.append(Turn(role="assistant", content=text, tool_call=tool_call))
-            transcript.tool_calls.append(tool_call)
-            output = tool.get("output", f"Error: unknown tool '{name}'") if tool else f"Error: unknown tool '{name}'"
-            messages.append({"role": "assistant", "content": text})
-            messages.append({"role": "user", "content": f"[tool result for {name}]\n{output}"})
-            transcript.turns.append(Turn(role="tool", content=str(output)))
+    finally:
+        if mcp is not None:
+            mcp.close()
 
     return transcript
 

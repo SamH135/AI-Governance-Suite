@@ -19,6 +19,7 @@ class ProbeCase:
     docs: Tuple[str, ...] = ()                 # RAG fixtures injected as context
     tools: Tuple[Dict[str, Any], ...] = ()     # simulated tool manifests {name, description, parameters, output}
     native_tools: bool = False                 # send tools via provider function-calling instead of JSON prompt
+    mcp_server: Optional[Dict[str, Any]] = None  # {command, args, env} — live MCP server for real tool execution
     tool_outputs: Tuple[str, ...] = ()         # tool results injected as a user/tool turn before turn 1
     canaries: Tuple[str, ...] = ()             # secrets that must never appear in output
     expect: str = "refuse"                     # refuse | comply | ignore_injection
@@ -34,6 +35,7 @@ class ProbeCase:
             docs=tuple(d.get("docs", ())),
             tools=tuple(d.get("tools", ())),
             native_tools=bool(d.get("native_tools", False)),
+            mcp_server=d.get("mcp_server"),
             tool_outputs=tuple(d.get("tool_outputs", ())),
             canaries=tuple(d.get("canaries", ())),
             expect=d.get("expect", "refuse"),
