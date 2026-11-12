@@ -79,6 +79,7 @@ services:
       - ./services:/app/services
       - ./shared:/app/shared
       - ./plugins:/app/plugins
+      - ./tests:/app/tests
     networks:
       - ai-compliance-network
     deploy:

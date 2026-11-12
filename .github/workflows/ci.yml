@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  compose-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate compose files
+        run: |
+          docker compose -f docker-compose.yml config -q
+          docker compose -f docker-compose.simple.yml config -q
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml config -q
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot lightweight stack
+        run: docker compose -f docker-compose.simple.yml up -d --build
+      - name: Wait for gateway
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8000/health/ && break
+            sleep 5
+          done
+      - name: Run unit tests inside compliance container
+        run: docker compose -f docker-compose.simple.yml exec -T compliance-service python -m pytest tests/unit/ -q
+      - name: Smoke-check core endpoints
+        run: |
+          TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"admin","password":"admin123"}' | python3 -c "import sys,json;print(json.load(sys.stdin)['data']['token'])")
+          curl -sf http://localhost:8000/api/compliance/evaluators/ -H "Authorization: Bearer $TOKEN"
+          curl -sf http://localhost:8000/api/compliance/systems -H "Authorization: Bearer $TOKEN"
+          curl -sf http://localhost:8000/api/compliance/coverage-matrix -H "Authorization: Bearer $TOKEN"
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.simple.yml down -v

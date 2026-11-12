@@ -16,8 +16,8 @@ import logging
 # Add shared directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'shared'))
 
-from unified_api import get_unified_api, set_unified_api_auth
-from unified_api.base import ModelConfig, ModelType
+from shared.unified_api import get_unified_api, set_unified_api_auth
+from shared.unified_api.base import ModelConfig, ModelType
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
