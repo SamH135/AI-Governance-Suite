@@ -32,6 +32,7 @@ The extension point for compliance checks. Every new evaluator is a plugin here 
 
 ## Verification
 - Add the plugin name to `expected_plugins` in `tests/unit/test_evaluator_plugins.py`, then run it.
+- Live-verify through the real pipeline before calling it done: `RUN_LIVE_EVALS=1 LIVE_EVAL_PASSWORD=<pw> LIVE_EVAL_SYSTEM_ID=<id> LIVE_EVAL_SET=<plugin> pytest tests/integration/test_probe_live.py` (add the plugin name to `PROBE_EVALUATORS` in that file). Asserts pipeline correctness, not score values — live outputs are nondeterministic.
 - Write a per-plugin unit test (`tests/unit/test_plugin_<name>.py`) with a fake target: one vulnerable and one safe response, and assert the result flips. No network.
 - New probes must be shown to fail on a deliberately unprotected target before their passes are trusted (`/plan.md` §6).
 
