@@ -127,7 +127,7 @@ Probe capabilities:
 - **MCP client layer** (`shared/unified_api/mcp_client.py`) — connects to real MCP servers over stdio, pulls live tool manifests, and executes real tool calls inside probes (dependency-free JSON-RPC; HTTP transport not yet implemented)
 - Every result carries per-case evidence, transcripts, token usage, provenance, and OWASP/ATLAS/NIST references — designed for audit artifacts
 
-> **Note:** Not every evaluator referenced by the platform ships in this repo. The plugin system is the extension point: drop a custom evaluator into `plugins/evaluators/` and it's discovered automatically. Adversarial corpora are small (4–6 cases per evaluator) — plug in your own prompt sets or standard jailbreak benchmarks for statistical power.
+> **Note:** The plugin system is the extension point: drop a custom evaluator into `plugins/evaluators/` and it's discovered and loaded automatically at startup. Shipped corpora are small (4–8 cases per evaluator) — `probes/benchmarks.py` loads HarmBench/JailbreakBench/XSTest/AgentDojo-style files for statistical power.
 
 ### Example live results
 
@@ -219,6 +219,46 @@ cd frontend
 npm install
 npm run dev
 ```
+
+### Run Your First Evaluation
+
+All evaluator plugins load automatically at startup. The eval flow is four API calls (compliance service on `:8001`, or via the gateway on `:8000`):
+
+```bash
+# 1. Login — dev seed account admin/admin123 (change before any real deployment;
+#    scripts/create_test_user.py creates additional users)
+TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123"}' | jq -r .data.token)
+
+# 2. Create a model config for the target model (your provider key)
+curl -X POST http://localhost:8001/api/models \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name": "gemini-target", "provider": "google",
+       "model_id": "gemini-3.1-flash-lite", "api_key": "'$GEMINI_API_KEY'"}'
+# → returns config_id, e.g. 4. OpenAI-compatible endpoints (groq, deepseek,
+#   vLLM) use "provider": "openai" plus "api_url": "https://api.groq.com/openai/v1"
+
+# 3. Create an AI system wired to that config
+curl -X POST http://localhost:8001/api/systems \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name": "Eval Target", "model_config_id": 4}'
+# → returns system_id, e.g. 3
+
+# 4. Run evaluators against it
+curl -X POST http://localhost:8001/api/systems/3/test-unified \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"evaluators": ["system_prompt_leakage", "jailbreak_robustness"],
+       "evaluator_model_id": 4}'
+# → per-case evidence, transcripts, scores, and framework refs.
+#   Use a different config_id for the judge so the target isn't grading itself.
+
+# Coverage: which framework controls have evaluators + latest scores
+curl http://localhost:8001/api/systems/3/coverage-matrix \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Every completed run is persisted (`compliance_test_executions`) and feeds the coverage matrix. The gated suite `tests/integration/test_probe_live.py` runs the same flow against every probe evaluator (`RUN_LIVE_EVALS=1`).
 
 ### Environment Configuration
 
@@ -394,4 +434,4 @@ frontend/src/
 
 ## License
 
-Proprietary. All rights reserved.
+MIT — see [LICENSE](LICENSE).

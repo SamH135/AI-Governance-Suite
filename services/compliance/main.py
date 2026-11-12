@@ -59,6 +59,17 @@ async def lifespan(app: FastAPI):
         Registry.discover_evaluators()
         evaluators = Registry.list_evaluators()
         logger.info("Framework registry initialized", evaluators_discovered=len(evaluators), evaluators=evaluators)
+
+        # Load all discovered plugins — evals must not depend on a manual
+        # /plugins/{name}/load call after every restart
+        from .services.evaluators.plugin_manager import plugin_manager
+        for plugin_name in await plugin_manager.discover_plugins():
+            try:
+                await plugin_manager.load_plugin(plugin_name)
+            except Exception as e:
+                # one broken plugin must not take down the rest
+                logger.warning("Plugin failed to load at startup", plugin=plugin_name, error=str(e))
+        logger.info("Plugins loaded", count=len(plugin_manager.get_loaded_plugins()))
         
         # Test unified API initialization
         try:

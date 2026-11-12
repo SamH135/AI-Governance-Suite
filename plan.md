@@ -75,8 +75,10 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
   `tool_sim` (JSON action protocol, mock tools, call recording).
 - Shared judges: refusal / StrongREJECT, injection-success, paraphrase-leak (reuse `g_eval_metric` judging).
 - Result: per-check `{score, evidence, refs}` + provenance `{corpus_version, judge_model, seed, thresholds}`.
-- Corpora: `cases/*.yaml|jsonl` per plugin. Public repo ships benign/illustrative samples + loaders for
-  external datasets (check licenses). Harmful corpora stay out of git; stored transcripts are sensitive data.
+- Corpora: `cases/*.json` per plugin ship with the repo — small, mild, illustrative attack cases
+  (standard red-team phrasing; nothing beyond what public benchmarks like HarmBench contain).
+  Loaders (`probes/benchmarks.py`) accept external datasets for scale — check licenses before
+  vendoring them. Stored transcripts are sensitive data regardless.
 
 ## 4. Plugin catalog
 
