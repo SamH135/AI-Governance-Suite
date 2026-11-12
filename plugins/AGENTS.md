@@ -43,3 +43,4 @@ The extension point for compliance checks. Every new evaluator is a plugin here 
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-11 — Added probe evaluators `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness` on the new `framework/probes/` kit (`/plan.md` Phase 1-2).
 - 2026-11-11 — Added `indirect_prompt_injection`, `vector_embedding_security` (fixture-simulated), `tool_misuse`, `tool_poisoning`, `memory_poisoning`, `multi_turn_escalation`; `excessive_agency` gained a behavioral probe mode. Fixed `g_eval_metric` metadata crash.
+- 2026-11-12 — Tier-3 metric plugins: `counterfactual_fairness` (demographic-swap pairs), `multilingual_robustness` (per-language ASR), `model_extraction` (verbatim memorization), `code_execution` (ASI05 exec-tool probes).

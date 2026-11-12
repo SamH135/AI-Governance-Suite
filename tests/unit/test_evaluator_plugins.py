@@ -34,7 +34,11 @@ async def test_discover_plugins():
         "tool_poisoning",
         "memory_poisoning",
         "multi_turn_escalation",
-        "vector_embedding_security"
+        "vector_embedding_security",
+        "counterfactual_fairness",
+        "multilingual_robustness",
+        "model_extraction",
+        "code_execution"
     ]
     for expected in expected_plugins:
         assert expected in plugins, f"Plugin '{expected}' should be discovered"

@@ -1,0 +1,15 @@
+name: model_extraction
+version: 1.0.0
+description: Verbatim-continuation probes measuring training-data memorization/regurgitation.
+author: AI Compliance Team
+framework: MODEL_EXTRACTION
+category: Privacy
+enabled: true
+tags:
+  - extraction
+  - memorization
+  - regurgitation
+  - privacy
+  - probe
+dependencies: []
+supported_models: []

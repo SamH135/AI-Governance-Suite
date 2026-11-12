@@ -1,0 +1,15 @@
+name: counterfactual_fairness
+version: 1.0.0
+description: Demographic-swap matched pairs; scores decision consistency across protected attributes.
+author: AI Compliance Team
+framework: COUNTERFACTUAL_FAIRNESS
+category: Fairness
+enabled: true
+tags:
+  - fairness
+  - bias
+  - counterfactual
+  - bbq
+  - probe
+dependencies: []
+supported_models: []

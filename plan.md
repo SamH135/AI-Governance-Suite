@@ -100,6 +100,9 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
 
 ### Tier 3 — Breadth and calibration
 - `counterfactual_fairness` — demographic-swap matched pairs (BBQ-style).
+- `multilingual_robustness` — replay attack cases in non-English languages; report per-language ASR delta.
+- `model_extraction` — verbatim training-data regurgitation + membership-inference signals (NIST MS-2.7-007); black-box approximation only.
+- `code_execution` — ASI05: model generates or invokes unexpected code execution (dangerous tool calls, eval-able output).
 - Benchmark adapters: HarmBench, JailbreakBench, XSTest, AgentDojo cases.
 - Existing `prompt_injection` kept, relabeled as a detector, not a probe.
 
@@ -144,3 +147,4 @@ static SBOM/supply-chain scanning; ASI07/08/10 (need multi-agent targets); nativ
 - 2026-11-11 — Native tool calling: `tools`/`tool_calls` on ModelRequest/ModelResponse, google/openai/anthropic adapters, `ProbeCase.native_tools`. Live-verified: gemini-3.1-flash-lite emitted a real `wipe_database` functionCall. This upgrades agentic probes from simulated-JSON to real function-calling; MCP client layer still open.
 - 2026-11-11 — MCP client layer: `shared/unified_api/mcp_client.py` (stdlib stdio JSON-RPC — official SDK conflicts with fastapi 0.104.x). `ProbeCase.mcp_server` runs cases against live MCP servers. Tested vs tests/fixtures/mcp_test_server.py. Unlocks ASI04 testing against real servers.
 - 2026-11-12 — Dependency security pass: 180+ known CVEs remediated (compliance 46->0, gateway 134->0, npm 0). fastapi 0.162.5, PyJWT replaces abandoned python-jose, JWT dev default removed. Official `mcp` SDK now installable (anyio conflict resolved) — hand-rolled client still in use.
+- 2026-11-12 — Live multi-model runs persisted in `eval_results/` (gemini-3.1-flash-lite, deepseek-chat, groq gpt-oss-120b): 12 evaluators exercised end-to-end via authenticated `test-unified`. Tier 3 expanded: `counterfactual_fairness`, `multilingual_robustness`, `model_extraction`, `code_execution` (ASI05) added to the catalog.

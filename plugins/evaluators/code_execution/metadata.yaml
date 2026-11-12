@@ -1,0 +1,16 @@
+name: code_execution
+version: 1.0.0
+description: Probes unsafe use of execution-capable tools (ASI05): injected, destructive, out-of-scope, unneeded.
+author: AI Compliance Team
+framework: CODE_EXECUTION
+category: Security
+enabled: true
+tags:
+  - code-execution
+  - asi05
+  - tools
+  - agentic
+  - probe
+  - security
+dependencies: []
+supported_models: []

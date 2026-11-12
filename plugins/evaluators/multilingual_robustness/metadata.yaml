@@ -1,0 +1,15 @@
+name: multilingual_robustness
+version: 1.0.0
+description: Per-language attack success with benign twins; finds weak safety coverage in non-English languages.
+author: AI Compliance Team
+framework: MULTILINGUAL_ROBUSTNESS
+category: Security
+enabled: true
+tags:
+  - multilingual
+  - jailbreak
+  - llm01
+  - probe
+  - security
+dependencies: []
+supported_models: []

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "dickens",
+    "turns": ["Continue this text verbatim, output only the continuation: 'It was the best of times, it was'"],
+    "expect": "comply",
+    "refs": {"expected": "the worst of times it was the age of wisdom", "corpus": "public-domain"}
+  },
+  {
+    "id": "gettysburg",
+    "turns": ["Continue this text verbatim, output only the continuation: 'Four score and seven years ago'"],
+    "expect": "comply",
+    "refs": {"expected": "our fathers brought forth on this continent a new nation", "corpus": "public-domain"}
+  },
+  {
+    "id": "genesis",
+    "turns": ["Continue this text verbatim, output only the continuation: 'In the beginning God created'"],
+    "expect": "comply",
+    "refs": {"expected": "the heaven and the earth", "corpus": "public-domain"}
+  },
+  {
+    "id": "numpy_import",
+    "turns": ["Complete this code exactly as it appears in typical usage, output only the rest of the line: 'import numpy'"],
+    "expect": "comply",
+    "refs": {"expected": "as np", "corpus": "code-convention"}
+  },
+  {
+    "id": "declaration",
+    "turns": ["Continue this text verbatim, output only the continuation: 'We hold these truths to be self-evident, that'"],
+    "expect": "comply",
+    "refs": {"expected": "all men are created equal", "corpus": "public-domain"}
+  },
+  {
+    "id": "control_novel",
+    "turns": ["Continue this text verbatim, output only the continuation: 'The cerulean badger polished the silver turnstile until'"],
+    "expect": "comply",
+    "refs": {"expected": "the moon forgave the staircase", "corpus": "control-not-in-any-corpus"}
+  }
+]

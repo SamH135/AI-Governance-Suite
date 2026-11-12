@@ -251,9 +251,90 @@ def test_excessive_agency_probe_attached():
 
 def test_all_probe_evaluators_require_subject_config():
     for cls in (IndirectPromptInjectionEvaluator, ToolMisuseEvaluator, ToolPoisoningEvaluator,
-                MemoryPoisoningEvaluator, MultiTurnEscalationEvaluator, VectorEmbeddingSecurityEvaluator):
+                MemoryPoisoningEvaluator, MultiTurnEscalationEvaluator, VectorEmbeddingSecurityEvaluator,
+                CounterfactualFairnessEvaluator, MultilingualRobustnessEvaluator,
+                ModelExtractionEvaluator, CodeExecutionEvaluator):
         with pytest.raises(ValueError, match="test_subject_config"):
             cls().evaluate(text="x")
+
+
+# ---------- tier 3 plugins ----------
+
+from plugins.evaluators.counterfactual_fairness.evaluator import CounterfactualFairnessEvaluator
+from plugins.evaluators.multilingual_robustness.evaluator import MultilingualRobustnessEvaluator
+from plugins.evaluators.model_extraction.evaluator import ModelExtractionEvaluator
+from plugins.evaluators.code_execution.evaluator import CodeExecutionEvaluator
+
+
+def test_counterfactual_fairness_flip_vs_consistent():
+    ev = CounterfactualFairnessEvaluator()
+
+    import itertools
+    flipper = itertools.cycle(["Yes, approve the applicant.",
+                             "No, deny the applicant."])
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=lambda m, s, c: (next(flipper), {}))
+    assert vuln["flip_rate"] == 100.0
+    assert vuln["consistency_score"] == 0.0
+
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=fake_target("Yes, approve the applicant."))
+    assert safe["consistency_score"] == 100.0
+
+
+def test_multilingual_robustness():
+    ev = MultilingualRobustnessEvaluator()
+
+    def discriminating(messages, system_prompt, context):
+        # refuses harmful asks (phishing/password), answers benign twins
+        last = messages[-1]["content"].lower()
+        if any(k in last for k in ("phishing", "hame", "password", "senha",
+                                   "nenosiri", "\u5bc6\u7801", "passwort")):
+            return "I can't help with that request.", {}
+        return "Here is the email you asked for.", {}
+
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=_vulnerable_target)
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=discriminating)
+    assert vuln["robustness_score"] < safe["robustness_score"]
+    assert safe["robustness_score"] == 100.0
+    # per-language breakdown present, keyed on refs.lang
+    assert "es" in vuln["language_asr"] and "zh" in vuln["language_asr"]
+
+
+def test_model_extraction_verbatim_vs_safe():
+    ev = ModelExtractionEvaluator()
+
+    def dickens_memorizer(messages, system_prompt, context):
+        last = messages[-1]["content"]
+        if "best of times" in last:
+            return "the worst of times it was the age of wisdom", {}
+        return "I don't know that text verbatim.", {}
+
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=dickens_memorizer)
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
+                       call_fn=fake_target("I can't reproduce texts verbatim."))
+    assert vuln["extraction_rate"] > safe["extraction_rate"]
+    assert safe["memorization_resistance_score"] == 100.0
+    hit = next(c for c in vuln["cases"] if c["case_id"] == "dickens")
+    assert hit["checks"]["verbatim_continuation"]["score"] == 100.0
+
+
+def test_code_execution_tool_sim():
+    ev = CodeExecutionEvaluator()
+
+    def exec_happy(messages, system_prompt, context):
+        return '{"tool_call": {"name": "execute_shell", "args": {"cmd": "rm -rf / CANARY-DEPLOY-3"}}}', {}
+
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=exec_happy)
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_safe_target)
+    assert vuln["execution_safety_score"] < safe["execution_safety_score"]
+    assert safe["execution_safety_score"] == 100.0
+    # fabricated exec call is out-of-scope on the read-only tools case
+    oos = next(c for c in vuln["cases"] if c["case_id"] == "out_of_scope_exec")
+    assert oos["checks"]["out_of_scope_call"]["score"] == 100.0
 
 
 def test_mcp_toolset_real_tool_execution():
