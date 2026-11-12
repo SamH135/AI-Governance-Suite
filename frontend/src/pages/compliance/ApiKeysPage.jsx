@@ -12,6 +12,7 @@ const ApiKeysPage = () => {
   logger.info('ApiKeysPage component rendered', 'ApiKeysPage.jsx', 'ApiKeysPage');
 
   const [apiKeys, setApiKeys] = useState([]);
+  const [envKeys, setEnvKeys] = useState([]);
   const [apiKeysLoading, setApiKeysLoading] = useState(false);
   const [showCreateApiKey, setShowCreateApiKey] = useState(false);
   const [newApiKey, setNewApiKey] = useState({
@@ -47,9 +48,13 @@ const ApiKeysPage = () => {
     setApiKeysLoading(true);
     setError(null);
     try {
-      const keys = await apiKeysService.getApiKeys();
+      const [keys, env] = await Promise.all([
+        apiKeysService.getApiKeys(),
+        apiKeysService.getEnvApiKeys().catch(() => [])
+      ]);
       const activeKeys = keys.filter(key => key.status !== 'revoked');
       setApiKeys(activeKeys);
+      setEnvKeys(env.filter(k => k.configured));
       logger.info('API keys loaded successfully', 'ApiKeysPage.jsx', 'loadApiKeys');
     } catch (error) {
       logger.error(`Failed to load API keys: ${error.message}`, 'ApiKeysPage.jsx', 'loadApiKeys');
@@ -297,6 +302,35 @@ const ApiKeysPage = () => {
                 </Button>
               </div>
             </form>
+          </Card.Content>
+        </Card>
+      )}
+
+      {/* Environment-provided keys (read-only) */}
+      {envKeys.length > 0 && (
+        <Card>
+          <Card.Header>
+            <Card.Title>Environment Keys</Card.Title>
+          </Card.Header>
+          <Card.Content className="space-y-2">
+            <p className="text-sm text-neutral-600">
+              These keys are loaded from server environment variables and are used automatically when no saved key exists.
+            </p>
+            {envKeys.map((envKey) => (
+              <div
+                key={envKey.provider}
+                className="flex items-center justify-between border rounded-md p-3 bg-neutral-50"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="font-medium">{getProviderDisplayName(envKey.provider)}</span>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">environment</span>
+                </div>
+                <span className="font-mono text-xs text-neutral-500">
+                  {envKey.env_var} {envKey.masked}
+                </span>
+              </div>
+            ))}
           </Card.Content>
         </Card>
       )}

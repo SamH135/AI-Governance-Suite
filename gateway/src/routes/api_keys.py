@@ -1,6 +1,7 @@
 """API Key Management Routes"""
 
 import logging
+import os
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
@@ -228,6 +229,34 @@ async def get_api_key_value(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve API key value"
         )
+
+@router.get("/env", response_model=List[Dict[str, Any]])
+async def get_environment_api_keys(
+    current_user: dict = Depends(get_current_user)
+):
+    """List provider keys supplied via environment variables (read-only).
+
+    Reports presence only — key values are never returned, only the env var
+    name and a masked tail so users can confirm which key was picked up.
+    """
+    from unified_api.config import ConfigManager
+
+    configured = ConfigManager()
+    results = []
+    for provider, cfg in configured.providers_config.items():
+        env_key = cfg.get("env_key")
+        if not env_key:
+            continue
+        value = os.getenv(env_key)
+        results.append({
+            "provider": provider,
+            "env_var": env_key,
+            "configured": bool(value),
+            "masked": f"****{value[-4:]}" if value else None,
+        })
+
+    logger.info("Environment API key status retrieved", user_id=current_user["user_id"])
+    return results
 
 @router.get("/providers", response_model=List[str])
 async def get_supported_providers():

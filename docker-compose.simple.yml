@@ -47,6 +47,10 @@ services:
       - ACCESS_TOKEN_EXPIRE_HOURS=24
       - REFRESH_TOKEN_EXPIRE_DAYS=7
       - API_KEY_ENCRYPTION_KEY=${API_KEY_ENCRYPTION_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - HF_TOKEN=${HF_TOKEN}
       - COMPLIANCE_SERVICE_URL=http://compliance-service:8000
       - PROMPTS_SERVICE_URL=http://prompt-service:8000
       - DOCUMENTS_SERVICE_URL=http://document-service:8000
@@ -83,6 +87,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GROQ_API_KEY=${GROQ_API_KEY}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - API_KEY_ENCRYPTION_KEY=${API_KEY_ENCRYPTION_KEY}
       - JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
       - JWT_ALGORITHM=HS256
     depends_on:

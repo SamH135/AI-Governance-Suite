@@ -342,6 +342,15 @@ export const apiKeysService = {
     );
   },
 
+  async getEnvApiKeys() {
+    logger.info('Fetching environment-configured API keys', 'apiService.js', 'getEnvApiKeys');
+
+    return await apiCallWithRetry(
+      () => api.get('/api-keys/env'),
+      'getEnvApiKeys'
+    );
+  },
+
   async createApiKey(keyData) {
     logger.info('Creating new API key', 'apiService.js', 'createApiKey');
     

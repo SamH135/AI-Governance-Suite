@@ -14,7 +14,7 @@ import structlog
 from services.shared.database import db_manager
 from services.shared.auth import get_current_active_user
 from services.shared.unified_api_auth import setup_unified_api_auth_dependency
-from services.shared.models import AISystem, User
+from services.shared.models import AISystem, User, UserAPIKey
 from services.shared.schemas import (
     UserResponse, ApiResponse,
     AISystemCreate, AISystemUpdate, AISystemResponse
@@ -438,14 +438,30 @@ async def _resolve_model_config(db: AsyncSession, model_config_id: int) -> Optio
         
         if not model_config:
             return None
-        
+
+        api_key = model_config.api_key
+        api_key_id = getattr(model_config, 'api_key_id', None)
+        if not api_key and api_key_id:
+            result = await db.execute(
+                select(UserAPIKey).where(
+                    UserAPIKey.id == api_key_id,
+                    UserAPIKey.status == 'active'
+                )
+            )
+            key_row = result.scalar_one_or_none()
+            if key_row:
+                from services.shared.api_key_manager import get_encryption_fernet
+                api_key = get_encryption_fernet().decrypt(key_row.encrypted_key.encode()).decode()
+            else:
+                logger.warning(f"Managed API key {api_key_id} not found or inactive")
+
         return {
             "config_id": model_config.config_id,
             "name": model_config.name,
             "provider": model_config.provider,
             "model_id": model_config.model_id,
-            "api_key": model_config.api_key,
-            "api_key_id": model_config.api_key_id if hasattr(model_config, 'api_key_id') else None,
+            "api_key": api_key,
+            "api_key_id": api_key_id,
             "api_url": model_config.api_url,
             "temperature": float(model_config.temperature) if model_config.temperature else 0.7,
             "max_tokens": model_config.max_tokens or 1000,

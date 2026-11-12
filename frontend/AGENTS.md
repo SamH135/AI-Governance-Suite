@@ -36,3 +36,4 @@ React 18 + Vite SPA for managing AI systems, model configs, compliance tests/res
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-12 — Security upgrade: node:18-alpine -> node:22-alpine, react-router-dom 6 -> 7, vite 5 -> 6.4.6, vitest 1 -> 5, package-lock.json added (builds were non-reproducible), `overrides` pins for dompurify/postcss-selector-parser/esbuild<0.26/tinypool CVE fixes. Removed `zod` (unused). eslint config still references missing @typescript-eslint — pre-existing, lint was already broken.
+- 2026-11-12 — `ApiKeysPage` shows env-sourced provider keys in a read-only "Environment Keys" section (`apiKeysService.getEnvApiKeys` → `GET /api-keys/env`). Managed keys remain editable.

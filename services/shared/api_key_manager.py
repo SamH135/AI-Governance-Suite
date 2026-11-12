@@ -1,6 +1,7 @@
 """API Key Management Service for LLM Provider Keys."""
 
 import asyncio
+import os
 import secrets
 import hashlib
 from typing import Dict, List, Any, Optional
@@ -15,6 +16,18 @@ from .redis_client import redis_client
 from .exceptions import ValidationError, NotFoundError, SecurityError
 
 logger = structlog.get_logger()
+
+def get_encryption_fernet() -> Fernet:
+    """Fernet built from API_KEY_ENCRYPTION_KEY.
+
+    Must derive the key identically to the gateway's SimpleAPIKeyService so
+    both services can decrypt the same user_api_keys rows.
+    """
+    key_str = os.environ.get("API_KEY_ENCRYPTION_KEY")
+    if not key_str:
+        raise SecurityError("API_KEY_ENCRYPTION_KEY environment variable must be set")
+    key = key_str if len(key_str) == 44 else base64.urlsafe_b64encode(key_str.encode())
+    return Fernet(key)
 
 class APIKeyProvider(Enum):
     """Supported API key providers."""
@@ -389,9 +402,7 @@ class APIKeyManager:
     
     async def _setup_encryption(self):
         """Setup encryption for API keys."""
-        # In production, this should be loaded from secure key management
-        encryption_key = base64.urlsafe_b64encode(b"your-32-byte-encryption-key-here!!")
-        self.fernet = Fernet(encryption_key)
+        self.fernet = get_encryption_fernet()
     
     async def _create_tables(self):
         """Create API keys table if not exists."""
