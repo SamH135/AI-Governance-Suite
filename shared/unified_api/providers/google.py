@@ -221,6 +221,16 @@ class GoogleProvider(BaseModelProvider):
             if 'top_k' in self.config.provider_options:
                 payload["generationConfig"]["topK"] = self.config.provider_options['top_k']
 
+        # Map generic tool manifests to Gemini function declarations
+        if request.tools:
+            payload["tools"] = [{
+                "function_declarations": [{
+                    "name": t.get("name"),
+                    "description": t.get("description", ""),
+                    "parameters": t.get("parameters", {"type": "object", "properties": {}}),
+                } for t in request.tools]
+            }]
+
         # Add safety settings to be more permissive for testing
         payload["safetySettings"] = [
             {
@@ -257,6 +267,7 @@ class GoogleProvider(BaseModelProvider):
         error_detail = None
         response_content = ""
         usage_data = None
+        tool_calls = None
         api_response = None
         response_data = None
 
@@ -300,7 +311,17 @@ class GoogleProvider(BaseModelProvider):
             if "candidates" in response_data and len(response_data["candidates"]) > 0:
                 candidate = response_data["candidates"][0]
                 if "content" in candidate and "parts" in candidate["content"]:
-                    response_content = candidate["content"]["parts"][0]["text"]
+                    texts, calls = [], []
+                    for part in candidate["content"]["parts"]:
+                        if "text" in part:
+                            texts.append(part["text"])
+                        if "functionCall" in part:
+                            calls.append({
+                                "name": part["functionCall"].get("name"),
+                                "arguments": part["functionCall"].get("args", {}),
+                            })
+                    response_content = "".join(texts)
+                    tool_calls = calls or None
                 else:
                     response_content = str(candidate)
             else:
@@ -347,6 +368,7 @@ class GoogleProvider(BaseModelProvider):
             content=response_content,
             model_id=self.config.model_id,
             provider="google",
+            tool_calls=tool_calls,
             usage=usage_data,
             latency=latency,
             error=error_detail

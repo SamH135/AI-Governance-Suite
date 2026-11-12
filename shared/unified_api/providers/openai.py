@@ -219,6 +219,15 @@ class OpenAIProvider(BaseModelProvider):
             "max_tokens": max_tokens
         }
 
+        if request.tools:
+            payload["tools"] = [
+                {"type": "function", "function": {
+                    "name": t.get("name"),
+                    "description": t.get("description", ""),
+                    "parameters": t.get("parameters", {"type": "object", "properties": {}}),
+                }} for t in request.tools
+            ]
+
         # Add any provider-specific options
         if self.config.provider_options:
             payload.update(self.config.provider_options)
@@ -238,6 +247,7 @@ class OpenAIProvider(BaseModelProvider):
 
         response_content = ""
         usage_data = {}
+        tool_calls = None
         error_detail = None
 
         try:
@@ -247,7 +257,13 @@ class OpenAIProvider(BaseModelProvider):
 
             # Extract content
             if response.choices and response.choices[0].message:
-                response_content = response.choices[0].message.content or ""
+                msg = response.choices[0].message
+                response_content = msg.content or ""
+                if getattr(msg, "tool_calls", None):
+                    tool_calls = [
+                        {"name": tc.function.name, "arguments": tc.function.arguments}
+                        for tc in msg.tool_calls
+                    ]
             else:
                 error_detail = APIErrorDetail(
                     message="No content in OpenAI response",
@@ -301,6 +317,7 @@ class OpenAIProvider(BaseModelProvider):
             content=response_content,
             model_id=self.config.model_id,
             provider=self.get_provider_name(),
+            tool_calls=tool_calls,
             usage=usage_data,
             metadata={"latency_seconds": latency},
             error=error_detail,
@@ -326,7 +343,13 @@ class OpenAIProvider(BaseModelProvider):
 
             # Extract content
             if response.choices and response.choices[0].message:
-                response_content = response.choices[0].message.content or ""
+                msg = response.choices[0].message
+                response_content = msg.content or ""
+                if getattr(msg, "tool_calls", None):
+                    tool_calls = [
+                        {"name": tc.function.name, "arguments": tc.function.arguments}
+                        for tc in msg.tool_calls
+                    ]
             else:
                 error_detail = APIErrorDetail(
                     message="No content in OpenAI response",
@@ -380,6 +403,7 @@ class OpenAIProvider(BaseModelProvider):
             content=response_content,
             model_id=self.config.model_id,
             provider=self.get_provider_name(),
+            tool_calls=tool_calls,
             usage=usage_data,
             metadata={"latency_seconds": latency},
             error=error_detail,

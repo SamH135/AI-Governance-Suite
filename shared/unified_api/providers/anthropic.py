@@ -158,6 +158,13 @@ class AnthropicProvider(BaseModelProvider):
         if request.system_prompt:
             payload["system"] = request.system_prompt
 
+        if request.tools:
+            payload["tools"] = [{
+                "name": t.get("name"),
+                "description": t.get("description", ""),
+                "input_schema": t.get("parameters", {"type": "object", "properties": {}}),
+            } for t in request.tools]
+
         # Add any additional kwargs
         if hasattr(request, 'kwargs') and request.kwargs:
             payload.update(request.kwargs)
@@ -178,6 +185,7 @@ class AnthropicProvider(BaseModelProvider):
         usage_data: Optional[Dict[str, int]] = None
         api_response = None
         response_data = None
+        tool_calls = None
 
         try:
             logger.debug(f"Making request to {self.api_url}")
@@ -216,7 +224,14 @@ class AnthropicProvider(BaseModelProvider):
                     code=str(api_response.status_code)
                 )
             elif response_data.get("content") and isinstance(response_data["content"], list):
-                response_content = response_data["content"][0].get("text", "")
+                texts, calls = [], []
+                for block in response_data["content"]:
+                    if block.get("type") == "text":
+                        texts.append(block.get("text", ""))
+                    elif block.get("type") == "tool_use":
+                        calls.append({"name": block.get("name"), "arguments": block.get("input", {})})
+                response_content = "".join(texts)
+                tool_calls = calls or None
                 usage_data = response_data.get("usage")
             else:
                 error_detail = APIErrorDetail(
@@ -250,6 +265,7 @@ class AnthropicProvider(BaseModelProvider):
             content=response_content,
             model_id=self.config.model_id,
             provider=self.get_provider_name(),
+            tool_calls=tool_calls,
             usage=usage_data,
             metadata={"latency_seconds": latency},
             error=error_detail,

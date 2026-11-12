@@ -69,6 +69,7 @@ class ModelRequest:
     system_prompt: Optional[str] = None
     messages: Optional[List[Dict[str, str]]] = None  # For chat models
     context: Optional[List[str]] = None  # For RAG
+    tools: Optional[List[Dict[str, Any]]] = None  # tool manifests (name/description/parameters)
 
     # Override config parameters
     temperature: Optional[float] = None
@@ -83,6 +84,7 @@ class ModelResponse:
     content: str
     model_id: str
     provider: str
+    tool_calls: Optional[List[Dict[str, Any]]] = None  # [{name, arguments}]
     usage: Optional[Dict[str, int]] = None  # tokens used, etc.
     metadata: Dict[str, Any] = field(default_factory=dict)
     error: Optional[APIErrorDetail] = None

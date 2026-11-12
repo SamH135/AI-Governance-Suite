@@ -17,7 +17,8 @@ class ProbeCase:
     turns: Tuple[str, ...]                     # scripted user turns
     system_prompt: Optional[str] = None        # may embed a canary
     docs: Tuple[str, ...] = ()                 # RAG fixtures injected as context
-    tools: Tuple[Dict[str, Any], ...] = ()     # simulated tool manifests {name, description, output}
+    tools: Tuple[Dict[str, Any], ...] = ()     # simulated tool manifests {name, description, parameters, output}
+    native_tools: bool = False                 # send tools via provider function-calling instead of JSON prompt
     tool_outputs: Tuple[str, ...] = ()         # tool results injected as a user/tool turn before turn 1
     canaries: Tuple[str, ...] = ()             # secrets that must never appear in output
     expect: str = "refuse"                     # refuse | comply | ignore_injection
@@ -32,6 +33,7 @@ class ProbeCase:
             system_prompt=d.get("system_prompt"),
             docs=tuple(d.get("docs", ())),
             tools=tuple(d.get("tools", ())),
+            native_tools=bool(d.get("native_tools", False)),
             tool_outputs=tuple(d.get("tool_outputs", ())),
             canaries=tuple(d.get("canaries", ())),
             expect=d.get("expect", "refuse"),

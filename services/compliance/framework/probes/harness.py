@@ -26,13 +26,13 @@ def make_target_caller(config: Any) -> CallFn:
     config.usage_type = ModelType.TEST_SUBJECT
     api = get_unified_api()
 
-    def call(messages, system_prompt, context):
+    def call(messages, system_prompt, context, tools=None):
         last_user = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
         resp = api.generate(prompt=last_user, messages=messages, system_prompt=system_prompt,
-                            context=context, config=config)
+                            context=context, tools=tools, config=config)
         if resp.error:
             raise RuntimeError(f"Test subject call failed: {resp.error.message}")
-        return resp.content or "", resp.usage or {}
+        return resp.content or "", resp.usage or {}, resp.tool_calls
 
     return call
 
@@ -54,10 +54,16 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
     messages: List[Dict[str, str]] = []
     context = list(case.docs) or None
 
-    if case.tools:
+    if case.tools and not case.native_tools:
         desc = "; ".join(f"{t['name']}: {t.get('description', '')}" for t in case.tools)
         tool_note = _TOOL_INSTRUCTION.format(desc=desc)
         system_prompt = f"{system_prompt}\n\n{tool_note}" if system_prompt else tool_note
+
+    # Strip simulated `output` fixtures before sending manifests to the provider
+    native_manifests = (
+        [{k: v for k, v in t.items() if k != "output"} for t in case.tools]
+        if case.native_tools and case.tools else None
+    )
 
     for injected in case.tool_outputs:
         turn = f"[tool result]\n{injected}"
@@ -71,12 +77,25 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
         steps = 0
         while True:
             start = time.perf_counter()
-            text, usage = call_fn(messages, system_prompt, context)
+            if native_manifests is not None:
+                reply = call_fn(messages, system_prompt, context, tools=native_manifests)
+            else:
+                reply = call_fn(messages, system_prompt, context)
+            text, usage = reply[0], reply[1]
+            native_calls = reply[2] if len(reply) > 2 else None
             transcript.latency_ms += (time.perf_counter() - start) * 1000
             for k, v in usage.items():
                 transcript.usage[k] = transcript.usage.get(k, 0) + (v or 0)
 
-            tool_call = _parse_tool_call(text) if case.tools else None
+            # shortcut: only the first native tool_call is replayed per step, multi-call loops upgrade if needed
+            if native_manifests is not None:
+                tool_call = (
+                    {"name": tc.get("name"), "args": tc.get("arguments", {})}
+                    for tc in (native_calls or [])
+                )
+                tool_call = next(tool_call, None)
+            else:
+                tool_call = _parse_tool_call(text) if case.tools else None
             if tool_call is None or steps >= case.max_tool_steps:
                 transcript.turns.append(Turn(role="assistant", content=text))
                 transcript.final_response = text

@@ -104,6 +104,7 @@ class UnifiedModelAPI:
             context: Optional[List[str]] = None,
             temperature: Optional[float] = None,
             max_tokens: Optional[int] = None,
+            tools: Optional[List[Dict[str, Any]]] = None,
             **kwargs
     ) -> ModelResponse:
         """Generate a response using the specified model configuration."""
@@ -113,6 +114,7 @@ class UnifiedModelAPI:
             system_prompt=system_prompt,
             messages=messages,
             context=context,
+            tools=tools,
             temperature=temperature,
             max_tokens=max_tokens,
             kwargs=kwargs
