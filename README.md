@@ -208,9 +208,9 @@ docker-compose up --build
 docker-compose -f docker-compose.simple.yml up --build
 ```
 
-**Development mode (hot-reload):**
+**Development mode (hot-reload) — dev.yml is an override, not standalone:**
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
 **Frontend only (local development):**
@@ -350,28 +350,17 @@ Do not hardcode evaluation logic directly into `services/compliance/`.
 
 ### Docker Production
 
+No dedicated production compose file ships yet — use the base file with production
+values in `.env` (strong `JWT_SECRET`, `POSTGRES_PASSWORD`, provider keys):
+
 ```bash
-# Build production images
-docker-compose -f docker-compose.prod.yml build
+docker-compose up -d
 
-# Deploy
-docker-compose -f docker-compose.prod.yml up -d
-
-# Scale services
-docker-compose -f docker-compose.prod.yml up -d --scale compliance-service=3
+# Scale a service
+docker-compose up -d --scale compliance-service=3
 ```
 
-### Kubernetes
-
-Apply configurations in order:
-```bash
-kubectl apply -f infrastructure/k8s/namespace.yaml
-kubectl apply -f infrastructure/k8s/configmaps/
-kubectl apply -f infrastructure/k8s/secrets/
-kubectl apply -f infrastructure/k8s/deployments/
-kubectl apply -f infrastructure/k8s/services/
-kubectl apply -f infrastructure/k8s/ingress/
-```
+Kubernetes manifests are not included yet — contributions welcome.
 
 ### Infrastructure Requirements
 

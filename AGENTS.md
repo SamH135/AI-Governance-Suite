@@ -89,7 +89,7 @@ docker-compose -f docker-compose.simple.yml up --build
 
 ### Start dev mode (hot-reload volumes):
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
 ### Tear down + clean volumes:

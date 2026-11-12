@@ -203,7 +203,7 @@ INSERT INTO compliance_frameworks (name, description, version, requirements) VAL
 
 -- Create default admin user (password: admin123 - change in production!)
 INSERT INTO users (username, password_hash, full_name, email, role) VALUES
-('admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6hsxq9w5KS', 'System Administrator', 'admin@example.com', 'admin');
+('admin', '$2b$12$.hBiKr07rvvo1UO4IsrvBuL4doOXPQbZ.mZnTCMjps7ECLTcxPAQa', 'System Administrator', 'admin@example.com', 'admin');
 
 -- Insert default prompt categories
 INSERT INTO prompt_categories (name, description, framework) VALUES
