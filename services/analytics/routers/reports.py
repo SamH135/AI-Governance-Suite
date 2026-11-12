@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/compliance")
 async def get_compliance_report(
     system_id: Optional[int] = Query(None),
-    time_range: str = Query("30d", regex="^(7d|30d|90d)$"),
+    time_range: str = Query("30d", pattern="^(7d|30d|90d)$"),
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Generate comprehensive compliance report."""
@@ -46,7 +46,7 @@ async def get_compliance_report(
 
 @router.get("/executive-summary")
 async def get_executive_summary(
-    time_range: str = Query("30d", regex="^(7d|30d|90d)$"),
+    time_range: str = Query("30d", pattern="^(7d|30d|90d)$"),
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Generate executive summary report."""

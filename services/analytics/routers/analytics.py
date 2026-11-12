@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get("/dashboard")
 async def get_dashboard_metrics(
-    time_range: str = Query("7d", regex="^(24h|7d|30d)$"),
+    time_range: str = Query("7d", pattern="^(24h|7d|30d)$"),
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Get dashboard metrics for the current user."""
@@ -75,7 +75,7 @@ async def get_test_analytics(
 @router.get("/performance-trends")
 async def get_performance_trends(
     system_id: Optional[int] = Query(None),
-    time_range: str = Query("30d", regex="^(7d|30d|90d)$"),
+    time_range: str = Query("30d", pattern="^(7d|30d|90d)$"),
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Get performance trends over time."""

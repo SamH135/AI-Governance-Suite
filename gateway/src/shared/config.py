@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     
     # JWT
-    JWT_SECRET: str = "your-super-secret-jwt-key-change-in-production"
+    JWT_SECRET: str  # required env var - no default (dev default was a known security issue)
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_HOURS: int = 24
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7

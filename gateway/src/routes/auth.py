@@ -6,7 +6,8 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field
 from passlib.context import CryptContext
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWTError as JWTError
 import asyncpg
 import redis.asyncio as redis
 

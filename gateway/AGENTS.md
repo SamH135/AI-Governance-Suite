@@ -36,3 +36,4 @@ Single public entry point. Handles auth (JWT), CORS, routing/proxying to backend
 
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
+- 2026-11-12 — Security upgrade: fastapi 0.104.1 -> 0.162.5 (starlette 1.x, anyio 4). python-jose -> PyJWT (jose had unfixable CVEs; same encode/decode API, `PyJWTError` replaces `JWTError`). `JWT_SECRET` in `src/shared/config.py` is now a required env var — the hardcoded dev default is gone. requests >=2.33, aiohttp >=3.14.4, python-multipart >=0.0.31.

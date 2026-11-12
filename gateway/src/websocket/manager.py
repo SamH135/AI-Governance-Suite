@@ -5,7 +5,8 @@ import json
 from datetime import datetime
 from typing import Dict, Set, Optional, Any, List
 from fastapi import WebSocket, WebSocketDisconnect
-from jose import jwt, JWTError
+import jwt
+from jwt import PyJWTError as JWTError
 
 # Import custom logger
 from ..logger_util import logger
