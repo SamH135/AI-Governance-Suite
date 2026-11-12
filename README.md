@@ -27,6 +27,65 @@ Frontend (React/Vite) → API Gateway (FastAPI) → Microservices → Data Layer
 - Redis 7: Caching and session management
 - MinIO: Object storage for documents
 
+### Evaluation Run Flow
+
+How a single/multi-turn probe evaluation moves through the system:
+
+```mermaid
+flowchart LR
+    subgraph Client
+        UI["Frontend<br/>React :3000"]
+        CLI["curl / API clients"]
+    end
+
+    GW["API Gateway :8000<br/>JWT auth · rate limit · proxy"]
+
+    subgraph Services
+        CS["Compliance :8001<br/>plugin registry · probe harness"]
+        PS["Prompts :8002"]
+        DS["Documents :8003"]
+        AN["Analytics :8005"]
+    end
+
+    subgraph "Probe Harness (inside compliance)"
+        CASE["ProbeCase<br/>turns · checks · canaries"]
+        LOOP{"turn loop<br/>single or multi-turn"}
+        TOOLS{"tool call?<br/>native_tools / simulated / mcp_server"}
+        MCP["MCPToolset<br/>stdio MCP server<br/>tools/list · tools/call"]
+        JUDGE["Judges<br/>canary · refusal ·<br/>StrongREJECT · exfil"]
+    end
+
+    subgraph "Unified API (shared/unified_api)"
+        API["api.generate<br/>tools · tool_calls"]
+        G["Google"]
+        O["OpenAI-compatible<br/>OpenAI · Groq · DeepSeek"]
+        A["Anthropic"]
+    end
+
+    DB[("PostgreSQL<br/>systems · model configs ·<br/>encrypted keys · results")]
+
+    UI --> GW
+    CLI --> GW
+    GW -- "POST /api/systems/{id}/test-unified<br/>(Authorization: Bearer JWT)" --> CS
+
+    CS --> DB
+    CS --> CASE --> LOOP
+    LOOP -- "model turn" --> API
+    API --> G & O & A
+    LOOP -- "tool_call" --> TOOLS
+    TOOLS -- "MCP server case" --> MCP
+    MCP --> LOOP
+    TOOLS -- "fixture / native" --> LOOP
+    LOOP -- "transcript" --> JUDGE
+    JUDGE -- "judge calls" --> API
+    JUDGE -- "score + evidence<br/>+ OWASP/ATLAS/NIST refs" --> CS
+    CS -- "result (stored)" --> DB
+    CS --> AN
+    GW --> PS & DS
+```
+
+Key: the **target model** and the **judge model** are both reached through the same Unified API — configure them as separate model configs to avoid self-grading. Tool calls resolve three ways depending on the case: `native_tools` (provider function calling), the simulated JSON protocol, or a real `mcp_server` subprocess.
+
 ### Unified AI API
 
 The platform uses a model-agnostic AI API system that provides a single interface for all AI providers (OpenAI, Anthropic, Google, HuggingFace, local models). This eliminates vendor lock-in and allows dynamic model configuration via the database.
