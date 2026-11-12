@@ -79,7 +79,10 @@ async def lifespan(app: FastAPI):
     
     # Initialize HTTP client
     logger.info("Initializing HTTP client", function="lifespan", component="http_client", timeout=30.0)
-    http_client = httpx.AsyncClient(timeout=30.0, follow_redirects=True)
+    # Long read timeout — eval endpoints (test-unified) run for minutes
+    http_client = httpx.AsyncClient(
+        timeout=httpx.Timeout(30.0, read=600.0), follow_redirects=True
+    )
     logger.info("HTTP client initialized successfully", function="lifespan", component="http_client")
     
     # Set HTTP client for WebSocket routes

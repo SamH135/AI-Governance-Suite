@@ -203,7 +203,7 @@ docker-compose up --build
 
 ### Alternative Start Options
 
-**Lightweight (no vector DB):**
+**Lightweight (all app services; skips Milvus/MinIO/etcd — evals fully work, vector/doc-storage features degrade):**
 ```bash
 docker-compose -f docker-compose.simple.yml up --build
 ```
@@ -222,7 +222,15 @@ npm run dev
 
 ### Run Your First Evaluation
 
-All evaluator plugins load automatically at startup. The eval flow is four API calls (compliance service on `:8001`, or via the gateway on `:8000`):
+All evaluator plugins load automatically at startup. To go from fresh clone to a working eval in one step:
+
+```bash
+python scripts/bootstrap_demo.py
+```
+
+It logs in as `admin/admin123`, creates a model config from whichever provider key is in your `.env` (Groq, Gemini, or DeepSeek), creates a demo AI system, and runs one sanity eval — then prints the system_id and the exact eval call. Manual equivalent below.
+
+The eval flow is four API calls (compliance service on `:8001`, or via the gateway on `:8000`):
 
 ```bash
 # 1. Login — dev seed account admin/admin123 (change before any real deployment;
