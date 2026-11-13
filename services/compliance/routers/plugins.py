@@ -1,11 +1,9 @@
 """Plugin management endpoints."""
 
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 import structlog
-import tempfile
-import os
 
 from ...shared.auth import get_current_active_user, require_admin
 from ...shared.schemas import UserResponse, ApiResponse
@@ -293,89 +291,6 @@ async def disable_plugin(
         return ApiResponse(
             success=False,
             message=f"Failed to disable plugin: {str(e)}"
-        )
-
-@router.post("/install", response_model=ApiResponse[Dict[str, Any]])
-async def install_plugin(
-    file: UploadFile = File(...),
-    plugin_name: Optional[str] = Form(None),
-    current_user: UserResponse = Depends(require_admin)
-):
-    """Install a plugin from uploaded file."""
-    
-    try:
-        # Save uploaded file to temporary location
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{file.filename}") as temp_file:
-            content = await file.read()
-            temp_file.write(content)
-            temp_file_path = temp_file.name
-        
-        try:
-            # Install plugin
-            success = await plugin_manager.install_plugin(temp_file_path, plugin_name)
-            
-            if success:
-                final_plugin_name = plugin_name or file.filename.split('.')[0]
-                
-                # Try to load the installed plugin
-                load_success = await plugin_manager.load_plugin(final_plugin_name)
-                
-                return ApiResponse(
-                    success=True,
-                    data={
-                        "plugin": final_plugin_name,
-                        "installed": True,
-                        "loaded": load_success
-                    },
-                    message=f"Plugin {final_plugin_name} installed successfully"
-                )
-            else:
-                return ApiResponse(
-                    success=False,
-                    message="Failed to install plugin"
-                )
-                
-        finally:
-            # Clean up temporary file
-            os.unlink(temp_file_path)
-            
-    except Exception as e:
-        logger.error("Failed to install plugin", filename=file.filename, error=str(e))
-        return ApiResponse(
-            success=False,
-            message=f"Failed to install plugin: {str(e)}"
-        )
-
-@router.delete("/{plugin_name}", response_model=ApiResponse[Dict[str, Any]])
-async def uninstall_plugin(
-    plugin_name: str,
-    current_user: UserResponse = Depends(require_admin)
-):
-    """Uninstall a plugin."""
-    
-    try:
-        success = await plugin_manager.uninstall_plugin(plugin_name)
-        
-        if success:
-            # Update enhanced factory
-            await enhanced_evaluator_factory.reload_plugins()
-            
-            return ApiResponse(
-                success=True,
-                data={"plugin": plugin_name, "uninstalled": True},
-                message=f"Plugin {plugin_name} uninstalled successfully"
-            )
-        else:
-            return ApiResponse(
-                success=False,
-                message=f"Failed to uninstall plugin {plugin_name}"
-            )
-            
-    except Exception as e:
-        logger.error("Failed to uninstall plugin", plugin=plugin_name, error=str(e))
-        return ApiResponse(
-            success=False,
-            message=f"Failed to uninstall plugin: {str(e)}"
         )
 
 @router.get("/{plugin_name}/config", response_model=ApiResponse[Dict[str, Any]])

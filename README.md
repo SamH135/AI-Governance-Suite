@@ -119,7 +119,7 @@ The platform ships probe-based security evaluators that run multi-turn, tool-cal
 | `multi_turn_escalation` | OWASP LLM01 / ATLAS T0054 |
 | `excessive_agency` | OWASP LLM06 / ASI02, ASI09 |
 
-Plus passive text evaluators: `prompt_injection`, `pii_leakage`, `insecure_output`, `hallucination_checker`, `bias_detection`-style generic checks via `generic_compliance`/`g_eval_metric`.
+Plus passive text evaluators: `prompt_injection`, `pii_leakage`, `insecure_output`, `hallucination_checker`, `bias_detection`-style generic checks via `generic_compliance`.
 
 Probe capabilities:
 - **Multi-turn conversations, RAG document injection, simulated tool protocols** via `services/compliance/framework/probes/`

@@ -73,7 +73,7 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
 - Harnesses → `Transcript` (messages, simulated tool calls, token usage, latency):
   `single_turn`, `multi_turn` (scripted or adaptive attacker LLM), `rag` (fixture docs in context),
   `tool_sim` (JSON action protocol, mock tools, call recording).
-- Shared judges: refusal / StrongREJECT, injection-success, paraphrase-leak (reuse `g_eval_metric` judging).
+- Shared judges: refusal / StrongREJECT, injection-success, paraphrase-leak (shared judge util TBD — `g_eval_metric` removed).
 - Result: per-check `{score, evidence, refs}` + provenance `{corpus_version, judge_model, seed, thresholds}`.
 - Corpora: `cases/*.json` per plugin ship with the repo — small, mild, illustrative attack cases
   (standard red-team phrasing; nothing beyond what public benchmarks like HarmBench contain).

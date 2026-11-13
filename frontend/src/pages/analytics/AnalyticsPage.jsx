@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   TrendingUp, 
   BarChart3, 
   PieChart, 
   Download, 
   Filter,
-  Calendar,
   RefreshCw
 } from 'lucide-react';
 import { 
@@ -31,9 +30,6 @@ import {
 // Import UI components
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import { analyticsService } from '../../services/apiService';
-
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 const MetricCard = ({ title, value, change, icon: Icon, color = 'blue' }) => {
   const colorClasses = {
@@ -67,7 +63,7 @@ const MetricCard = ({ title, value, change, icon: Icon, color = 'blue' }) => {
 const AnalyticsPage = () => {
   const [timeRange, setTimeRange] = useState('30d');
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({
+  const [data] = useState({
     metrics: {
       totalTests: 156,
       avgComplianceScore: 87,

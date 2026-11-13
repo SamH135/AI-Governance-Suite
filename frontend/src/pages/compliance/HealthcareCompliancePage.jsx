@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   Heart, 
-  Shield, 
   FileText, 
   CheckCircle, 
   AlertTriangle, 

@@ -1,9 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { 
   Upload, 
   FileText, 
   Search, 
-  Play, 
   Download, 
   Trash2, 
   Eye,
@@ -14,8 +13,8 @@ import {
 import { useDropzone } from 'react-dropzone';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import api from '../../services/authService';
 
 const FileUploadZone = ({ onFilesUploaded, uploading }) => {
   const onDrop = useCallback((acceptedFiles) => {

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Play, Edit, Trash2, Settings, Brain, Copy } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Play, Edit, Trash2, Brain, Copy } from 'lucide-react';
 import Button from '../ui/Button';
-import Card from '../ui/Card';
 import Input from '../ui/Input';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { modelsService, apiKeysService } from '../../services/apiService';
@@ -14,6 +13,7 @@ const SystemModelsManager = ({ systemId, system, availableTemplates, onTestModel
 
   useEffect(() => {
     fetchSystemModels();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, [systemId]);
 
   const fetchSystemModels = async () => {

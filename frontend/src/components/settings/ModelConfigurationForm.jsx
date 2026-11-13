@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { Brain, Settings, Eye, EyeOff, TestTube, CheckCircle, XCircle, AlertCircle, Key } from 'lucide-react';
+import { Brain, Eye, EyeOff, TestTube, CheckCircle, XCircle, Key } from 'lucide-react';
 import { apiKeysService } from '../../services/apiService';
 import logger from '../../utils/logger.js';
 

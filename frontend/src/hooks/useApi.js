@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import api from '../services/authService';
 import logger from '../utils/logger.js';
 
 export const useApi = (apiCall, dependencies = []) => {
@@ -25,6 +26,7 @@ export const useApi = (apiCall, dependencies = []) => {
     };
 
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, dependencies);
 
   const refetch = async () => {

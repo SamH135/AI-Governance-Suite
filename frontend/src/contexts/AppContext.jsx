@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer } from 'react';
 import logger from '../utils/logger.js';
 
 const AppContext = createContext();

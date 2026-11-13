@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Brain, 
   Zap, 
-  TrendingUp, 
   AlertTriangle, 
   Play, 
   Pause, 
-  Settings, 
-  BarChart3,
+  Settings,
   Activity,
   Target,
-  Cpu,
   RefreshCw
 } from 'lucide-react';
 import { 
@@ -18,16 +15,12 @@ import {
   Line, 
   AreaChart, 
   Area, 
-  BarChart, 
-  Bar, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer,
-  ScatterChart,
-  Scatter
+  ResponsiveContainer
 } from 'recharts';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -141,7 +134,7 @@ const J1DashboardPage = () => {
     biasDetection: 'active'
   });
 
-  const [metrics, setMetrics] = useState({
+  const [metrics] = useState({
     thinkingQuality: 87.3,
     responseTime: 245,
     tokenEfficiency: 92.1,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Plus, 
   Search, 
@@ -8,7 +8,6 @@ import {
   Trash2, 
   Copy,
   Tag,
-  FileText,
   Users,
   TrendingUp,
   Eye
@@ -305,7 +304,7 @@ const PromptCategoriesPage = () => {
     }
   ]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterFramework, setFilterFramework] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);

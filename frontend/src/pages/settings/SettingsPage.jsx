@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { useAuth } from '../../contexts/AuthContext';
-import { Settings, User, Shield, Bell, Database } from 'lucide-react';
+import { User, Shield, Bell, Database } from 'lucide-react';
 import logger from '../../utils/logger.js';
 
 const SettingsPage = () => {

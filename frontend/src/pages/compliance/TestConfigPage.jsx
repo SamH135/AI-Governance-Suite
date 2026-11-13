@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Play, Settings, AlertCircle } from 'lucide-react';
 import Card from '../../components/ui/Card';
@@ -216,6 +216,7 @@ const TestConfigPage = () => {
       setError('No system ID provided');
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, [systemId, navigate]);
 
   const handleEvaluatorToggle = (evaluatorId) => {

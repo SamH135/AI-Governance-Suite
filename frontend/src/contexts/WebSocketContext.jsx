@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import logger from '../utils/logger.js';
 
@@ -158,6 +158,7 @@ export const WebSocketProvider = ({ children }) => {
         setConnected(false);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, [isAuthenticated]);
 
   const value = {

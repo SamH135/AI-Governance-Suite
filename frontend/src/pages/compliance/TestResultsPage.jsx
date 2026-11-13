@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { Search, Filter, Download, Eye, Clock, AlertCircle } from 'lucide-react';
+import { Search, Filter, Download, Eye, Clock } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import { testingService, systemsService } from '../../services/apiService';
 
 const StatusBadge = ({ status, score }) => {
-  const getStatusInfo = (status, score) => {
+  const getStatusInfo = (status) => {
     if (status === 'passed') return { class: 'status-success', text: 'Passed' };
     if (status === 'failed') return { class: 'status-error', text: 'Failed' };
     if (status === 'warning') return { class: 'status-warning', text: 'Warning' };
@@ -101,8 +100,6 @@ const TestResultsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [specificTest, setSpecificTest] = useState(null);
-
-  const pollingRef = useRef(null);
 
   useEffect(() => {
     const fetchResults = async () => {

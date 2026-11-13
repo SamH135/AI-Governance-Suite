@@ -14,6 +14,7 @@ from ..shared.cache import get_redis_client
 from ..shared.config import get_settings
 router = APIRouter(prefix="/health", tags=["health"])
 
+@router.get("")
 @router.get("/")
 async def health_check():
     """Basic health check"""

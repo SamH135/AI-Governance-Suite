@@ -20,7 +20,6 @@ async def test_discover_plugins():
     expected_plugins = [
         "example_plugin",
         "excessive_agency",
-        "g_eval_metric",
         "generic_compliance",
         "hallucination_checker",
         "insecure_output",
@@ -83,7 +82,7 @@ async def test_evaluator_rule_based_execution():
             if evaluator_cls.get_metadata().requires_test_subject_config:
                 continue
         except Exception:
-            pass  # broken metadata (e.g. g_eval_metric) — let evaluate() decide
+            pass  # broken metadata — let evaluate() decide
 
         # Run evaluate in rule-based / fallback mode (without external LLM required)
         result = evaluator.evaluate(text=test_sample_text)

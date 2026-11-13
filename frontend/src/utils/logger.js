@@ -26,7 +26,7 @@ class BrowserLogger {
     } */
   }
 
-  _sendToBackend(level, message, filename, functionName) {
+  _sendToBackend(_level, _message, _filename, _functionName) {
     // Optional: send logs to backend in development mode
     // This is a fire-and-forget operation that shouldn't block the UI
     /*

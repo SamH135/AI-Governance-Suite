@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -531,12 +531,13 @@ const PluginInstaller = ({ onPluginInstalled }) => {
 };
 
 // Plugin Details Modal Component
-const PluginDetailsModal = ({ plugin, onClose, onUpdate }) => {
-  const [config, setConfig] = useState({});
-  const [loading, setLoading] = useState(true);
+const PluginDetailsModal = ({ plugin, onClose }) => {
+  const [, setConfig] = useState({});
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPluginConfig();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, [plugin]);
 
   const fetchPluginConfig = async () => {

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import LoadingSpinner from '../ui/LoadingSpinner';
-import { Key, Brain, Shield, TestTube, CheckCircle, ArrowRight, ArrowLeft, X } from 'lucide-react';
+import { Key, Brain, Shield, CheckCircle, ArrowRight, ArrowLeft, X } from 'lucide-react';
 import { apiKeysService, modelsService, systemsService } from '../../services/apiService';
 import logger from '../../utils/logger.js';
 
@@ -109,7 +109,7 @@ const QuickSetupWizard = ({ onClose }) => {
 
       setLoading(true);
       try {
-        const newSystem = await systemsService.createSystem(systemData);
+        await systemsService.createSystem(systemData);
         logger.info('AI system created successfully in wizard', 'QuickSetupWizard.jsx', 'handleNext');
         setCurrentStep(4);
       } catch (error) {

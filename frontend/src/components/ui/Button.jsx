@@ -1,4 +1,3 @@
-import React from 'react';
 import { clsx } from 'clsx';
 import LoadingSpinner from './LoadingSpinner';
 import logger from '../../utils/logger.js';

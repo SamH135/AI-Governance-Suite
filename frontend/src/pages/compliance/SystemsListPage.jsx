@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Plus, Search, Filter, MoreVertical, Play, Edit, Trash2, Shield, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Plus, Search, Filter, MoreVertical, Play, Trash2, Shield, Settings } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import { systemsService, modelsService } from '../../services/apiService';
+import { systemsService } from '../../services/apiService';
 
 const StatusBadge = ({ status }) => {
   const statusClasses = {
