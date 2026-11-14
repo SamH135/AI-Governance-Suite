@@ -1,6 +1,7 @@
 # AGENTS.md — shared/ (Unified AI API + platform types)
 
 > Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Maintenance: keep it short — update the sections and add a dated Change Log line when this area's behavior, interfaces or conventions change; delete entries that stop being true.
 > Not to be confused with `services/shared/` (backend service utilities).
 
 ## Purpose
@@ -34,3 +35,5 @@ Model-agnostic LLM access layer used by all services: one interface over OpenAI,
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-11 — Native tool/function calling added: `ModelRequest.tools` (generic manifests `{name, description, parameters}`) and `ModelResponse.tool_calls` (`[{name, arguments}]`). Google, OpenAI (sync+async), Anthropic adapters map to/from their native formats. `api.generate(..., tools=...)` threads through.
 - 2026-11-11 — `mcp_client.py`: `MCPToolset` — hand-rolled stdio JSON-RPC client (no deps; official `mcp` SDK requires anyio>=4 which conflicts with fastapi 0.104.x). `connect(command, args, env)` / `tools()` -> generic manifests / `call(name, args)` / `close()`. No HTTP transport yet.
+- 2026-11-13 — Google provider: `_prepare_payload` now sends `request.messages` as alternating `contents` (consecutive same-role merged into multi-part) and `system_prompt` via `systemInstruction` (was dropped/prepended — multi-turn probes only saw the last user message). A candidate with no text/functionCall parts now returns `error` (type `blocked`) instead of stringifying the raw dict.
+- 2026-11-13 — OpenAI provider: `generate_async` initialized `tool_calls`/`usage_data`/`error_detail` before response parsing (previously `UnboundLocalError` on non-tool responses through the async path — hit by DeepSeek/Groq live evals).

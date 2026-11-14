@@ -337,6 +337,7 @@ class OpenAIProvider(BaseModelProvider):
         response_content = ""
         usage_data = {}
         error_detail = None
+        tool_calls = None
 
         try:
             logger.debug(f"Making async OpenAI API request to {self.config.model_id}")

@@ -196,15 +196,21 @@ class GoogleProvider(BaseModelProvider):
 
     def _prepare_payload(self, request: ModelRequest) -> Dict[str, Any]:
         """Prepare the payload for Google Gemini API."""
-        # Prepare content
-        user_text = request.prompt
-        if request.system_prompt:
-            user_text = f"{request.system_prompt}\n\n{request.prompt}"
-
-        contents = [{
-            "role": "user",
-            "parts": [{"text": user_text}]
-        }]
+        if request.messages:
+            # Gemini requires alternating user/model roles — merge consecutive
+            # same-role messages into one content with multiple parts.
+            contents = []
+            for msg in request.messages:
+                role = "model" if msg.get("role") == "assistant" else "user"
+                if contents and contents[-1]["role"] == role:
+                    contents[-1]["parts"].append({"text": msg.get("content", "")})
+                else:
+                    contents.append({"role": role, "parts": [{"text": msg.get("content", "")}]})
+        else:
+            contents = [{
+                "role": "user",
+                "parts": [{"text": request.prompt}]
+            }]
 
         payload = {
             "contents": contents,
@@ -213,6 +219,9 @@ class GoogleProvider(BaseModelProvider):
                 "maxOutputTokens": request.max_tokens or self.config.max_tokens,
             }
         }
+
+        if request.system_prompt:
+            payload["systemInstruction"] = {"parts": [{"text": request.system_prompt}]}
 
         # Add provider-specific options
         if self.config.provider_options:
@@ -322,8 +331,16 @@ class GoogleProvider(BaseModelProvider):
                             })
                     response_content = "".join(texts)
                     tool_calls = calls or None
+                    if not response_content and not tool_calls:
+                        error_detail = APIErrorDetail(
+                            message=f"Google returned no content (finishReason={candidate.get('finishReason')})",
+                            type="blocked"
+                        )
                 else:
-                    response_content = str(candidate)
+                    error_detail = APIErrorDetail(
+                        message=f"Google returned no content (finishReason={candidate.get('finishReason')})",
+                        type="blocked"
+                    )
             else:
                 error_detail = APIErrorDetail(
                     message="No candidates in Google API response",

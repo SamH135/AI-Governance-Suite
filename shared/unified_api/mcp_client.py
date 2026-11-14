@@ -1,12 +1,14 @@
 """MCP client layer — connects to Model Context Protocol servers over stdio
 and exposes their tools through the platform's generic manifest format.
 
-Hand-rolled newline-delimited JSON-RPC 2.0 on purpose: every version of the
-official ``mcp`` SDK requires ``anyio>=4.5``, which conflicts with this
-stack's ``fastapi 0.104.x`` (``anyio<4``). stdio covers local/test servers.
+Hand-rolled newline-delimited JSON-RPC 2.0 on purpose: the probe harness is
+synchronous and the official ``mcp`` SDK is anyio-async — adopting it would
+mean bridging an event loop into a sync call path for no functional gain.
+stdio covers local/test servers.
 
-shortcut: no HTTP/SSE transport — add streamable-HTTP support if/when the
-platform needs to probe remote MCP servers.
+shortcut: stdio transport only — migrate to the official SDK when the
+platform needs to probe remote MCP servers over HTTP/SSE, since it brings
+streamable-HTTP transport for free.
 """
 
 import json
