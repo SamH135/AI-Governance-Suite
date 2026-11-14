@@ -56,6 +56,7 @@ class GenericComplianceEvaluator(BaseEvaluator):
             tags=["regulations", "ethics", "legal", "rag", "compliance", "gdpr", "hipaa"],
             output_format="composite",
             primary_output_key="compliance_score",
+            score_higher_is_better=False,
             display_fields=[
                 {
                     "key": "compliance_score",

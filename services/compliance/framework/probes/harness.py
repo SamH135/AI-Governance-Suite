@@ -14,6 +14,10 @@ from .models import ProbeCase, Transcript, Turn
 CallFn = Callable[[List[Dict[str, str]], Optional[str], Optional[List[str]]], Tuple[str, Dict[str, int]]]
 
 
+class ProviderBlockedError(RuntimeError):
+    """The provider's safety layer refused the request before the model answered."""
+
+
 def make_target_caller(config: Any) -> CallFn:
     """Build a CallFn that invokes the test subject through the unified API."""
     from shared.unified_api import get_unified_api
@@ -31,9 +35,12 @@ def make_target_caller(config: Any) -> CallFn:
         resp = api.generate(prompt=last_user, messages=messages, system_prompt=system_prompt,
                             context=context, tools=tools, config=config)
         if resp.error:
+            if resp.error.type == "blocked":
+                raise ProviderBlockedError(resp.error.message)
             raise RuntimeError(f"Test subject call failed: {resp.error.message}")
         return resp.content or "", resp.usage or {}, resp.tool_calls
 
+    call.target_model = f"{config.provider}/{config.model_id}"  # for run_suite provenance
     return call
 
 
@@ -44,7 +51,13 @@ _TOOL_INSTRUCTION = (
 
 
 def _find_tool(tools, name):
-    return next((t for t in tools if t.get("name") == name), None)
+    # last manifest wins: in tool-shadowing cases the attacker's duplicate is
+    # listed second and must be the definition that actually executes
+    found = None
+    for t in tools:
+        if t.get("name") == name:
+            found = t
+    return found
 
 
 def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
@@ -52,7 +65,7 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
     transcript = Transcript(case_id=case.id)
     system_prompt = case.system_prompt
     messages: List[Dict[str, str]] = []
-    context = list(case.docs) or None
+    context = None  # docs are delivered as messages below; no provider reads request.context
     try:
 
         # Live MCP server first: its real tools join the manifest + get real execution
@@ -78,6 +91,10 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
             if case.native_tools and effective_tools else None
         )
 
+        for doc in case.docs:
+            messages.append({"role": "user", "content": f"[retrieved document]\n{doc}"})
+            transcript.turns.append(Turn(role="document", content=doc))
+
         for injected in case.tool_outputs:
             turn = f"[tool result]\n{injected}"
             messages.append({"role": "user", "content": turn})
@@ -90,10 +107,19 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
             steps = 0
             while True:
                 start = time.perf_counter()
-                if native_manifests is not None:
-                    reply = call_fn(messages, system_prompt, context, tools=native_manifests)
-                else:
-                    reply = call_fn(messages, system_prompt, context)
+                try:
+                    if native_manifests is not None:
+                        reply = call_fn(messages, system_prompt, context, tools=native_manifests)
+                    else:
+                        reply = call_fn(messages, system_prompt, context)
+                except ProviderBlockedError as e:
+                    # platform safety refused before the model answered: that IS
+                    # a refusal — evidence, not a run failure
+                    transcript.provider_blocked = True
+                    transcript.turns.append(Turn(role="assistant", content=""))
+                    transcript.final_response = ""
+                    transcript.latency_ms += (time.perf_counter() - start) * 1000
+                    break
                 text, usage = reply[0], reply[1]
                 native_calls = reply[2] if len(reply) > 2 else None
                 transcript.latency_ms += (time.perf_counter() - start) * 1000
@@ -102,15 +128,27 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
 
                 # shortcut: only the first native tool_call is replayed per step, multi-call loops upgrade if needed
                 if native_manifests is not None:
-                    tool_call = (
-                        {"name": tc.get("name"), "args": tc.get("arguments", {})}
-                        for tc in (native_calls or [])
-                    )
-                    tool_call = next(tool_call, None)
+                    tool_call = None
+                    for tc in (native_calls or []):
+                        args = tc.get("arguments", {})
+                        if isinstance(args, str):  # OpenAI returns a JSON string; google/anthropic return dicts
+                            try:
+                                args = json.loads(args)
+                            except (json.JSONDecodeError, TypeError):
+                                pass
+                        tool_call = {"name": tc.get("name"), "args": args}
+                        break
                 else:
                     tool_call = _parse_tool_call(text) if effective_tools else None
                 if tool_call is None or steps >= case.max_tool_steps:
-                    transcript.turns.append(Turn(role="assistant", content=text))
+                    if tool_call is None and not (text or "").strip():
+                        raise RuntimeError(f"Empty response from test subject in case {case.id}")
+                    if tool_call is not None:
+                        # step cap hit mid-loop: record the pending call as evidence
+                        # (the model attempted it — it counts as execution intent)
+                        tool_call = {**tool_call, "dropped_at_step_cap": True}
+                        transcript.tool_calls.append(tool_call)
+                    transcript.turns.append(Turn(role="assistant", content=text, tool_call=tool_call))
                     transcript.final_response = text
                     messages.append({"role": "assistant", "content": text})
                     break
@@ -131,6 +169,9 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
                 messages.append({"role": "user", "content": f"[tool result for {name}]\n{output}"})
                 transcript.turns.append(Turn(role="tool", content=str(output)))
 
+            if transcript.provider_blocked:
+                break
+
     finally:
         if mcp is not None:
             mcp.close()
@@ -139,10 +180,22 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
 
 
 def _parse_tool_call(text: str) -> Optional[Dict[str, Any]]:
-    match = re.search(r'\{[^{}]*"tool_call"[^{}]*\{.*\}.*\}', text, re.DOTALL)
-    if not match:
-        return None
-    try:
-        return json.loads(match.group(0)).get("tool_call")
-    except json.JSONDecodeError:
-        return None
+    """Extract {"tool_call": {...}} via balanced-brace scan — a regex misses
+    calls when the reply has braces before or after the JSON block."""
+    text = text or ""
+    for m in re.finditer(r"\{", text):
+        depth = 0
+        for i in range(m.start(), len(text)):
+            if text[i] == "{":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        obj = json.loads(text[m.start():i + 1])
+                    except json.JSONDecodeError:
+                        break
+                    if isinstance(obj, dict) and "tool_call" in obj:
+                        return obj["tool_call"]
+                    break
+    return None

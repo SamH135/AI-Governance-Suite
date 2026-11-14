@@ -60,6 +60,9 @@ class EvaluatorMetadata:
     tags: List[str]
     output_format: str = "default"
     primary_output_key: str = "score"
+    # False when primary_output_key is a risk score (higher = worse, e.g.
+    # pii_score). Aggregators invert it so overall scores stay higher-is-better.
+    score_higher_is_better: bool = True
     display_fields: List[Dict[str, Any]] = field(default_factory=list)
     risk_thresholds: Dict[str, Any] = field(
         default_factory=lambda: {"high": 50, "medium": 20, "low": 0}

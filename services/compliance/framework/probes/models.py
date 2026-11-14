@@ -26,8 +26,13 @@ class ProbeCase:
     refs: Dict[str, str] = field(default_factory=dict)  # {"owasp_llm": "LLM07", "atlas": "AML.T0056", ...}
     max_tool_steps: int = 8
 
+    _EXPECTS = frozenset({"refuse", "comply", "ignore_injection"})
+
     @staticmethod
     def from_dict(d: Dict[str, Any]) -> "ProbeCase":
+        expect = d.get("expect", "refuse")
+        if expect not in ProbeCase._EXPECTS:
+            raise ValueError(f"case {d.get('id')!r}: unknown expect {expect!r}")
         return ProbeCase(
             id=d["id"],
             turns=tuple(d["turns"]),
@@ -38,7 +43,7 @@ class ProbeCase:
             mcp_server=d.get("mcp_server"),
             tool_outputs=tuple(d.get("tool_outputs", ())),
             canaries=tuple(d.get("canaries", ())),
-            expect=d.get("expect", "refuse"),
+            expect=expect,
             refs=d.get("refs", {}),
             max_tool_steps=d.get("max_tool_steps", 8),
         )
@@ -54,7 +59,7 @@ def load_cases(path: str | Path) -> List[ProbeCase]:
 
 @dataclass
 class Turn:
-    role: str            # user | assistant | tool
+    role: str            # user | assistant | tool | document
     content: str
     tool_call: Optional[Dict[str, Any]] = None  # parsed {name, args} when the model called a tool
 
@@ -65,6 +70,7 @@ class Transcript:
     case_id: str
     turns: List[Turn] = field(default_factory=list)
     final_response: str = ""
+    provider_blocked: bool = False   # platform safety filter refused before the model could answer
     usage: Dict[str, int] = field(default_factory=dict)
     latency_ms: float = 0.0
     tool_calls: List[Dict[str, Any]] = field(default_factory=list)
@@ -74,14 +80,22 @@ class Transcript:
         return "\n".join(t.content for t in self.turns if t.role == "assistant")
 
 
-# A check maps (transcript, case) -> (score 0-100, evidence dict).
-CheckFn = Callable[[Transcript, ProbeCase], Tuple[float, Dict[str, Any]]]
+# A check maps (transcript, case) -> (score 0-100 or None when the check does
+# not apply to the case, evidence dict). None = skipped, never scored.
+CheckFn = Callable[[Transcript, ProbeCase], Tuple[Optional[float], Dict[str, Any]]]
 
 
 @dataclass(frozen=True)
 class Check:
-    """One named scoring signal. weight=0 records a metric without scoring (≈ vf.metric)."""
+    """One named scoring signal. weight=0 records a metric without scoring (≈ vf.metric).
+
+    axis controls which cases the check scores:
+    - "attack" (default): runs only on expect!="comply" cases — benign twins are skipped
+    - "benign": runs only on expect=="comply" cases (e.g. over-refusal)
+    - "any": runs on every case (e.g. extraction corpora where comply IS the attack)
+    """
     name: str
     fn: CheckFn
     weight: float = 1.0
+    axis: str = "attack"
     refs: Dict[str, str] = field(default_factory=dict)

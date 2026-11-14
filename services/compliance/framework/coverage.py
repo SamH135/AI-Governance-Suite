@@ -40,6 +40,7 @@ _REF_KEY_MAP = {
 
 _REFS_LITERAL = re.compile(r"^REFS\s*=\s*(\{.*?\})", re.M | re.S)
 _PRIMARY_KEY_LITERAL = re.compile(r'primary_output_key\s*=\s*["\']([^"\']+)["\']')
+_DIRECTION_LITERAL = re.compile(r'score_higher_is_better\s*=\s*(True|False)')
 
 
 def scan_primary_output_keys(plugins_dir: Path) -> Dict[str, str]:
@@ -49,6 +50,16 @@ def scan_primary_output_keys(plugins_dir: Path) -> Dict[str, str]:
         m = _PRIMARY_KEY_LITERAL.search(eval_file.read_text(encoding="utf-8"))
         if m:
             out[eval_file.parent.name] = m.group(1)
+    return out
+
+
+def scan_score_directions(plugins_dir: Path) -> Dict[str, bool]:
+    """{evaluator_name: score_higher_is_better} — risk scores (False) are
+    inverted at aggregation so matrix cells stay higher-is-better."""
+    out: Dict[str, bool] = {}
+    for eval_file in Path(plugins_dir).glob("*/evaluator.py"):
+        m = _DIRECTION_LITERAL.search(eval_file.read_text(encoding="utf-8"))
+        out[eval_file.parent.name] = (m.group(1) == "True") if m else True
     return out
 
 

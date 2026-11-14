@@ -54,6 +54,7 @@ class BiasDetectionEvaluator(BaseEvaluator):
             tags=["bias", "fairness", "discrimination", "equality", "rag", "llm"],
             output_format="composite",
             primary_output_key="bias_score",
+            score_higher_is_better=False,
             display_fields=[
                 {"key": "bias_score", "label": "Bias Score", "type": "number"},
                 {"key": "bias_status", "label": "Status", "type": "text"},

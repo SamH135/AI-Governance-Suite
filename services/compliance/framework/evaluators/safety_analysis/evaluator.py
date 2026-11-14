@@ -54,6 +54,7 @@ class SafetyAnalysisEvaluator(BaseEvaluator):
             tags=["safety", "harmful", "violence", "dangerous", "rag", "llm"],
             output_format="composite", 
             primary_output_key="safety_score",
+            score_higher_is_better=False,
             display_fields=[
                 {"key": "safety_score", "label": "Safety Risk Score", "type": "number"},
                 {"key": "safety_status", "label": "Status", "type": "text"},
