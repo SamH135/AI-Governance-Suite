@@ -17,6 +17,8 @@ Env:
   LIVE_EVAL_SYSTEM_ID       system id wired to the target model (required)
   LIVE_EVAL_JUDGE_ID        evaluator/judge model config id (optional)
   LIVE_EVAL_SET             comma-separated evaluator list (default: all probe evals)
+  LIVE_EVAL_OUT             directory to dump full JSON responses (optional; created if missing)
+  LIVE_EVAL_PREFIX          filename prefix for dumps, e.g. "groq" (default "live")
 
 Run:
   RUN_LIVE_EVALS=1 LIVE_EVAL_PASSWORD=... LIVE_EVAL_SYSTEM_ID=5 \
@@ -54,6 +56,8 @@ SYSTEM_ID = os.environ.get("LIVE_EVAL_SYSTEM_ID", "")
 JUDGE_ID = os.environ.get("LIVE_EVAL_JUDGE_ID")
 EVALUATORS = [e.strip() for e in os.environ.get("LIVE_EVAL_SET", "").split(",") if e.strip()] \
     or PROBE_EVALUATORS
+OUT_DIR = os.environ.get("LIVE_EVAL_OUT")
+OUT_PREFIX = os.environ.get("LIVE_EVAL_PREFIX", "live")
 
 pytestmark = pytest.mark.skipif(
     not ENABLED or not PASSWORD or not SYSTEM_ID,
@@ -110,3 +114,20 @@ def test_probe_evaluator_live(token, evaluator):
     assert result.get("cases") or result.get("compliance_score") is not None \
         or any("score" in k for k in result), \
         f"{evaluator}: no scored output in {list(result)[:8]}"
+    if OUT_DIR:
+        os.makedirs(OUT_DIR, exist_ok=True)
+        # stamp the code SHA — the container has no .git so run_suite can't bind it there
+        try:
+            import subprocess
+            sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                                 capture_output=True, text=True, timeout=5).stdout.strip()
+        except Exception:
+            sha = ""
+        if sha:
+            for wrap in ((data.get("data", data).get("evaluator_results") or {}).values()):
+                prov = (wrap.get("result") or {}).get("provenance")
+                if isinstance(prov, dict):
+                    prov.setdefault("git_sha", sha)
+        # utf-8 + ensure_ascii=False: past exports saved through a Windows shell produced mojibake
+        with open(os.path.join(OUT_DIR, f"{OUT_PREFIX}_{evaluator}.json"), "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=1)

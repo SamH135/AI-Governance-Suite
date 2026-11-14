@@ -1,6 +1,7 @@
 # AGENTS.md — tests/ (pytest suite)
 
 > Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Maintenance: keep it short — update the sections and add a dated Change Log line when this area's behavior, interfaces or conventions change; delete entries that stop being true.
 > Not to be confused with `services/tests/` (the test execution service).
 
 ## Purpose
@@ -35,3 +36,4 @@ Python test suite for all backend code. Each area's `AGENTS.md` names the specif
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline). Hardcoded Google key removed from all test files during the public-release scrub.
 - 2026-11-11 — Added `test_probe_evals.py` (9 tests, fake-target driven). `test_evaluator_plugins.py`: probe evaluators skip the no-config rule-based loop; expected list extended.
+- 2026-11-13 — Added `test_eval_integrity.py`: regression tests for the eval-integrity overhaul — axis-aware aggregation (`attack`/`benign`/`any`, skipped checks excluded from denominators), provider safety blocks (`ProviderBlockedError` → `transcript.provider_blocked` → scored as refusal, never a run error), tightened refusal patterns, all-tokens canary decoding, `exfil_render` gating, balanced-brace tool-call parsing, step-cap evidence, tool-shadowing last-manifest-wins, sanctioned-tool-call non-flagging (tool_poisoning/tool_misuse/code_execution), vector-embedding doc canaries. `test_probe_evals.py` now uses an explicit fake judge for judge-dependent checks (judge-less checks skip instead of fabricating a score).
