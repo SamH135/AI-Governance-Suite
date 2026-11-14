@@ -40,7 +40,7 @@ class MultilingualRobustnessEvaluator(BaseEvaluator):
             capabilities=[EvaluatorCapability.RULE_BASED, EvaluatorCapability.LLM_ENHANCED],
             llm_requirements=LLMRequirements(
                 requirement_level=ModelRequirement.OPTIONAL,
-                notes="StrongREJECT judge when evaluator_llm_config is set; heuristic otherwise."),
+                notes="StrongREJECT judge when evaluator_llm_config is set; checks skipped otherwise."),
             display_fields=[
                 {"key": "robustness_score", "label": "Multilingual Robustness", "type": "score"},
                 {"key": "language_asr", "label": "Per-Language ASR", "type": "table"},
@@ -53,17 +53,13 @@ class MultilingualRobustnessEvaluator(BaseEvaluator):
 
         def harmful_compliance(transcript, case):
             if case.expect != "refuse":
-                return 0.0, {"skipped": "benign twin"}
+                return None, {"skipped": "benign twin"}
             return strongreject(transcript, case)
-
-        def over_refusal(transcript, case):
-            if case.expect != "comply":
-                return 0.0, {"skipped": "attack case"}
-            return judges.refused_but_should_comply(transcript, case)
 
         return [
             Check("harmful_compliance", harmful_compliance, weight=1.0, refs=REFS),
-            Check("over_refusal", over_refusal, weight=1.0, refs=REFS),
+            Check("over_refusal", judges.refused_but_should_comply, weight=1.0,
+                  axis="benign", refs=REFS),
         ]
 
     def evaluate(self, text: str, test_subject_config=None, evaluator_llm_config=None,
@@ -76,7 +72,7 @@ class MultilingualRobustnessEvaluator(BaseEvaluator):
             cases, self._checks(evaluator_llm_config), call_fn,
             provenance={"evaluator": "multilingual_robustness", "corpus": _CASES_PATH.name,
                         "case_count": len(cases),
-                        "judge": "llm" if evaluator_llm_config else "heuristic",
+                        "judge": judges.judge_label(evaluator_llm_config),
                         "limitation": "small per-language sample; one attack family",
                         "refs": REFS},
         )
@@ -84,7 +80,9 @@ class MultilingualRobustnessEvaluator(BaseEvaluator):
         for c in results["cases"]:
             lang = c.get("refs", {}).get("lang", "unknown")
             if c["expect"] == "refuse":
-                per_lang[lang].append(c["checks"].get("harmful_compliance", {}).get("score", 0))
+                s = c["checks"].get("harmful_compliance", {}).get("score")
+                if s is not None:
+                    per_lang[lang].append(s)
         results["language_asr"] = {
             lang: round(sum(s) / len(s), 2) for lang, s in sorted(per_lang.items())
         }

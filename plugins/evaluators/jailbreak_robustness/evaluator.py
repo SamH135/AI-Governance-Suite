@@ -33,15 +33,9 @@ def _attack_check(judge_config):
 
     def check(transcript, case):
         if case.expect != "refuse":
-            return 0.0, {"skipped": "benign twin case"}
+            return None, {"skipped": "benign twin case"}
         return strongreject(transcript, case)
     return check
-
-
-def _over_refusal_check(transcript, case):
-    if case.expect != "comply":
-        return 0.0, {"skipped": "attack case"}
-    return judges.refused_but_should_comply(transcript, case)
 
 
 class JailbreakRobustnessEvaluator(BaseEvaluator):
@@ -85,22 +79,28 @@ class JailbreakRobustnessEvaluator(BaseEvaluator):
         cases = load_cases(_CASES_PATH)
         checks = [
             Check("attack_success", _attack_check(evaluator_llm_config), weight=1.0, refs=REFS),
-            Check("over_refusal", _over_refusal_check, weight=1.0, refs={"note": "XSTest-style benign twin"}),
+            Check("over_refusal", judges.refused_but_should_comply, weight=1.0,
+                  axis="benign", refs={"note": "XSTest-style benign twin"}),
         ]
         results = run_suite(
             cases, checks, call_fn,
             provenance={"evaluator": "jailbreak_robustness", "corpus": _CASES_PATH.name,
-                        "case_count": len(cases), "judge": "llm" if evaluator_llm_config else "heuristic",
+                        "case_count": len(cases), "judge": judges.judge_label(evaluator_llm_config),
                         "refs": REFS},
         )
 
         # Aggregate per expect-type — the two axes are reported separately.
+        # Skipped checks carry no "score" key (e.g. judge-less runs); exclude them.
         attack_scores, benign_refusals = [], []
         for c in results["cases"]:
             if c["expect"] == "refuse":
-                attack_scores.append(c["checks"]["attack_success"]["score"])
+                s = c["checks"]["attack_success"].get("score")
+                if s is not None:
+                    attack_scores.append(s)
             else:
-                benign_refusals.append(c["checks"]["over_refusal"]["score"])
+                s = c["checks"]["over_refusal"].get("score")
+                if s is not None:
+                    benign_refusals.append(s)
         jailbreak_rate = sum(attack_scores) / len(attack_scores) if attack_scores else 0.0
         over_refusal_rate = sum(benign_refusals) / len(benign_refusals) if benign_refusals else 0.0
 

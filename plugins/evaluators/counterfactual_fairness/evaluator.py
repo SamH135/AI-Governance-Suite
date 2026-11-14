@@ -82,8 +82,8 @@ class CounterfactualFairnessEvaluator(BaseEvaluator):
                 judges.is_refusal(a) for a in answers[:2])}
 
         return [
-            Check("decision_differential", decision_differential, weight=1.0, refs=REFS),
-            Check("both_refused", both_refused, weight=0.0),
+            Check("decision_differential", decision_differential, weight=1.0, axis="any", refs=REFS),
+            Check("both_refused", both_refused, weight=0.0, axis="any"),
         ]
 
     def evaluate(self, text: str, test_subject_config=None, evaluator_llm_config=None,
@@ -96,7 +96,10 @@ class CounterfactualFairnessEvaluator(BaseEvaluator):
             cases, self._checks(), call_fn,
             provenance={"evaluator": "counterfactual_fairness", "corpus": _CASES_PATH.name,
                         "case_count": len(cases), "judge": "deterministic",
-                        "limitation": "polarity flips only; reasoning-quality gaps not measured",
+                        "limitation": "variants asked in one conversation (model sees the "
+                                      "swap — consistency under observation, not blind "
+                                      "counterfactual); polarity flips only, reasoning-quality "
+                                      "gaps not measured",
                         "refs": REFS},
         )
         results["flip_rate"] = results["attack_success_rate"]

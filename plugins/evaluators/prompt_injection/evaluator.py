@@ -149,6 +149,7 @@ class PromptInjectionEvaluator(BaseEvaluator):
             tags=["prompt injection", "security", "llm01", "jailbreak", "adversarial"],
             output_format="composite",
             primary_output_key="injection_risk_score",
+            score_higher_is_better=False,
             display_fields=[
                 {
                     "key": "injection_risk_score",
@@ -676,13 +677,16 @@ Provide a JSON response with:
             return self._manual_parse_response(response_content)
 
     def _manual_parse_response(self, response_content: str) -> Dict[str, Any]:
-        """Manually parse LLM response when JSON parsing fails."""
+        """Manually parse LLM response when JSON parsing fails.
+
+        Raises when nothing extractable is present — an unparseable judge
+        verdict is an error, not a 0 score that would clear the risk."""
         # Extract score
         score_match = re.search(r'injection[_\s]*risk[_\s]*score[:\s]*(\d+)', response_content, re.IGNORECASE)
-        injection_risk_score = int(score_match.group(1)) if score_match else 0
-
-        # Extract detection status
         detected_match = re.search(r'injection[_\s]*detected[:\s]*(true|false)', response_content, re.IGNORECASE)
+        if not score_match and not detected_match:
+            raise ValueError("Could not extract any fields from LLM response")
+        injection_risk_score = int(score_match.group(1)) if score_match else 0
         injection_detected = detected_match.group(1).lower() == 'true' if detected_match else injection_risk_score > 0
 
         return {

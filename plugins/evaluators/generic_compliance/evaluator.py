@@ -53,6 +53,7 @@ class GenericComplianceEvaluator(BaseEvaluator):
             tags=["regulations", "ethics", "legal", "rag", "compliance", "gdpr", "hipaa"],
             output_format="composite",
             primary_output_key="compliance_score",
+            score_higher_is_better=False,
             display_fields=[
                 {
                     "key": "compliance_score",
@@ -369,210 +370,103 @@ class GenericComplianceEvaluator(BaseEvaluator):
             return self._rule_based_analysis(text, start_time, error_context=str(e))
 
     def _parse_llm_response(self, response_content: str) -> Dict[str, Any]:
-        """Parse LLM response and extract structured compliance data."""
-        logger.info(f"🔍 EVALUATOR: Starting to parse LLM response (length: {len(response_content)})")
+        """Parse LLM response and extract structured compliance data.
 
-        # Log the complete raw response for debugging
-        logger.info(f"📝 EVALUATOR: Full raw response content:")
-        logger.info(f"{'=' * 60}")
-        logger.info(response_content)
-        logger.info(f"{'=' * 60}")
+        Raises ValueError when no strategy yields JSON — a judge that can't be
+        parsed is an error (callers fall back to rule-based analysis), never a
+        score. The response quotes the graded target text, so it is never logged.
+        """
+        cleaned_content = response_content.strip()
+        analysis = None
+        strategy_used = None
 
-        try:
-            # Clean the response content first
-            cleaned_content = response_content.strip()
-            logger.info(f"🧹 EVALUATOR: Cleaned content length: {len(cleaned_content)}")
+        # Strategy 1: JSON wrapped in code blocks (```json ... ```)
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_content, re.DOTALL)
+        if json_match:
+            try:
+                analysis = json.loads(json_match.group(1).strip())
+                strategy_used = "code_block"
+            except json.JSONDecodeError:
+                pass
 
-            # Try multiple extraction strategies
-            analysis = None
-            strategy_used = None
-
-            # Strategy 1: Look for JSON wrapped in code blocks (```json)
-            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', cleaned_content, re.DOTALL)
-            if json_match:
-                logger.info("🎯 EVALUATOR: Strategy 1 - Found JSON in code block")
+        # Strategy 2: JSON object patterns with nested braces
+        if not analysis:
+            for i, json_candidate in enumerate(
+                    re.findall(r'\{(?:[^{}]|{[^{}]*})*\}', cleaned_content, re.DOTALL)):
                 try:
-                    json_content = json_match.group(1).strip()
-                    logger.info(f"📋 EVALUATOR: Extracted JSON from code block: {json_content}")
-                    analysis = json.loads(json_content)
-                    strategy_used = "code_block"
-                    logger.info("✅ EVALUATOR: Successfully parsed JSON from code block")
-                except json.JSONDecodeError as e:
-                    logger.warning(f"❌ EVALUATOR: Failed to parse JSON from code block: {e}")
+                    candidate = json.loads(json_candidate.strip())
+                    if isinstance(candidate, dict) and any(
+                            key in candidate for key in ('compliance_score', 'compliance_status', 'violations')):
+                        analysis = candidate
+                        strategy_used = f"object_pattern_{i + 1}"
+                        break
+                except json.JSONDecodeError:
+                    continue
 
-            # Strategy 2: Look for JSON object patterns with nested braces
-            if not analysis:
-                logger.info("🎯 EVALUATOR: Strategy 2 - Looking for JSON object patterns")
-                # More sophisticated regex for nested JSON
-                json_pattern = r'\{(?:[^{}]|{[^{}]*})*\}'
-                json_matches = re.findall(json_pattern, cleaned_content, re.DOTALL)
-                logger.info(f"🔍 EVALUATOR: Found {len(json_matches)} potential JSON candidates")
+        # Strategy 3: entire response is JSON
+        if not analysis:
+            try:
+                analysis = json.loads(cleaned_content)
+                strategy_used = "entire_response"
+            except json.JSONDecodeError:
+                pass
 
-                for i, json_candidate in enumerate(json_matches):
+        # Strategy 4: locate JSON by the compliance_score key
+        if not analysis:
+            for j, pattern in enumerate([
+                    r'(\{"compliance_score".*?\})',
+                    r'(\{[^}]*"compliance_score"[^}]*\})',
+                    r'(\{.*?"compliance_score".*?\})']):
+                for k, match in enumerate(re.findall(pattern, cleaned_content, re.DOTALL)):
                     try:
-                        logger.info(f"📋 EVALUATOR: Trying JSON candidate {i + 1}: {json_candidate[:200]}...")
-                        analysis = json.loads(json_candidate.strip())
-                        # Validate that it looks like our expected structure
-                        if isinstance(analysis, dict) and any(
-                                key in analysis for key in ['compliance_score', 'compliance_status', 'violations']):
-                            strategy_used = f"object_pattern_{i + 1}"
-                            logger.info(f"✅ EVALUATOR: Successfully parsed JSON object pattern {i + 1}")
-                            break
-                        else:
-                            logger.info(f"❌ EVALUATOR: JSON candidate {i + 1} doesn't match expected structure")
-                            analysis = None  # Reset if it doesn't look right
-                    except json.JSONDecodeError as e:
-                        logger.warning(f"❌ EVALUATOR: JSON candidate {i + 1} failed to parse: {e}")
+                        analysis = json.loads(match)
+                        strategy_used = f"key_indicator_{j + 1}_{k + 1}"
+                        break
+                    except json.JSONDecodeError:
                         continue
+                if analysis:
+                    break
 
-            # Strategy 3: Try to parse the entire response as JSON
-            if not analysis:
-                logger.info("🎯 EVALUATOR: Strategy 3 - Attempting to parse entire response as JSON")
-                try:
-                    analysis = json.loads(cleaned_content)
-                    strategy_used = "entire_response"
-                    logger.info("✅ EVALUATOR: Successfully parsed entire response as JSON")
-                except json.JSONDecodeError as e:
-                    logger.warning(f"❌ EVALUATOR: Failed to parse entire response as JSON: {e}")
-
-            # Strategy 4: Try to find JSON by looking for key indicators and extract
-            if not analysis:
-                logger.info("🎯 EVALUATOR: Strategy 4 - Looking for JSON using key indicators")
-                try:
-                    # Look for compliance_score as an indicator of our JSON structure
-                    start_patterns = [
-                        r'(\{"compliance_score".*?\})',
-                        r'(\{[^}]*"compliance_score"[^}]*\})',
-                        r'(\{.*?"compliance_score".*?\})'
-                    ]
-
-                    for j, pattern in enumerate(start_patterns):
-                        matches = re.findall(pattern, cleaned_content, re.DOTALL)
-                        logger.info(f"🔍 EVALUATOR: Pattern {j + 1} found {len(matches)} matches")
-                        for k, match in enumerate(matches):
+        # Strategy 5: first balanced-brace substring (fixes truncated JSON)
+        if not analysis:
+            start_idx = cleaned_content.find('{')
+            if start_idx >= 0:
+                depth = 0
+                for i, char in enumerate(cleaned_content[start_idx:], start_idx):
+                    if char == '{':
+                        depth += 1
+                    elif char == '}':
+                        depth -= 1
+                        if depth == 0:
                             try:
-                                logger.info(
-                                    f"📋 EVALUATOR: Trying key indicator match {j + 1}-{k + 1}: {match[:200]}...")
-                                analysis = json.loads(match)
-                                strategy_used = f"key_indicator_{j + 1}_{k + 1}"
-                                logger.info(
-                                    f"✅ EVALUATOR: Successfully parsed JSON using key indicators {j + 1}-{k + 1}")
-                                break
-                            except json.JSONDecodeError as e:
-                                logger.warning(f"❌ EVALUATOR: Key indicator match {j + 1}-{k + 1} failed: {e}")
-                                continue
-                        if analysis:
+                                analysis = json.loads(cleaned_content[start_idx:i + 1])
+                                strategy_used = "truncated_fix"
+                            except json.JSONDecodeError:
+                                pass
                             break
 
-                except Exception as e:
-                    logger.warning(f"❌ EVALUATOR: Failed to extract JSON using key indicators: {e}")
+        if not analysis:
+            raise ValueError("Could not extract valid JSON from LLM response")
 
-            # Strategy 5: Try to fix truncated JSON by finding balanced braces
-            if not analysis:
-                logger.info("🎯 EVALUATOR: Strategy 5 - Attempting to fix truncated JSON")
-                try:
-                    # Find the first { and try to match it with balanced }
-                    start_idx = cleaned_content.find('{')
-                    if start_idx >= 0:
-                        logger.info(f"🔍 EVALUATOR: Found opening brace at position {start_idx}")
-                        bracket_count = 0
-                        for i, char in enumerate(cleaned_content[start_idx:], start_idx):
-                            if char == '{':
-                                bracket_count += 1
-                            elif char == '}':
-                                bracket_count -= 1
-                                if bracket_count == 0:
-                                    json_candidate = cleaned_content[start_idx:i + 1]
-                                    logger.info(
-                                        f"📋 EVALUATOR: Found balanced JSON at positions {start_idx}-{i}: {json_candidate[:200]}...")
-                                    try:
-                                        analysis = json.loads(json_candidate)
-                                        strategy_used = "truncated_fix"
-                                        logger.info("✅ EVALUATOR: Successfully parsed truncated JSON")
-                                        break
-                                    except json.JSONDecodeError as e:
-                                        logger.warning(f"❌ EVALUATOR: Balanced JSON failed to parse: {e}")
-                                        continue
-                    else:
-                        logger.warning("❌ EVALUATOR: No opening brace found for truncated JSON fix")
-                except Exception as e:
-                    logger.warning(f"❌ EVALUATOR: Failed to parse truncated JSON: {e}")
+        # Fill missing required fields without inventing a score
+        if "violations" not in analysis:
+            analysis["violations"] = []
+        if "compliance_status" not in analysis:
+            analysis["compliance_status"] = "Unknown"
+        if "compliance_score" not in analysis:
+            analysis["compliance_score"] = 50
+        for field in ("explanation", "summary"):
+            if field not in analysis:
+                analysis[field] = "No information provided"
 
-            if analysis:
-                logger.info(f"🎉 EVALUATOR: Successfully parsed LLM response using strategy: {strategy_used}")
-                logger.info(f"📊 EVALUATOR: Parsed analysis keys: {list(analysis.keys())}")
-                logger.info(f"📋 EVALUATOR: Parsed analysis content:")
-                logger.info(f"{'=' * 60}")
-                for key, value in analysis.items():
-                    if isinstance(value, (list, dict)):
-                        logger.info(
-                            f"  {key}: {type(value).__name__} with {len(value) if hasattr(value, '__len__') else 0} items")
-                    else:
-                        logger.info(f"  {key}: {value}")
-                logger.info(f"{'=' * 60}")
-
-                # Ensure required fields exist
-                required_fields = ["compliance_status", "compliance_score", "violations", "explanation", "summary"]
-                missing_fields = []
-                for field in required_fields:
-                    if field not in analysis:
-                        missing_fields.append(field)
-                        if field == "violations":
-                            analysis[field] = []
-                        elif field == "compliance_score":
-                            analysis[field] = 50  # Default medium risk
-                        elif field == "compliance_status":
-                            analysis[field] = "Unknown"
-                        else:
-                            analysis[field] = "No information provided"
-
-                if missing_fields:
-                    logger.warning(f"⚠️ EVALUATOR: Added missing fields: {missing_fields}")
-
-                # Ensure violations_count is set
-                analysis["violations_count"] = len(analysis.get("violations", []))
-
-                # Ensure violated_regulations is set
-                if "violated_regulations" not in analysis:
-                    analysis["violated_regulations"] = [v.get("framework", "Unknown") for v in
-                                                        analysis.get("violations", [])]
-
-                # Log final processed analysis
-                logger.info(f"🏁 EVALUATOR: Final processed analysis:")
-                logger.info(f"  - Strategy used: {strategy_used}")
-                logger.info(f"  - Compliance score: {analysis.get('compliance_score')}")
-                logger.info(f"  - Compliance status: {analysis.get('compliance_status')}")
-                logger.info(f"  - Violations count: {analysis.get('violations_count')}")
-                logger.info(f"  - Violated regulations: {analysis.get('violated_regulations')}")
-
-                return analysis
-            else:
-                logger.error("💥 EVALUATOR: Could not extract valid JSON from any strategy")
-                raise ValueError("Could not extract valid JSON from response")
-
-        except Exception as e:
-            logger.error(f"💥 EVALUATOR: Failed to parse LLM response: {e}")
-            logger.error(f"📋 EVALUATOR: Response content preview (first 500 chars): {response_content[:500]}...")
-            logger.error(f"📋 EVALUATOR: Response content preview (last 500 chars): ...{response_content[-500:]}")
-
-            # Create fallback response
-            fallback_response = {
-                "compliance_status": "Error",
-                "compliance_score": 100,
-                "violations": [],
-                "violated_regulations": [],
-                "violations_count": 0,
-                "explanation": f"Failed to parse LLM response: {str(e)}",
-                "summary": f"Error parsing response: {response_content[:100]}...",
-                "parse_error": str(e),
-                "raw_response_preview": response_content[:200] if response_content else "No content",
-                "parsing_strategy_used": "fallback_error"
-            }
-
-            logger.info(f"🔄 EVALUATOR: Returning fallback response:")
-            logger.info(f"📋 EVALUATOR: Fallback response: {fallback_response}")
-
-            return fallback_response
+        analysis["violations_count"] = len(analysis.get("violations", []))
+        if "violated_regulations" not in analysis:
+            analysis["violated_regulations"] = [
+                v.get("framework", "Unknown") for v in analysis.get("violations", [])]
+        analysis["parsing_strategy_used"] = strategy_used
+        logger.info(f"Parsed LLM compliance response (strategy={strategy_used}, "
+                    f"violations={analysis['violations_count']})")
+        return analysis
 
     def _combine_analysis_results(self, rule_result: Dict[str, Any], rag_result: Dict[str, Any]) -> Dict[str, Any]:
         """Combine results from multiple analysis methods."""

@@ -1052,6 +1052,7 @@ class PrivateHallucinationCheckerEvaluator(BaseEvaluator):
             tags=["hallucination", "privacy", "factual", "web verification", "self-contained"],
             output_format="composite",
             primary_output_key="hallucination_score",
+            score_higher_is_better=False,
             display_fields=[
                 {
                     "key": "hallucination_score",
@@ -1119,7 +1120,8 @@ class PrivateHallucinationCheckerEvaluator(BaseEvaluator):
 
         return processed_results
 
-    def evaluate(self, text: str) -> Dict[str, Any]:
+    def evaluate(self, text: str, test_subject_config=None, evaluator_llm_config=None,
+                 rag_config=None, vector_store=None, **kwargs) -> Dict[str, Any]:
         """
         Evaluate if the given text contains hallucinations.
 
@@ -1163,6 +1165,19 @@ class PrivateHallucinationCheckerEvaluator(BaseEvaluator):
                     all_scraped_data.extend(results)
                 except Exception as e:
                     logger.error(f"Error processing query: {e}")
+
+            # No evidence retrieved -> claims are unverifiable, not "50% hallucinated".
+            if not all_scraped_data:
+                return {
+                    "error": "No sources retrieved — claims could not be verified",
+                    "verdict": "Not evaluated (source retrieval failed)",
+                    "execution_time": time.time() - start_time,
+                    "claims_analysis": [],
+                    "total_claims": len(extracted_data["claims"]),
+                    "verified_claims": 0,
+                    "contradicted_claims": 0,
+                    "source_count": 0,
+                }
 
             # Step 4: Analyze claims against sources
             claims_analysis = []
@@ -1268,9 +1283,8 @@ class PrivateHallucinationCheckerEvaluator(BaseEvaluator):
             logger.error(f"Error in hallucination evaluation: {e}")
             logger.error(traceback.format_exc())
 
-            # Return error result
+            # Return error result — an infra failure is an error, not a score
             return {
-                "hallucination_score": 50,  # Neutral score for errors
                 "verdict": f"Error during hallucination check: {str(e)}",
                 "execution_time": time.time() - start_time,
                 "error": str(e),

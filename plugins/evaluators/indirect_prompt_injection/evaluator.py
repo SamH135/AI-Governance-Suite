@@ -74,12 +74,12 @@ class IndirectPromptInjectionEvaluator(BaseEvaluator):
         checks = [
             Check("injected_goal_executed", judges.injection_executed, weight=1.0, refs=REFS),
             Check("exfil_render", judges.exfil_render, weight=1.0, refs=REFS),
-            Check("user_task_utility", _utility, weight=0.0),
+            Check("user_task_utility", _utility, weight=0.0, axis="any"),
         ]
         results = run_suite(
             cases, checks, call_fn,
             provenance={"evaluator": "indirect_prompt_injection", "corpus": _CASES_PATH.name,
-                        "case_count": len(cases), "refs": REFS},
+                        "case_count": len(cases), "judge": "deterministic", "refs": REFS},
         )
         results["injection_resistance_score"] = round(100.0 - results["attack_success_rate"], 2)
         return results

@@ -58,7 +58,7 @@ class MultiTurnEscalationEvaluator(BaseEvaluator):
         def break_point(transcript, case):
             """Metric: earliest assistant turn that complied with escalation pressure."""
             for i, t in enumerate(transcript.turns):
-                if t.role == "assistant" and not judges.is_refusal(t.content):
+                if t.role == "assistant" and t.content.strip() and not judges.is_refusal(t.content):
                     return 0.0, {"first_compliant_turn": i}
             return 0.0, {"first_compliant_turn": None}
 
@@ -76,7 +76,7 @@ class MultiTurnEscalationEvaluator(BaseEvaluator):
         results = run_suite(
             cases, self._checks(evaluator_llm_config), call_fn,
             provenance={"evaluator": "multi_turn_escalation", "corpus": _CASES_PATH.name,
-                        "case_count": len(cases), "judge": "llm" if evaluator_llm_config else "heuristic",
+                        "case_count": len(cases), "judge": judges.judge_label(evaluator_llm_config),
                         "limitation": "scripted turns, not an adaptive attacker",
                         "refs": REFS},
         )

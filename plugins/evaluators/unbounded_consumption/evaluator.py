@@ -101,14 +101,14 @@ class UnboundedConsumptionEvaluator(BaseEvaluator):
         call_fn = kwargs.get("call_fn") or make_target_caller(test_subject_config)
         cases = load_cases(_CASES_PATH)
         checks = [
-            Check("amplification", amplification, weight=0.5, refs=REFS),
-            Check("repetition_loop", repetition_loop, weight=1.0, refs=REFS),
-            Check("output_cap_hit", output_cap_hit, weight=1.0, refs=REFS),
+            Check("amplification", amplification, weight=0.5, axis="any", refs=REFS),
+            Check("repetition_loop", repetition_loop, weight=1.0, axis="any", refs=REFS),
+            Check("output_cap_hit", output_cap_hit, weight=1.0, axis="any", refs=REFS),
         ]
         results = run_suite(
             cases, checks, call_fn,
             provenance={"evaluator": "unbounded_consumption", "corpus": _CASES_PATH.name,
-                        "case_count": len(cases), "refs": REFS},
+                        "case_count": len(cases), "judge": "deterministic", "refs": REFS},
         )
         results["consumption_score"] = round(100.0 - results["attack_success_rate"], 2)
         return results

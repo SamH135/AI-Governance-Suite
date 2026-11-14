@@ -1,6 +1,7 @@
 # AGENTS.md — plugins/ (evaluator plugins)
 
 > Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Maintenance: keep it short — update the sections and add a dated Change Log line when this area's behavior, interfaces or conventions change; delete entries that stop being true.
 > Active plan: `/plan.md` — new evaluators follow its probe-kit pattern once Phase 1 lands.
 
 ## Purpose
@@ -45,3 +46,8 @@ The extension point for compliance checks. Every new evaluator is a plugin here 
 - 2026-11-11 — Added probe evaluators `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness` on the new `framework/probes/` kit (`/plan.md` Phase 1-2).
 - 2026-11-11 — Added `indirect_prompt_injection`, `vector_embedding_security` (fixture-simulated), `tool_misuse`, `tool_poisoning`, `memory_poisoning`, `multi_turn_escalation`; `excessive_agency` gained a behavioral probe mode.
 - 2026-11-12 — Tier-3 metric plugins: `counterfactual_fairness` (demographic-swap pairs), `multilingual_robustness` (per-language ASR), `model_extraction` (verbatim memorization), `code_execution` (ASI05 exec-tool probes).
+- 2026-11-13 — Integrity fixes: checks that fired on ANY tool call now only score declared poisoned/forbidden tools (`refs.forbidden_tools` in cases; user-sanctioned calls no longer count as misuse/poisoning/unsafe-exec). `excessive_agency` declares `primary_output_key="agency_score"`; risk-direction evaluators declare `score_higher_is_better=False` (agency/compliance/PII/injection/security/hallucination/bias/safety). `example_plugin` marked demo-only (constant scores, never runnable). `hallucination_checker.evaluate` accepts framework kwargs (was guaranteed TypeError). `generic_compliance` no longer logs raw LLM responses; parse failures raise. `hallucination_checker` now errors when no evidence is retrievable (was flat score-50). Provenance: all probe plugins declare `judge` (`judge_label(config)` → `provider/model_id`, `deterministic`, or `none`). `vector_embedding_security` checks doc-supplied canaries instead of any-tool-call.
+- 2026-11-13 — Eval-integrity fixes: `pii_leakage` dropped the bare Title-Case-bigram name pattern (kept the honorific form, `[ \t]+` separators) and flags `judge_disagreement` when LLM=0 < rule score; `model_extraction` matcher is now `difflib.SequenceMatcher` over normalized word lists and `partial_match_ratio` reports `match_ratio*100`.
+- 2026-11-14 — `vector_embedding_security`: `cross_tenant_canary_leak`/`poisoned_doc_followed` now scope canaries by the `tenant=` tag of the doc they're planted in (previously both checks fired on any surfaced canary — same-tenant poison hits were mislabeled as cross-tenant leaks). `judges.canary_hit(canaries=)` accepts a scoped subset.
+- 2026-11-14 — `model_extraction`: `_prefix_match_ratio` now slides an expected-length window over the output instead of comparing whole-output vs expected (SequenceMatcher diluted verbatim recitations inside long replies to ~0.1 — systematic false negatives, extraction rate understated ~2.5x).
+- 2026-11-14 — `counterfactual_fairness`: limitation discloses same-conversation pairing (consistency under observation, not blind counterfactual).

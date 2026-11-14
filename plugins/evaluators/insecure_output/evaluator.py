@@ -125,6 +125,7 @@ class InsecureOutputEvaluator(BaseEvaluator):
             tags=["security", "code safety", "malware", "exploitation", "dangerous content"],
             output_format="composite",
             primary_output_key="security_risk_score",
+            score_higher_is_better=False,
             display_fields=[
                 {
                     "key": "security_risk_score",
