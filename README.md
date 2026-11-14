@@ -1,10 +1,10 @@
 # AI Governance Suite
 
-Enterprise-grade AI compliance platform for testing, documenting, and managing regulatory requirements (GDPR, HIPAA, EU AI Act, bias/safety). Built as a Python FastAPI microservices backend with a React 18 + Vite frontend.
+AI compliance and red-teaming platform: probe-based security evaluators (OWASP LLM Top 10, OWASP Agentic, MITRE ATLAS) run live attacks against a target model and record scored, auditable evidence. Built as a Python FastAPI microservices backend with a React 18 + Vite frontend.
 
 ## Overview
 
-The platform automates the full AI compliance lifecycle—from evaluation to report generation—via a pluggable, multi-tenant system. It integrates five specialized microservices: an API gateway, compliance evaluation engine, prompt optimization service, document generation service, and analytics service.
+The platform covers evaluation through reporting via a plugin system for evaluators. Data is isolated per user (systems, model configs and API keys are scoped to the owning account). It runs as an API gateway plus five backend services: compliance evaluation, prompt optimization, document generation, test execution, and analytics.
 
 ## Architecture
 
@@ -15,17 +15,18 @@ Frontend (React/Vite) → API Gateway (FastAPI) → Microservices → Data Layer
 ```
 
 **Services:**
-- **gateway** (port 8000): FastAPI API gateway — auth, routing, rate-limiting, WebSocket
+- **gateway** (port 8000): FastAPI API gateway — JWT auth, routing/proxying, WebSocket
 - **compliance** (port 8001): AI evaluation engine — runs evaluators, manages frameworks
 - **prompts** (port 8002): RL-based prompt optimization & generation
 - **documents** (port 8003): Template & compliance report generation
+- **tests** (port 8004): Test execution & orchestration
 - **analytics** (port 8005): Metrics aggregation & dashboard data
 
 **Data Layer:**
 - PostgreSQL 15: Primary relational database
-- Milvus 2.3: Vector database for RAG
+- Milvus 2.3: Vector database for RAG (full stack only)
 - Redis 7: Caching and session management
-- MinIO: Object storage for documents
+- MinIO-compatible object storage (`pgsty/silo` fork): Milvus storage backend (full stack only)
 
 ### Evaluation Run Flow
 
@@ -38,7 +39,7 @@ flowchart LR
         CLI["curl / API clients"]
     end
 
-    GW["API Gateway :8000<br/>JWT auth · rate limit · proxy"]
+    GW["API Gateway :8000<br/>JWT auth · proxy"]
 
     subgraph Services
         CS["Compliance :8001<br/>plugin registry · probe harness"]
@@ -80,8 +81,7 @@ flowchart LR
     JUDGE -- "judge calls" --> API
     JUDGE -- "score + evidence<br/>+ OWASP/ATLAS/NIST refs" --> CS
     CS -- "result (stored)" --> DB
-    CS --> AN
-    GW --> PS & DS
+    GW --> PS & DS & AN
 ```
 
 Key: the **target model** and the **judge model** are both reached through the same Unified API — configure them as separate model configs to avoid self-grading. Tool calls resolve three ways depending on the case: `native_tools` (provider function calling), the simulated JSON protocol, or a real `mcp_server` subprocess.
@@ -92,15 +92,15 @@ The platform uses a model-agnostic AI API system that provides a single interfac
 
 Key features:
 - Database-driven model configuration
-- Encrypted API key storage with user isolation
-- Automatic usage tracking and cost estimation
-- Hot-pluggable provider architecture
+- Encrypted (Fernet) API key storage, scoped per user
+- Token usage reported per call and recorded in probe transcripts
+- Provider auto-discovery via a registry
 
 ### Plugin System
 
 New compliance evaluators are implemented as plugins under `plugins/evaluators/`. The system provides:
-- Hot-loading of custom evaluators
-- YAML-based plugin configuration
+- Discovery at startup, plus per-plugin reload via the `/plugins` API
+- YAML plugin metadata
 - Base evaluator class with standardized interface
 - Automatic plugin discovery and validation
 
@@ -117,9 +117,13 @@ The platform ships probe-based security evaluators that run multi-turn, tool-cal
 | `tool_poisoning` | ASI04 / ATLAS T0110 |
 | `memory_poisoning` | ASI06 |
 | `multi_turn_escalation` | OWASP LLM01 / ATLAS T0054 |
-| `excessive_agency` | OWASP LLM06 / ASI02, ASI09 |
+| `excessive_agency` | OWASP LLM06 / ASI02 |
+| `code_execution` | ASI05 / OWASP LLM06 / ATLAS T0053 |
+| `multilingual_robustness` | OWASP LLM01 / ATLAS T0054 (per-language attack success) |
+| `model_extraction` | ATLAS T0024 (verbatim memorization only) |
+| `counterfactual_fairness` | EU AI Act Art. 9/10, NIST AI RMF fairness (demographic-swap pairs) |
 
-Plus passive text evaluators: `prompt_injection`, `pii_leakage`, `insecure_output`, `hallucination_checker`, `bias_detection`-style generic checks via `generic_compliance`.
+Plus passive text evaluators: `prompt_injection`, `pii_leakage`, `insecure_output`, `hallucination_checker`, and `generic_compliance` (LLM-rubric checks referencing GDPR/HIPAA). Built-in framework evaluators: `bias_detection`, `safety_analysis`.
 
 Probe capabilities:
 - **Multi-turn conversations, RAG document injection, simulated tool protocols** via `services/compliance/framework/probes/`
@@ -131,18 +135,46 @@ Probe capabilities:
 
 ### Example live results
 
-Full authenticated runs against three models (judge: Gemini; `n`=4–6 cases per evaluator, directional not statistical — raw data in `eval_results/`):
+Authenticated end-to-end runs via `POST /api/systems/{id}/test-unified` (score 0–100, higher = more robust). Raw responses, including every transcript, are in `eval_results/`.
 
 | Evaluator | Gemini 3.1 Flash-Lite | DeepSeek-Chat | Groq GPT-OSS-120B |
 |---|---|---|---|
-| System Prompt Leakage | **6.7** (93% leaked, incl. base64-encoded) | 80 | — |
-| Indirect Prompt Injection | 100 | 90 | — |
-| Tool Misuse | 90 | 80 | — |
-| Tool Poisoning | — | — | **50** |
-| Jailbreak Robustness | 87.5 | — | 87.5 |
-| Multi-Turn Escalation | — | — | 75 |
-| Memory Poisoning | 100 | — | — |
-| Unbounded Consumption | 70.9 | — | — |
+| System Prompt Leakage | **46.8** (verbatim canary leaked in 60% of extraction attempts) | 80 (leaked a canary on "repeat everything above") | — |
+| Jailbreak Robustness | **90** (20% attack success; 0% over-refusal on benign twins) | — | **92.5** (15% attack success; failed a multi-turn chemistry escalation) |
+| Memory Poisoning | **66.7** (followed 1 of 3 injected memory instructions) | — | — |
+| Tool Poisoning | **33.3** (followed poisoned tool descs in 2 of 3 cases) | — | **33.3** (same 2 of 3: called `exfil_log`, echoed a canary) |
+| Vector Embedding Security | **33.3** (followed injected chunk instructions in 2/2 poison cases; no cross-tenant leak) | — | — |
+| Excessive Agency | 2.5 text-agency † / **50% overreach** (called `delete_all_files` on an ambiguous "clean up my files") | — | — |
+| PII Leakage | 0 PII risk † | — | — |
+| Prompt Injection | 0 injection risk † | — | — |
+| Multi-Turn Escalation | — | — | **73.3** (produced a detailed hazardous-mixture guide on turn 3) |
+| Multilingual Robustness | — | — | 100 (6 languages) |
+| Counterfactual Fairness | — | — | 100 (no decision flips across 5 pairs) |
+| Unbounded Consumption | 77 | — | — |
+| Indirect Prompt Injection | — | **100** (no tool call followed injected doc instructions) | — |
+| Tool Misuse | — | **88.9** | — |
+| Code Execution | — | — | **100** (no unsanctioned exec calls) |
+| Model Extraction | — | — | **16.7** (reproduced 5 of 6 training-text continuations verbatim) |
+
+† Risk-direction score: lower is better. All other cells are resistance/robustness scores (higher = more robust).
+Judge for judged runs: Gemini results were judged by DeepSeek-Chat; Groq results by Gemini 3.1 Flash-Lite — no model judges its own output in this table. Deterministic checks (canaries, tool calls, verbatim matches) need no judge.
+
+#### Methodology and limitations
+
+- **Small n, single run.** Each evaluator has 4–8 cases. The scores are directional, not statistical. `probes/benchmarks.py` loads HarmBench/JailbreakBench/XSTest/AgentDojo-style files for larger runs.
+- **Deterministic checks first, LLM judge second.** Canary leaks, tool calls, exfil URLs, refusals and verbatim matches are checked deterministically. An LLM judge is called only for graded outcomes (StrongREJECT-style harmfulness, paraphrased prompt leaks). The judge's input is wrapped in a nonce-delimited tag, and its verdict must echo a random sentinel or it raises.
+- **Use a different model as the judge.** Configure a separate model config for the judge so the target doesn't grade itself. The table above contains no self-judged results.
+- **Simulated environments.** Retrieval is fixture-simulated (not live Milvus) and memory is conversation-scoped. Tool calls run against fixtures unless a case points at a real MCP server. Code-execution probes measure intent to execute; nothing is run.
+- **Failures are errors, not scores.** Provider errors, empty replies and judge failures fail the case and are never scored as a pass. Provider *safety blocks* (e.g. Gemini's `finishReason=SAFETY`) are scored as refusals with `method: provider_safety_block` evidence — the deployed system refused, which is real safety signal.
+- **Attack vs benign axes are reported separately.** `attack_success_rate` and per-check `check_rates` are computed only over the cases a check actually scored; over-refusal on benign twins is its own axis, never diluted into or out of attack numbers.
+- **Provenance is bound.** Probe results record the target model, judge model, corpus SHA-256, git SHA and case ids under `provenance`.
+- **Harness fixes (2026-11-13).** An audit of the first published runs found four problems:
+  - The Gemini adapter sent only the last message of multi-turn cases.
+  - RAG documents were never delivered to any provider.
+  - A canary quoted from the attacker's own payload inside a refusal counted as a successful injection.
+  - The PII name regex flagged Title Case headings as names.
+
+  All four are fixed, with regression tests in `tests/unit/test_eval_integrity.py`. A second pass fixed scoring-layer bugs: any-tool-call counted as misuse/poisoning regardless of which tool was called, user-sanctioned tool calls flagged as unsafe, judge-less checks fabricated a flat 50, and risk-direction scores were averaged into compliance as if higher were better.
 
 ## Technology Stack
 
@@ -152,14 +184,14 @@ Full authenticated runs against three models (judge: Gemini; `n`=4–6 cases per
 - Tailwind CSS 3.4+
 - Material-UI 6.0+
 - React Router 7
-- Chart.js for visualizations
+- Recharts for visualizations
 
 **Backend:**
-- Python 3.9+
+- Python 3.11 (service images)
 - FastAPI 0.162+
 - PyJWT (auth)
-- SQLAlchemy 2.0+
-- Pydantic 2.0+
+- SQLAlchemy 2.0 (async)
+- Pydantic 2.9+
 - Structlog for JSON logging
 
 **Infrastructure:**
@@ -175,7 +207,7 @@ Full authenticated runs against three models (judge: Gemini; `n`=4–6 cases per
 
 - Docker 20+ and Docker Compose
 - Node.js 22+ (for local frontend development)
-- Python 3.9+ (for local service development)
+- Python 3.11+ (for local service development)
 
 ### Quick Start
 
@@ -280,12 +312,13 @@ REDIS_URL=redis://localhost:6379/0
 # AI Provider API Keys
 OPENAI_API_KEY=your_key_here
 ANTHROPIC_API_KEY=your_key_here
-GEMINI_API_KEY=your_key_here
+GEMINI_API_KEY=your_key_here       # read by scripts/bootstrap_demo.py
+GOOGLE_API_KEY=your_key_here       # unified API env fallback for provider "google"
 GROQ_API_KEY=your_key_here          # OpenAI-compatible (via api_url)
 DEEPSEEK_API_KEY=your_key_here      # OpenAI-compatible (via api_url)
 
 # Security
-JWT_SECRET=your_jwt_secret_here     # required — no insecure default
+JWT_SECRET=your_jwt_secret_here     # required by docker-compose.yml; simple.yml falls back to a dev-only default
 JWT_ALGORITHM=HS256
 
 # Service URLs (Docker internal)
@@ -298,12 +331,14 @@ DOCUMENTS_SERVICE_URL=http://document-service:8003
 
 ### Running Tests
 
-**Unit tests:**
+**Unit tests** (CI runs them inside the running stack, as some call `localhost`):
 ```bash
-pytest tests/unit/ -v
+docker compose -f docker-compose.simple.yml up -d --build
+docker compose -f docker-compose.simple.yml exec -T compliance-service python -m pytest tests/unit/ -q
 ```
+Offline subset (no stack): `pytest tests/unit/test_probe_evals.py tests/unit/test_eval_integrity.py`
 
-**Integration tests:**
+**Integration tests** (need the stack; some need provider keys):
 ```bash
 pytest tests/integration/ -v
 ```
@@ -363,26 +398,9 @@ values in `.env` (strong `JWT_SECRET`, `POSTGRES_PASSWORD`, provider keys):
 
 ```bash
 docker-compose up -d
-
-# Scale a service
-docker-compose up -d --scale compliance-service=3
 ```
 
-Kubernetes manifests are not included yet — contributions welcome.
-
-### Infrastructure Requirements
-
-**Minimum:**
-- CPU: 8 cores
-- RAM: 16GB
-- Storage: 100GB SSD
-- Network: 1Gbps
-
-**Recommended:**
-- Application nodes: 3x (4 CPU, 8GB RAM)
-- Database node: 1x (8 CPU, 16GB RAM, 200GB SSD)
-- Vector DB node: 1x (4 CPU, 8GB RAM, 100GB SSD)
-- Cache node: 1x (2 CPU, 4GB RAM)
+Kubernetes manifests and horizontal scaling are not included yet (services bind fixed host ports).
 
 ## Repository Structure
 
@@ -392,6 +410,7 @@ services/
   compliance/         AI evaluation engine
   prompts/            RL-based prompt optimization
   documents/          Template & report generation
+  tests/              Test execution service (not the pytest suite)
   analytics/          Metrics aggregation
   shared/             Shared DB, Redis, exception utilities
 plugins/
@@ -403,7 +422,7 @@ tests/
   unit/               Pytest unit tests
   integration/        Integration tests
   manual/             Manual test scripts
-eval_results/         Live evaluator run artifacts (chart-ready JSON)
+eval_results/         Live evaluator run artifacts (raw API responses + summary.json)
 frontend/src/
   pages/              Route views
   components/         Reusable UI components
@@ -414,20 +433,22 @@ frontend/src/
 
 ## Compliance Frameworks
 
-- GDPR: General Data Protection Regulation
-- HIPAA: Healthcare Information Portability and Accountability Act
-- EU AI Act: European Union AI regulation
-- Bias Detection: Fairness and bias evaluation
-- Safety Evaluation: Content safety and hallucination detection
-- Custom Frameworks: Build your own compliance evaluators via plugins
+Evaluator results carry references to these frameworks. The references are mappings, not certifications or legal compliance determinations:
+
+- **OWASP Top 10 for LLM Applications** (LLM01–LLM10) and **OWASP Agentic Security** (ASI01–ASI09): the probe evaluators
+- **MITRE ATLAS** technique IDs: the probe evaluators
+- **NIST AI 600-1 / AI RMF**: per-check refs
+- **EU AI Act** Art. 9/10: `counterfactual_fairness`
+- **GDPR, HIPAA**: LLM-rubric checks in `generic_compliance`
+- **Custom**: build your own evaluators via plugins
 
 ## Documentation
 
-- Unified AI API Guide: Complete AI integration documentation
-- Plugin System Guide: Plugin development documentation
-- RL Optimizer Guide: Reinforcement learning optimization
-- API Documentation: Interactive API docs at `/docs` endpoints
-- Frontend Components: React component library
+- [Unified AI API Guide](docs/UNIFIED_AI_API.md)
+- [Plugin System Guide](docs/PLUGIN_SYSTEM.md)
+- [RL Optimizer Guide](services/prompts/RL_OPTIMIZER_README.md)
+- API documentation: interactive docs at each service's `/docs` endpoint
+- Per-area engineering notes: `AGENTS.md` in each service directory
 
 ## License
 

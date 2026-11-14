@@ -1,6 +1,7 @@
 # AGENTS.md — gateway/
 
 > Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Maintenance: keep it short — update the sections and add a dated Change Log line when this area's behavior, interfaces or conventions change; delete entries that stop being true.
 
 ## Purpose
 Single public entry point. Handles auth (JWT), CORS, routing/proxying to backend services, and WebSockets.
@@ -31,7 +32,6 @@ Single public entry point. Handles auth (JWT), CORS, routing/proxying to backend
 - Manual check: `docker-compose up --build`, then `GET http://localhost:8000/health` and `/docs`.
 
 ## Decisions & Known Issues
-- `src/shared/config.py` ships a literal default for `JWT_SECRET`. That violates the root security rule. It should fail fast the way `services/shared/auth.py` does.
 - `src/shared/models_service.py` duplicates `services/shared/models_service.py`. Converge before changing either one.
 
 ## Change Log

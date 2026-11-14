@@ -15,10 +15,10 @@ A modern React-based frontend application that combines features from three AI c
 ## Technology Stack
 
 - **React 18.3.1** - Modern React with hooks and context
-- **Vite 5.1.4** - Fast build tool and development server
+- **Vite 6.4.6** - Fast build tool and development server
 - **Tailwind CSS 3.4.14** - Utility-first CSS framework
 - **Material-UI 6.x** - React component library
-- **React Router DOM 6.28.0** - Client-side routing
+- **React Router DOM 7.x** - Client-side routing
 - **Recharts 2.13.3** - Chart and visualization library
 - **Lucide React** - Modern icon library
 - **Monaco Editor** - Code editor for prompt engineering
@@ -63,7 +63,7 @@ npm install
 npm run dev
 ```
 
-3. Open your browser and navigate to `http://localhost:3000`
+3. Open your browser and navigate to `http://localhost:5173` (the `frontend` Docker container serves it on port 3000)
 
 ### Available Scripts
 
@@ -113,7 +113,7 @@ The application uses React Context API for state management:
 
 ## API Integration
 
-The frontend is designed to work with the unified backend API. Currently using mock data for development, but can be easily switched to real API endpoints by updating the service files.
+The frontend talks to the API gateway (default `http://localhost:8000`, configurable via `VITE_API_URL`) through the axios clients in `src/services/` — it never calls backend services directly.
 
 ## Styling
 
@@ -171,4 +171,4 @@ VITE_ENABLE_WEBSOCKETS=true
 
 ## License
 
-This project is part of the Unified AI Compliance Platform and is proprietary software.
+This project is part of the AI Governance Suite. MIT — see [LICENSE](../LICENSE).

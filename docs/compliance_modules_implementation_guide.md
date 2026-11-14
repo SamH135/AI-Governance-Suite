@@ -1,3 +1,5 @@
+> **Historical design document.** Written before implementation; describes intended scope, not current behavior. Targets and metrics here were goals, not measured results. See README.md and the per-area AGENTS.md files for what is implemented.
+
 # AI Governance Suite -  Frontend-Backend Integration Guide
 
 ## 🎯 **CORE WORKFLOW - WHAT ACTUALLY NEEDS TO WORK**

@@ -1,6 +1,7 @@
 # AGENTS.md — services/shared/ (backend shared library)
 
 > Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Maintenance: keep it short — update the sections and add a dated Change Log line when this area's behavior, interfaces or conventions change; delete entries that stop being true.
 
 ## Purpose
 Code used by two or more backend services (root rule 3). Not a container. It's imported by every service and by the gateway through a mounted volume.

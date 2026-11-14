@@ -1,6 +1,7 @@
 # AGENTS.md — services/documents/
 
 > Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Maintenance: keep it short — update the sections and add a dated Change Log line when this area's behavior, interfaces or conventions change; delete entries that stop being true.
 
 ## Purpose
 Generates compliance documents/reports from templates, with approval workflows, version tracking, and notifications.

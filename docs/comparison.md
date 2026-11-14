@@ -1,3 +1,4 @@
+> **Historical comparison document.** Compares legacy standalone projects to this repo; the legacy projects are not in this repository, so their details cannot be verified here. See the per-area AGENTS.md files for the current structure.
 
 # Project Structure Comparison
 

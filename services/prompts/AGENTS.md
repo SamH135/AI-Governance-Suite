@@ -1,6 +1,7 @@
 # AGENTS.md — services/prompts/
 
 > Inherits `/AGENTS.md`. Root Security Rules always apply and cannot be overridden here.
+> Maintenance: keep it short — update the sections and add a dated Change Log line when this area's behavior, interfaces or conventions change; delete entries that stop being true.
 
 ## Purpose
 Prompt generation and optimization ("J1"): RL-based and genetic-algorithm prompt optimization, prompt categories, feedback collection, advanced RAG, streaming.

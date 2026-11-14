@@ -1,3 +1,5 @@
+> **Historical design document.** Written before implementation; describes intended scope, not current behavior. Targets and metrics here were goals, not measured results. See README.md and the per-area AGENTS.md files for what is implemented.
+
 # 🏗️ AI Compliance Platform - Design Document
 
 <div align="center">
@@ -37,11 +39,11 @@
 The **Unified AI Compliance Platform** is an enterprise-grade solution designed to revolutionize how organizations approach AI compliance testing, documentation, and regulatory management. Built with modern microservices architecture, the platform provides a comprehensive suite of tools for evaluating AI systems against various compliance frameworks.
 
 ### 🏆 Key Success Metrics
-- **95%+ Compliance Accuracy**: Automated testing with minimal false positives
-- **80% Time Reduction**: In compliance documentation generation
-- **99.9% Uptime**: Enterprise-grade reliability and availability
-- **Sub-2s Response**: Real-time compliance evaluation
-- **Unlimited Scalability**: Horizontal scaling for enterprise workloads
+- **Compliance Accuracy**: TBD — automated testing with minimal false positives
+- **Documentation Time Reduction**: TBD
+- **Uptime**: TBD
+- **Response Time**: TBD — real-time compliance evaluation
+- **Scalability**: Horizontal scaling for enterprise workloads
 
 ### 🎯 Target Stakeholders
 - **Compliance Officers**: Regulatory oversight and reporting
@@ -67,15 +69,15 @@ graph TB
     
     subgraph "🔒 Quality Attributes"
         SC[Scalability<br/>📈 Horizontal Growth]
-        RE[Reliability<br/>🛡️ 99.9% Uptime]
+        RE[Reliability<br/>🛡️ Uptime TBD]
         SE[Security<br/>🔐 Zero Trust]
         MA[Maintainability<br/>🔧 Clean Code]
     end
     
     subgraph "⚡ Performance Goals"
-        RT[Response Time<br/>⚡ < 2 seconds]
-        TP[Throughput<br/>🚀 1000+ req/sec]
-        AV[Availability<br/>🌟 99.9%]
+        RT[Response Time<br/>⚡ TBD]
+        TP[Throughput<br/>🚀 TBD]
+        AV[Availability<br/>🌟 TBD]
         SC2[Scalability<br/>📊 Auto-scaling]
     end
     
@@ -249,7 +251,7 @@ sequenceDiagram
     Gateway-->>Frontend: 13. API Response
     Frontend-->>User: 14. Display Results
     
-    Note over User,Cache: End-to-End Request Flow (< 2 seconds)
+    Note over User,Cache: End-to-End Request Flow
 ```
 
 ### 🔧 Component Interaction Model
@@ -1782,7 +1784,7 @@ The **AI Compliance Platform** represents a comprehensive, enterprise-grade solu
 - **🤖 AI-Powered Optimization**: Reinforcement learning for intelligent prompt optimization
 - **📊 Comprehensive Monitoring**: Full observability stack with AI-powered insights
 - **🔒 Enterprise Security**: Zero-trust architecture with comprehensive audit trails
-- **⚡ High Performance**: Sub-2s response times with horizontal scalability
+- **⚡ High Performance**: Horizontal scalability
 
 ### 🚀 Key Success Factors
 

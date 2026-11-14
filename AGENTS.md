@@ -8,7 +8,7 @@ Enterprise-grade AI compliance platform for testing, documenting, and managing r
 ## Repository Map
 
 ```
-gateway/              FastAPI API gateway — auth, routing, rate-limiting, WebSocket (port 8000)
+gateway/              FastAPI API gateway — auth, routing, WebSocket (port 8000). slowapi `Limiter` is instantiated in `main.py` but no limits are configured.
 services/
   compliance/         AI evaluation engine — runs evaluators, manages frameworks (port 8001)
   prompts/            RL-based prompt optimization & generation (port 8002)
@@ -47,7 +47,7 @@ This root file holds project-wide conventions, commands, security rules and navi
 1. Before editing, read this file **and** the `AGENTS.md` of every area you touch.
 2. On conflict, the area file wins for area-specific conventions. The Security Rules below can **never** be overridden.
 3. Run the tests listed in the area file's **Verification** section. `tests/AGENTS.md` has the change → tests matrix.
-4. When you change an area's behavior, interfaces, architecture or conventions, update that area's `AGENTS.md` in the same change, including a dated **Change Log** line. Don't log trivial edits.
+4. When you change an area's behavior, interfaces, architecture or conventions, update that area's `AGENTS.md` in the same change, including a dated **Change Log** line. Don't log trivial edits, and delete entries that stop being true.
 5. New AGENTS.md files go only at the root of a new major area, not in every subdirectory.
 
 | Area | File |
@@ -64,6 +64,7 @@ This root file holds project-wide conventions, commands, security rules and navi
 | Evaluator plugins | `plugins/AGENTS.md` |
 | Database schema | `infrastructure/AGENTS.md` |
 | Pytest suite | `tests/AGENTS.md` |
+| Services-wide notes | `services/AGENTS.md` |
 
 `scripts/` (one-off admin scripts) and `docs/` (reference docs, which may be stale; check them against the code) are covered by this file.
 
@@ -75,63 +76,18 @@ This root file holds project-wide conventions, commands, security rules and navi
 
 ## Commands
 
-> **All development is Docker-first.** Do not run services directly — always use docker-compose.
+> **Docker-first.** Don't run services directly.
 
-### Start full stack
 ```bash
-docker-compose up --build
-```
+docker-compose up --build                                   # full stack
+docker-compose -f docker-compose.simple.yml up --build      # no Milvus/MinIO/etcd
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build  # hot-reload
+docker-compose down -v                                      # tear down + clean volumes
 
-### Start lightweight (no Milvus/MinIO/etcd — skips vector DB):
-```bash
-docker-compose -f docker-compose.simple.yml up --build
-```
-
-### Start dev mode (hot-reload volumes):
-```bash
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-```
-
-### Tear down + clean volumes:
-```bash
-docker-compose down -v
-```
-
-### Frontend only (local, for UI development):
-```bash
-cd frontend
-npm install
-npm run dev          # Vite dev server → http://localhost:5173
-npm run lint         # ESLint (0 warnings allowed)
-npm run lint:fix     # Auto-fix lint issues
-npm run format       # Prettier
-npm run test         # Vitest
-npm run test:coverage
-```
-
-### Python tests (run inside container or with local venv):
-```bash
-# From repo root — requires services infra to be running
-pytest tests/unit/ -v
-pytest tests/integration/ -v
-
-# Specific service tests
-pytest tests/unit/test_compliance.py -v
-pytest tests/unit/test_evaluator.py -v
-```
-
-### Python linting / formatting:
-```bash
-black services/ gateway/
-isort services/ gateway/
-flake8 services/ gateway/
-mypy services/ gateway/
-```
-
-### Admin scripts:
-```bash
-python scripts/create_test_user.py         # Seed a test user
-python scripts/validate_implementation.py  # Smoke-check service wiring
+cd frontend && npm install && npm run dev                   # UI only (5173); also lint, lint:fix, format, test
+pytest tests/unit/ -v                                       # integration: tests/integration/ (needs infra)
+black services/ gateway/ && isort services/ gateway/ && flake8 services/ gateway/ && mypy services/ gateway/
+python scripts/create_test_user.py                          # seed user; scripts/validate_implementation.py = smoke check
 ```
 
 ---
@@ -163,46 +119,15 @@ python scripts/validate_implementation.py  # Smoke-check service wiring
 
 ## Git / PR Workflow
 
-### Branch naming
-```
-feature/<short-description>     # New features
-fix/<short-description>         # Bug fixes
-chore/<short-description>       # Deps, tooling, docs
-plugin/<evaluator-name>         # New evaluator plugins
-```
-
-### Commit format (Conventional Commits)
-```
-<type>(<scope>): <short summary>
-
-type:  feat | fix | chore | docs | test | refactor
-scope: gateway | compliance | prompts | documents | analytics | frontend | plugins | shared
-
-Examples:
-  feat(compliance): add HIPAA phi detection evaluator plugin
-  fix(gateway): correct JWT expiry header on token refresh
-  chore(deps): bump fastapi to 0.104.1
-```
-
-### Merge strategy
-- Squash merge into `main` — one commit per PR.
-- PRs require: passing tests, lint clean, and a description of what changed and why.
-- Delete branch after merge.
+- Branches: `feature/`, `fix/`, `chore/`, `plugin/<name>` + short description. Never commit to `main`; squash-merge PRs, delete branch after.
+- Conventional Commits: `<type>(<scope>): <summary>`; type: feat|fix|chore|docs|test|refactor; scope: gateway|compliance|prompts|documents|analytics|frontend|plugins|shared.
+- PRs need passing tests, clean lint, and a description of what/why/how to test manually.
 
 ---
 
 ## Definition of Done
 
-A task is **done** when ALL of the following are true:
-
-- [ ] The feature/fix works end-to-end via `docker-compose up` — not just in isolation.
-- [ ] All existing `pytest tests/unit/` tests pass without modification.
-- [ ] New behavior has corresponding tests in `tests/unit/` (or `tests/integration/` if cross-service).
-- [ ] Python code passes `black`, `isort`, `flake8`, and `mypy` with no errors.
-- [ ] Frontend code passes `npm run lint` with 0 warnings.
-- [ ] No secrets, `.env` values, or hardcoded credentials are present in any changed file.
-- [ ] New compliance evaluators are implemented as plugins under `plugins/evaluators/`, not inline service code.
-- [ ] Structured logging (`structlog`) is used for any new log statements — no bare `print()`.
-- [ ] The `AGENTS.md` of each touched area is updated if behavior, interfaces or conventions changed (with a Change Log line).
-- [ ] The PR description explains *what* changed, *why*, and *how to test it manually*.
-- [ ] The branch is off a recent `main` and has no unresolved merge conflicts.
+- Works end-to-end via `docker-compose up`; existing `tests/unit/` pass unmodified; new behavior has tests.
+- `black`, `isort`, `flake8`, `mypy` clean; `npm run lint` 0 warnings.
+- Security Rules respected (no secrets in changed files); structlog only, no `print()`.
+- Touched areas' `AGENTS.md` updated with a Change Log line when behavior/interfaces/conventions changed.
