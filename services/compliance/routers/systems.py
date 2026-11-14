@@ -1,13 +1,14 @@
 """AI Systems management endpoints."""
 
+import asyncio
 import json
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, text
 from sqlalchemy.orm import selectinload
-from pydantic import BaseModel
-from datetime import datetime
+from pydantic import BaseModel, Field
+from datetime import datetime, timezone
 import time
 import structlog
 
@@ -408,7 +409,7 @@ class TestExecutionRequest(BaseModel):
     temperature: float = 0.7  # Deprecated: use test_subject_params
     
     # Test Execution Settings
-    iterations: int = 1
+    iterations: int = Field(default=1, ge=1, le=20)  # re-run target+evaluators N times; scores = mean
     concurrent_evaluators: bool = True
     save_intermediate_results: bool = True
     
@@ -558,7 +559,7 @@ async def _update_test_execution_status(
         
         update_data = {
             "status": status,
-            "completed_at": datetime.utcnow()
+            "completed_at": datetime.now(timezone.utc)
         }
         if error_message:
             update_data["error_message"] = error_message
@@ -583,7 +584,7 @@ async def _update_test_execution_status(
             {
                 "execution_id": execution_id_int,
                 "status": status,
-                "completed_at": datetime.utcnow(),
+                "completed_at": datetime.now(timezone.utc),
                 "error_message": error_message,
                 "score": score,
                 "result": result,
@@ -595,6 +596,78 @@ async def _update_test_execution_status(
     except Exception as e:
         logger.error("Failed to update test execution status", execution_id=execution_id, error=str(e))
         await db.rollback()
+
+async def _run_evaluators(
+    evaluator_factory: EvaluatorFactory,
+    evaluator_names: List[str],
+    response_text: str,
+    test_subject_config: Any,
+    evaluator_model_config: Any,
+    evaluator_params: Dict[str, Any],
+    concurrent: bool
+) -> Dict[str, Any]:
+    """Run the requested evaluators over one target response.
+
+    Sequential loop or asyncio.gather depending on `concurrent`; per-evaluator
+    failures are captured into the result wrapper, never raised.
+    """
+    async def _one(name: str):
+        evaluator = evaluator_factory.get_evaluator(name)
+        if not evaluator:
+            logger.warning(f"Evaluator not found: {name}")
+            return name, None
+        try:
+            result = await evaluator.aevaluate(
+                text=response_text,
+                test_subject_config=test_subject_config,
+                evaluator_llm_config=evaluator_model_config,
+                **evaluator_params
+            )
+            return name, {"status": "completed", "result": result, "execution_time": time.time()}
+        except Exception as e:
+            logger.error(f"Evaluator {name} failed", error=str(e))
+            return name, {"status": "failed", "error": str(e), "execution_time": time.time()}
+
+    if concurrent:
+        pairs = await asyncio.gather(*[_one(n) for n in evaluator_names])
+    else:
+        pairs = [await _one(n) for n in evaluator_names]
+    return {name: wrapper for name, wrapper in pairs if wrapper is not None}
+
+
+def _merge_iterations(per_iteration: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Merge N iterations of evaluator_results into one.
+
+    Each evaluator's headline score becomes the iteration mean; the raw
+    per-iteration scores stay under `iteration_scores` for transparency.
+    """
+    merged: Dict[str, Any] = {}
+    names = {name for results in per_iteration for name in results}
+    for name in names:
+        runs = [r[name] for r in per_iteration if name in r]
+        completed = [r for r in runs if r.get("status") == "completed"]
+        if not completed:
+            merged[name] = runs[-1]
+            continue
+        representative = dict(completed[-1])
+        result = representative.get("result")
+        try:
+            key = EvaluatorFactory.get_evaluator(name).get_metadata().primary_output_key
+        except Exception:
+            key = "score"
+        scores = [
+            r["result"].get(key) for r in completed
+            if isinstance(r.get("result"), dict) and isinstance(r["result"].get(key), (int, float))
+        ]
+        if key and scores and isinstance(result, dict):
+            result = dict(result)
+            result[key] = sum(scores) / len(scores)
+            result["iterations"] = len(completed)
+            result["iteration_scores"] = scores
+            representative["result"] = result
+        merged[name] = representative
+    return merged
+
 
 async def _run_compliance_test_sync(
     system_id: int,
@@ -653,62 +726,64 @@ async def _run_compliance_test_sync(
         logger.info(f"Using test subject model: {test_subject_config['provider']}/{test_subject_config['model_id']}")
         logger.info(f"Using evaluator model: {evaluator_config['provider']}/{evaluator_config['model_id']}")
         
-        # 4. CALL TEST SUBJECT MODEL VIA UNIFIED API
+        if test_subject_model_id == test_request.evaluator_model_id:
+            logger.warning(
+                "Evaluator model is the test subject model — self-judging run",
+                system_id=system_id, model_config_id=test_subject_model_id)
+
+        # 4+5. CALL TEST SUBJECT AND RUN EVALUATORS, once per iteration
+        evaluator_factory = EvaluatorFactory()
+        evaluator_model_config = _create_unified_api_config(
+            evaluator_config, test_request.evaluator_params)
+        test_subject_model_config = _create_unified_api_config(
+            test_subject_config, test_request.test_subject_params)
+
+        iteration_results: List[Dict[str, Any]] = []
         test_subject_response = None
-        if UNIFIED_API_AVAILABLE:
-            try:
-                unified_api = get_unified_api()
-                test_subject_model_config = _create_unified_api_config(
-                    test_subject_config, 
-                    test_request.test_subject_params
-                )
-                
-                test_subject_response = await _call_test_subject_model(
-                    unified_api, 
-                    test_subject_model_config, 
-                    test_request.test_prompts
-                )
-                
-                if test_subject_response:
-                    logger.info(f"Test subject responded with {len(test_subject_response)} characters")
-                else:
-                    logger.warning("Test subject returned no response")
-            except Exception as e:
-                logger.error(f"Test subject model call failed: {e}")
+        for iteration in range(test_request.iterations):
+            if UNIFIED_API_AVAILABLE:
+                try:
+                    unified_api = get_unified_api()
+                    test_subject_response = await _call_test_subject_model(
+                        unified_api,
+                        test_subject_model_config,
+                        test_request.test_prompts
+                    )
+                    if test_subject_response:
+                        logger.info(f"Test subject responded with {len(test_subject_response)} characters")
+                    else:
+                        return {
+                            "testId": f"test_{system_id}_{int(time.time())}",
+                            "status": "failed",
+                            "error": "Test subject model returned no response",
+                            "systemId": system_id
+                        }
+                except Exception as e:
+                    logger.error(f"Test subject model call failed: {e}")
+                    return {
+                        "testId": f"test_{system_id}_{int(time.time())}",
+                        "status": "failed",
+                        "error": f"Test subject model call failed: {str(e)}",
+                        "systemId": system_id
+                    }
+            else:
+                logger.warning("Unified API not available, skipping test subject call")
                 return {
                     "testId": f"test_{system_id}_{int(time.time())}",
                     "status": "failed",
-                    "error": f"Test subject model call failed: {str(e)}",
+                    "error": "Unified API not available",
                     "systemId": system_id
                 }
-        else:
-            logger.warning("Unified API not available, skipping test subject call")
-        
-        # 5. RUN EVALUATORS
-        evaluator_factory = EvaluatorFactory()
-        evaluator_results = {}
-        
-        for evaluator_name in test_request.evaluators:
-            try:
-                evaluator = evaluator_factory.get_evaluator(evaluator_name)
-                if evaluator:
-                    evaluation_result = await evaluator.aevaluate(
-                        text=test_subject_response or "No response from test subject",
-                        test_subject_config=test_subject_config,
-                        evaluator_llm_config=_create_unified_api_config(evaluator_config, test_request.evaluator_params)
-                    )
-                    evaluator_results[evaluator_name] = {
-                        "result": evaluation_result,
-                        "status": "completed"
-                    }
-                    logger.info(f"Evaluator {evaluator_name} completed")
-            except Exception as e:
-                logger.error(f"Evaluator {evaluator_name} failed: {e}")
-                evaluator_results[evaluator_name] = {
-                    "result": {"error": str(e)},
-                    "status": "failed"
-                }
-        
+
+            iteration_results.append(await _run_evaluators(
+                evaluator_factory, test_request.evaluators, test_subject_response,
+                test_subject_model_config, evaluator_model_config,
+                test_request.evaluator_params, test_request.concurrent_evaluators))
+            logger.info("Iteration completed", iteration=iteration + 1,
+                        total=test_request.iterations, system_id=system_id)
+
+        evaluator_results = _merge_iterations(iteration_results)
+
         # 6. COMPOSE FINAL RESULT
         final_result = {
             "testId": f"test_{system_id}_{int(time.time())}",
@@ -727,10 +802,12 @@ async def _run_compliance_test_sync(
                 "provider": evaluator_config["provider"],
                 "config_id": test_request.evaluator_model_id
             },
+            "self_judging": test_subject_model_id == test_request.evaluator_model_id,
+            "iterations": test_request.iterations,
             "evaluator_results": evaluator_results,
             "test_prompts": test_request.test_prompts,
             "evaluators": test_request.evaluators,
-            "completed_at": datetime.utcnow().isoformat()
+            "completed_at": datetime.now(timezone.utc).isoformat()
         }
         
         logger.info("Synchronous test completed successfully", system_id=system_id)
@@ -793,87 +870,57 @@ async def _run_compliance_test_background(
         
         logger.info(f"Using test subject model: {test_subject_config['provider']}/{test_subject_config['model_id']}")
         logger.info(f"Using evaluator model: {evaluator_config['provider']}/{evaluator_config['model_id']}")
+        if test_subject_model_id == test_request.evaluator_model_id:
+            logger.warning(
+                "Evaluator model is the test subject model — self-judging run",
+                system_id=system_id, model_config_id=test_subject_model_id)
         
-        # 4. CALL TEST SUBJECT MODEL VIA UNIFIED API (consistent with model_configs.py)
-        test_subject_response = None
-        if UNIFIED_API_AVAILABLE:
-            try:
-                # Use the same pattern as model_configs.py
-                unified_api = get_unified_api()
-                test_subject_model_config = _create_unified_api_config(
-                    test_subject_config, 
-                    test_request.test_subject_params
-                )
-                
-                test_subject_response = await _call_test_subject_model(
-                    unified_api, 
-                    test_subject_model_config, 
-                    test_request.test_prompts
-                )
-                
-                if test_subject_response:
-                    logger.info(f"Test subject responded with {len(test_subject_response)} characters")
-                else:
-                    logger.error("Test subject model returned no response")
-                    await _update_test_execution_status(db, execution_id, "failed", "Test subject model returned no response")
-                    return
-                    
-            except ImportError as e:
-                logger.error(f"Unified API import failed: {e}")
-                await _update_test_execution_status(db, execution_id, "failed", f"Unified API import failed: {e}")
-                return
-            except Exception as e:
-                logger.error(f"Failed to call test subject model via unified API: {e}")
-                await _update_test_execution_status(db, execution_id, "failed", f"Test subject model call failed: {e}")
-                return
-        else:
-            logger.error("Unified API not available - cannot call test subject model")
-            await _update_test_execution_status(db, execution_id, "failed", "Unified API not available")
-            return
-        
-        # 5. RUN EVALUATORS WITH TEST SUBJECT RESPONSE
+        # 4+5. CALL TEST SUBJECT AND RUN EVALUATORS, once per iteration
         evaluator_factory = EvaluatorFactory()
-        test_results = {}
-        
-        for evaluator_name in test_request.evaluators:
-            try:
-                logger.info(f"Running evaluator: {evaluator_name}")
-                
-                # Get the evaluator instance
-                evaluator = evaluator_factory.get_evaluator(evaluator_name)
-                if not evaluator:
-                    logger.warning(f"Evaluator not found: {evaluator_name}")
-                    continue
-                
-                # Create evaluator model config for unified API
-                evaluator_model_config = _create_unified_api_config(
-                    evaluator_config,
-                    test_request.evaluator_params
-                )
-                
-                # Run evaluation with test subject response
-                evaluation_result = await evaluator.aevaluate(
-                    text=test_subject_response,
-                    test_subject_config=test_subject_model_config,  # For context
-                    evaluator_llm_config=evaluator_model_config,    # For LLM-as-judge
-                    **test_request.evaluator_params
-                )
-                
-                test_results[evaluator_name] = {
-                    "status": "completed",
-                    "result": evaluation_result,
-                    "execution_time": time.time()  # Add timestamp
-                }
-                
-                logger.info(f"Evaluator {evaluator_name} completed successfully")
-                
-            except Exception as e:
-                logger.error(f"Evaluator {evaluator_name} failed", error=str(e))
-                test_results[evaluator_name] = {
-                    "status": "failed", 
-                    "error": str(e),
-                    "execution_time": time.time()
-                }
+        test_subject_model_config = _create_unified_api_config(
+            test_subject_config, test_request.test_subject_params)
+        evaluator_model_config = _create_unified_api_config(
+            evaluator_config, test_request.evaluator_params)
+
+        iteration_results: List[Dict[str, Any]] = []
+        test_subject_response = None
+        for iteration in range(test_request.iterations):
+            if UNIFIED_API_AVAILABLE:
+                try:
+                    unified_api = get_unified_api()
+                    test_subject_response = await _call_test_subject_model(
+                        unified_api,
+                        test_subject_model_config,
+                        test_request.test_prompts
+                    )
+                    if test_subject_response:
+                        logger.info(f"Test subject responded with {len(test_subject_response)} characters")
+                    else:
+                        logger.error("Test subject model returned no response")
+                        await _update_test_execution_status(db, execution_id, "failed", "Test subject model returned no response")
+                        return
+                except Exception as e:
+                    logger.error(f"Failed to call test subject model via unified API: {e}")
+                    await _update_test_execution_status(db, execution_id, "failed", f"Test subject model call failed: {e}")
+                    return
+            else:
+                logger.error("Unified API not available - cannot call test subject model")
+                await _update_test_execution_status(db, execution_id, "failed", "Unified API not available")
+                return
+
+            iteration_results.append(await _run_evaluators(
+                evaluator_factory, test_request.evaluators, test_subject_response,
+                test_subject_model_config, evaluator_model_config,
+                test_request.evaluator_params, test_request.concurrent_evaluators))
+            logger.info("Iteration completed", iteration=iteration + 1,
+                        total=test_request.iterations, execution_id=execution_id)
+            if test_request.save_intermediate_results and test_request.iterations > 1:
+                await _update_test_execution_status(
+                    db, execution_id, "running",
+                    details={"iterations_completed": iteration + 1,
+                             "iterations_total": test_request.iterations})
+
+        test_results = _merge_iterations(iteration_results)
         
         # 6. PREPARE FINAL RESULTS
         final_results = {
@@ -895,11 +942,12 @@ async def _run_compliance_test_background(
             "test_subject_response": test_subject_response,
             "evaluator_results": test_results,
             "metadata": {
+                "self_judging": test_subject_model_id == test_request.evaluator_model_id,
                 "iterations": test_request.iterations,
                 "concurrent_evaluators": test_request.concurrent_evaluators,
                 "test_subject_params": test_request.test_subject_params,
                 "evaluator_params": test_request.evaluator_params,
-                "completed_at": datetime.utcnow().isoformat()
+                "completed_at": datetime.now(timezone.utc).isoformat()
             }
         }
         
@@ -936,12 +984,19 @@ def _calculate_overall_score(test_results: Dict[str, Any]) -> float:
         if not isinstance(result, dict):
             continue
         try:
-            key = EvaluatorFactory.get_evaluator(evaluator_name).get_metadata().primary_output_key
+            meta = EvaluatorFactory.get_evaluator(evaluator_name).get_metadata()
+            key = meta.primary_output_key
+            higher_is_better = getattr(meta, "score_higher_is_better", True)
         except Exception:
-            key = None
+            key, higher_is_better = None, True
         for candidate in (key, "compliance_score", "score"):
             if candidate and isinstance(result.get(candidate), (int, float)):
-                scores.append(result[candidate])
+                value = result[candidate]
+                # Risk scores (higher=worse) invert so the mean stays higher=better;
+                # the fallback candidates are only ever compliance-style scores.
+                if not higher_is_better and candidate == key:
+                    value = 100.0 - value
+                scores.append(value)
                 break
 
     if not scores:

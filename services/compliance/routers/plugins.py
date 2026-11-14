@@ -76,6 +76,53 @@ async def get_plugins(
             message=f"Failed to get plugins: {str(e)}"
         )
 
+@router.get("/statistics", response_model=ApiResponse[Dict[str, Any]])
+async def get_plugin_statistics(
+    current_user: UserResponse = Depends(get_current_active_user)
+):
+    """Get plugin system statistics."""
+    
+    try:
+        discovered = await plugin_manager.discover_plugins()
+        loaded = plugin_manager.get_loaded_plugins()
+        
+        # Get category distribution
+        categories = {}
+        for plugin_name in discovered:
+            metadata = plugin_manager.get_plugin_metadata(plugin_name)
+            if metadata:
+                category = metadata.category
+                categories[category] = categories.get(category, 0) + 1
+        
+        # Get framework statistics
+        framework_stats = enhanced_evaluator_factory.get_framework_statistics()
+        
+        statistics = {
+            "plugins": {
+                "total_discovered": len(discovered),
+                "loaded": len(loaded),
+                "enabled": len([p for p in discovered if plugin_manager.get_plugin_metadata(p) and plugin_manager.get_plugin_metadata(p).enabled]),
+                "categories": categories
+            },
+            "frameworks": framework_stats,
+            "system": {
+                "plugins_directory": str(plugin_manager.plugins_dir),
+                "plugin_manager_initialized": True
+            }
+        }
+        
+        return ApiResponse(
+            success=True,
+            data=statistics,
+            message="Plugin system statistics"
+        )
+        
+    except Exception as e:
+        logger.error("Failed to get plugin statistics", error=str(e))
+        return ApiResponse(
+            success=False,
+            message=f"Failed to get plugin statistics: {str(e)}"
+        )
 @router.get("/{plugin_name}", response_model=ApiResponse[Dict[str, Any]])
 async def get_plugin_details(
     plugin_name: str,
@@ -414,50 +461,3 @@ async def validate_plugin_config(
             message=f"Failed to validate plugin config: {str(e)}"
         )
 
-@router.get("/statistics", response_model=ApiResponse[Dict[str, Any]])
-async def get_plugin_statistics(
-    current_user: UserResponse = Depends(get_current_active_user)
-):
-    """Get plugin system statistics."""
-    
-    try:
-        discovered = await plugin_manager.discover_plugins()
-        loaded = plugin_manager.get_loaded_plugins()
-        
-        # Get category distribution
-        categories = {}
-        for plugin_name in discovered:
-            metadata = plugin_manager.get_plugin_metadata(plugin_name)
-            if metadata:
-                category = metadata.category
-                categories[category] = categories.get(category, 0) + 1
-        
-        # Get framework statistics
-        framework_stats = enhanced_evaluator_factory.get_framework_statistics()
-        
-        statistics = {
-            "plugins": {
-                "total_discovered": len(discovered),
-                "loaded": len(loaded),
-                "enabled": len([p for p in discovered if plugin_manager.get_plugin_metadata(p) and plugin_manager.get_plugin_metadata(p).enabled]),
-                "categories": categories
-            },
-            "frameworks": framework_stats,
-            "system": {
-                "plugins_directory": str(plugin_manager.plugins_dir),
-                "plugin_manager_initialized": True
-            }
-        }
-        
-        return ApiResponse(
-            success=True,
-            data=statistics,
-            message="Plugin system statistics"
-        )
-        
-    except Exception as e:
-        logger.error("Failed to get plugin statistics", error=str(e))
-        return ApiResponse(
-            success=False,
-            message=f"Failed to get plugin statistics: {str(e)}"
-        )

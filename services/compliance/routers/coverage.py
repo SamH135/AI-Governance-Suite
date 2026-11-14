@@ -72,6 +72,7 @@ async def system_coverage_matrix(
 
     # latest score per evaluator, newest execution wins
     primary_keys = coverage.scan_primary_output_keys(_PLUGINS_DIR)
+    directions = coverage.scan_score_directions(_PLUGINS_DIR)
     latest: dict = {}
     for details_raw, _ in rows:
         details = details_raw if isinstance(details_raw, dict) else json.loads(details_raw or "{}")
@@ -82,7 +83,10 @@ async def system_coverage_matrix(
             if isinstance(result, dict) and "error" in result:
                 latest[name] = None  # ran but failed
                 continue
-            latest[name] = _primary_score(result, primary_keys.get(name))
+            score = _primary_score(result, primary_keys.get(name))
+            if score is not None and not directions.get(name, True):
+                score = 100.0 - score  # normalize risk scores to higher-is-better
+            latest[name] = score
 
     matrix = coverage.build_matrix(coverage.scan_evaluator_refs(_PLUGINS_DIR), latest)
     matrix["system_id"] = system_id
