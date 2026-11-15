@@ -429,14 +429,20 @@ class TestExecutionRequest(BaseModel):
         if 'temperature' not in self.test_subject_params:
             self.test_subject_params['temperature'] = self.temperature
 
-async def _resolve_model_config(db: AsyncSession, model_config_id: int) -> Optional[Dict[str, Any]]:
-    """Resolve AI model configuration from database."""
+async def _resolve_model_config(db: AsyncSession, model_config_id: int, user_id: int) -> Optional[Dict[str, Any]]:
+    """Resolve AI model configuration from database, scoped to the owning user.
+
+    Not-owned behaves exactly like not-found.
+    """
     try:
         result = await db.execute(
-            select(AIModelConfig).where(AIModelConfig.config_id == model_config_id)
+            select(AIModelConfig).where(
+                AIModelConfig.config_id == model_config_id,
+                AIModelConfig.created_by == user_id
+            )
         )
         model_config = result.scalar_one_or_none()
-        
+
         if not model_config:
             return None
 
@@ -446,6 +452,7 @@ async def _resolve_model_config(db: AsyncSession, model_config_id: int) -> Optio
             result = await db.execute(
                 select(UserAPIKey).where(
                     UserAPIKey.id == api_key_id,
+                    UserAPIKey.user_id == user_id,
                     UserAPIKey.status == 'active'
                 )
             )
@@ -455,6 +462,16 @@ async def _resolve_model_config(db: AsyncSession, model_config_id: int) -> Optio
                 api_key = get_encryption_fernet().decrypt(key_row.encrypted_key.encode()).decode()
             else:
                 logger.warning(f"Managed API key {api_key_id} not found or inactive")
+
+        # Re-validate api_url at call time: older rows predate the schema validators
+        if model_config.api_url:
+            try:
+                from services.shared.url_safety import validate_outbound_url
+                validate_outbound_url(model_config.api_url)
+            except ValueError as e:
+                logger.warning("Model config api_url failed outbound-URL validation",
+                               config_id=model_config_id, error=str(e))
+                return None
 
         return {
             "config_id": model_config.config_id,
@@ -704,9 +721,9 @@ async def _run_compliance_test_sync(
             }
         
         # 3. RESOLVE MODEL CONFIGURATIONS
-        test_subject_config = await _resolve_model_config(db, test_subject_model_id)
-        evaluator_config = await _resolve_model_config(db, test_request.evaluator_model_id)
-        
+        test_subject_config = await _resolve_model_config(db, test_subject_model_id, user_id)
+        evaluator_config = await _resolve_model_config(db, test_request.evaluator_model_id, user_id)
+
         if not test_subject_config:
             return {
                 "testId": f"test_{system_id}_{int(time.time())}",
@@ -853,9 +870,9 @@ async def _run_compliance_test_background(
             return
         
         # 3. RESOLVE MODEL CONFIGURATIONS
-        test_subject_config = await _resolve_model_config(db, test_subject_model_id)
-        evaluator_config = await _resolve_model_config(db, test_request.evaluator_model_id)
-        
+        test_subject_config = await _resolve_model_config(db, test_subject_model_id, user_id)
+        evaluator_config = await _resolve_model_config(db, test_request.evaluator_model_id, user_id)
+
         if not test_subject_config:
             error_msg = f"Test subject model config {test_subject_model_id} not found or missing API key"
             logger.error(error_msg, model_id=test_subject_model_id)
