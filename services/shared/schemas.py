@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union, Generic, TypeVar
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from enum import Enum
 
 # Type variable for generic API responses
@@ -108,7 +108,13 @@ class AIModelConfigBase(BaseSchema):
     tags: Optional[List[str]] = Field(default_factory=list)
 
 class AIModelConfigCreate(AIModelConfigBase):
-    pass
+    @field_validator("api_url")
+    @classmethod
+    def _validate_api_url(cls, v):
+        if v is None:
+            return v
+        from services.shared.url_safety import validate_outbound_url
+        return validate_outbound_url(v)
 
 class AIModelConfigUpdate(BaseSchema):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -125,6 +131,14 @@ class AIModelConfigUpdate(BaseSchema):
     timeout: Optional[int] = Field(None, gt=0)
     enabled: Optional[bool] = None
     tags: Optional[List[str]] = None
+
+    @field_validator("api_url")
+    @classmethod
+    def _validate_api_url(cls, v):
+        if v is None:
+            return v
+        from services.shared.url_safety import validate_outbound_url
+        return validate_outbound_url(v)
 
 class AIModelConfigResponse(AIModelConfigBase):
     id: int = Field(..., alias="config_id")  # Frontend expects 'id' field

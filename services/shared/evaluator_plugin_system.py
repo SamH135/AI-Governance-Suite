@@ -515,43 +515,7 @@ class PluginManager:
         config: PluginConfig
     ) -> BaseEvaluatorPlugin:
         """Load a plugin from code string."""
-        try:
-            # Create module spec
-            spec = importlib.util.spec_from_loader(
-                f"plugin_{plugin_id}",
-                loader=None,
-                origin="dynamic"
-            )
-            
-            # Create module
-            module = importlib.util.module_from_spec(spec)
-            
-            # Add to sys.modules to allow imports
-            sys.modules[f"plugin_{plugin_id}"] = module
-            
-            # Execute code in module namespace
-            exec(plugin_code, module.__dict__)
-            
-            # Find plugin class (should inherit from BaseEvaluatorPlugin)
-            plugin_class = None
-            for name, obj in module.__dict__.items():
-                if (isinstance(obj, type) and 
-                    issubclass(obj, BaseEvaluatorPlugin) and 
-                    obj != BaseEvaluatorPlugin):
-                    plugin_class = obj
-                    break
-            
-            if not plugin_class:
-                raise ValidationError("Plugin must contain a class inheriting from BaseEvaluatorPlugin")
-            
-            # Instantiate plugin
-            plugin_instance = plugin_class(config)
-            
-            return plugin_instance
-            
-        except Exception as e:
-            logger.error("Failed to load plugin instance", plugin_id=plugin_id, error=str(e))
-            raise ValidationError(f"Failed to load plugin: {str(e)}")
+        raise NotImplementedError("dynamic code plugins are disabled")
     
     async def _validate_plugin_code(
         self,

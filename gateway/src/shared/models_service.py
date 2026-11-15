@@ -80,6 +80,13 @@ class AIModelConfigRequest(BaseModel):
     tags: List[str] = Field(default_factory=list)
     enabled: bool = Field(default=True)
 
+    @validator('api_url')
+    def validate_api_url(cls, v):
+        if v is None:
+            return v
+        from services.shared.url_safety import validate_outbound_url
+        return validate_outbound_url(v)
+
     @validator('tags')
     def validate_tags(cls, v):
         if len(v) > 10:
