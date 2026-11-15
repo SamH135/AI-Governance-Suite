@@ -12,10 +12,12 @@ from ..logger_util import logger
 from ..shared.database import get_db_pool
 from ..shared.cache import get_redis_client
 from ..shared.config import get_settings
+from ..shared.limiter import limiter
 router = APIRouter(prefix="/health", tags=["health"])
 
 @router.get("")
 @router.get("/")
+@limiter.exempt
 async def health_check():
     """Basic health check"""
     logger.debug("Basic health check requested", function="health_check")

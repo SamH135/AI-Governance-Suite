@@ -13,6 +13,14 @@ from ..logger_util import logger
 
 from ..shared.cache import get_redis_client
 from ..shared.config import get_settings
+from ..shared.database import get_db_pool
+
+# Resource channel -> ownership check (parameterized; $1=resource id, $2=user_id)
+_RESOURCE_CHANNEL_QUERIES = {
+    "compliance": "SELECT 1 FROM ai_systems WHERE system_id = $1 AND user_id = $2",
+    "document": "SELECT 1 FROM generated_documents WHERE document_id = $1 AND created_by = $2",
+    "prompt": "SELECT 1 FROM generated_prompts WHERE prompt_id = $1 AND created_by = $2",
+}
 
 class WebSocketManager:
     """Manages WebSocket connections and message broadcasting."""
@@ -164,6 +172,59 @@ class WebSocketManager:
         
         logger.debug("Channel broadcast completed", function="broadcast_to_channel", channel=channel, subscriber_count=len(subscribers))
     
+    async def authorize_channel(self, user_id: int, channel: str) -> bool:
+        """Default-deny authorization for a subscription request.
+
+        Allowed: admins, and resource channels whose row is owned by the user.
+        test_execution ids are either a numeric execution PK or the
+        `test_{system_id}_{ts}` form used by the compliance service.
+        """
+        prefix, sep, resource = channel.partition(":")
+        if not sep or not resource:
+            return False
+
+        try:
+            async with get_db_pool().acquire() as conn:
+                user = await conn.fetchrow(
+                    "SELECT role FROM users WHERE user_id = $1 AND is_active = TRUE",
+                    user_id,
+                )
+                if user is None:
+                    return False
+                if user["role"] == "admin":
+                    return True
+
+                if prefix == "test_execution":
+                    if resource.isdigit():
+                        row = await conn.fetchrow(
+                            "SELECT 1 FROM test_executions WHERE execution_id = $1 AND created_by = $2",
+                            int(resource), user_id,
+                        )
+                        if row:
+                            return True
+                        row = await conn.fetchrow(
+                            "SELECT 1 FROM compliance_test_executions WHERE execution_id = $1 AND created_by = $2",
+                            int(resource), user_id,
+                        )
+                        return row is not None
+                    parts = resource.split("_")
+                    if len(parts) == 3 and parts[0] == "test" and parts[1].isdigit():
+                        row = await conn.fetchrow(
+                            "SELECT 1 FROM ai_systems WHERE system_id = $1 AND user_id = $2",
+                            int(parts[1]), user_id,
+                        )
+                        return row is not None
+                    return False
+
+                query = _RESOURCE_CHANNEL_QUERIES.get(prefix)
+                if not query or not resource.isdigit():
+                    return False
+                row = await conn.fetchrow(query, int(resource), user_id)
+                return row is not None
+        except Exception as e:
+            logger.error("Channel authorization check failed", function="authorize_channel", channel=channel, error=str(e))
+            return False
+
     def subscribe_user(self, user_id: int, channel: str):
         """Subscribe a user to a channel."""
         logger.info("User channel subscription request", function="subscribe_user", user_id=user_id, channel=channel)
@@ -225,13 +286,21 @@ class WebSocketManager:
                 channel = message_data.get("channel")
                 if channel:
                     logger.info("Processing subscription request", function="handle_message", user_id=user_id, channel=channel)
-                    self.subscribe_user(user_id, channel)
-                    await websocket.send_json({
-                        "type": "subscription_confirmed",
-                        "channel": channel,
-                        "timestamp": datetime.utcnow().isoformat()
-                    })
-                    logger.debug("Subscription confirmation sent", function="handle_message", user_id=user_id, channel=channel)
+                    if await self.authorize_channel(user_id, channel):
+                        self.subscribe_user(user_id, channel)
+                        await websocket.send_json({
+                            "type": "subscription_confirmed",
+                            "channel": channel,
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
+                        logger.debug("Subscription confirmation sent", function="handle_message", user_id=user_id, channel=channel)
+                    else:
+                        logger.warn("Subscription denied", function="handle_message", user_id=user_id, channel=channel)
+                        await websocket.send_json({
+                            "type": "subscription_denied",
+                            "channel": channel,
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
                 else:
                     logger.warn("Subscribe request missing channel", function="handle_message", user_id=user_id)
             
@@ -424,12 +493,21 @@ async def get_current_user_websocket(token: str) -> Optional[dict]:
         if user_id is None:
             logger.warn("JWT token missing user_id", function="get_current_user_websocket")
             return None
-        
-        # In a real implementation, you might want to verify the user exists in the database
+
+        # Verify the user still exists and is active — same check as HTTP get_current_user
+        async with get_db_pool().acquire() as conn:
+            user_row = await conn.fetchrow(
+                "SELECT user_id, username, role FROM users WHERE user_id = $1 AND is_active = TRUE",
+                user_id,
+            )
+        if user_row is None:
+            logger.warn("WebSocket user not found or inactive", function="get_current_user_websocket", user_id=user_id)
+            return None
+
         user_info = {
             "user_id": user_id,
             "username": username,
-            "role": payload.get("role")
+            "role": user_row["role"]
         }
         
         logger.debug("WebSocket user authenticated successfully", function="get_current_user_websocket", user_id=user_id, username=username)

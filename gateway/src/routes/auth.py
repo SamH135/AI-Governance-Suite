@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field
 from passlib.context import CryptContext
@@ -17,6 +17,7 @@ from ..logger_util import logger
 from ..shared.database import get_db_pool
 from ..shared.cache import get_redis_client
 from ..shared.config import get_settings
+from ..shared.limiter import limiter
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -153,7 +154,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     return dict(user)
 
 @router.post("/login", response_model=LoginResponse)
-async def login(user_data: UserLogin):
+@limiter.limit("5/minute")
+async def login(request: Request, user_data: UserLogin):
     """User login endpoint"""
     logger.info("User login attempt", function="login", username=user_data.username)
     
@@ -251,7 +253,8 @@ async def login(user_data: UserLogin):
         )
 
 @router.post("/register", response_model=LoginResponse)
-async def register(user_data: UserRegister):
+@limiter.limit("5/minute")
+async def register(request: Request, user_data: UserRegister):
     """User registration endpoint"""
     logger.info("User registration attempt", function="register", username=user_data.username, email=user_data.email)
     

@@ -127,7 +127,10 @@ async def websocket_endpoint(
     
     # Subscribe to requested rooms
     for room in room_list:
-        websocket_manager.subscribe_user(user_id, room)
+        if await websocket_manager.authorize_channel(user_id, room):
+            websocket_manager.subscribe_user(user_id, room)
+        else:
+            logger.warn("Room subscription denied", function="websocket_endpoint", user_id=user_id, room=room)
     
     try:
         while True:

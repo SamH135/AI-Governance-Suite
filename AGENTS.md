@@ -8,7 +8,7 @@ Enterprise-grade AI compliance platform for testing, documenting, and managing r
 ## Repository Map
 
 ```
-gateway/              FastAPI API gateway — auth, routing, WebSocket (port 8000). slowapi `Limiter` is instantiated in `main.py` but no limits are configured.
+gateway/              FastAPI API gateway — auth, routing, WebSocket (port 8000). slowapi limits enforced: 200/min default, 5/min on auth login/register, `/health` exempt.
 services/
   compliance/         AI evaluation engine — runs evaluators, manages frameworks (port 8001)
   prompts/            RL-based prompt optimization & generation (port 8002)

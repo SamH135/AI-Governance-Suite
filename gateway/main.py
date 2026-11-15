@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from prometheus_client import Counter, Histogram, generate_latest
 import structlog
 
@@ -38,7 +39,7 @@ from src.websocket_routes import set_http_client as set_websocket_http_client
 from src.websocket_routes import router as websocket_router
 
 # Rate limiting
-limiter = Limiter(key_func=get_remote_address)
+from src.shared.limiter import limiter
 
 # Metrics
 request_count = Counter('gateway_requests_total', 'Total requests', ['method', 'endpoint', 'status'])
@@ -146,6 +147,8 @@ app.add_middleware(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# Required for default_limits to apply to routes without a decorator
+app.add_middleware(SlowAPIMiddleware)
 
 # Helper functions for service proxying
 async def forward_request(service_url: str, path: str, method: str, **kwargs) -> Dict[str, Any]:
