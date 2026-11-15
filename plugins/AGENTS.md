@@ -14,7 +14,7 @@ The extension point for compliance checks. Every new evaluator is a plugin here 
   - `metadata.yaml` — `name`, `version`, `framework`, `category`, `tags`, `config_schema`
 - Current plugins:
   - Passive (judge the response text): `example_plugin`, `excessive_agency`, `generic_compliance`, `hallucination_checker`, `insecure_output`, `pii_leakage`, `prompt_injection`
-  - Probe (drive the target model, `requires_test_subject_config=True`): `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness`, `indirect_prompt_injection`, `vector_embedding_security`, `tool_misuse`, `tool_poisoning`, `memory_poisoning`, `multi_turn_escalation`
+  - Probe (drive the target model, `requires_test_subject_config=True`): `system_prompt_leakage`, `unbounded_consumption`, `jailbreak_robustness`, `indirect_prompt_injection`, `vector_embedding_security`, `tool_misuse`, `tool_poisoning`, `memory_poisoning`, `multi_turn_escalation`, `adaptive_jailbreak`
   - Hybrid: `excessive_agency` is passive by default and adds an `agentic_probe` block when `test_subject_config` is provided
 - `cases/*.json` — probe corpora (`ProbeCase` dicts loaded via `framework/probes.load_cases`)
 - `configs/` — plugin config examples (placeholder values only)
@@ -52,3 +52,4 @@ The extension point for compliance checks. Every new evaluator is a plugin here 
 - 2026-11-14 — `model_extraction`: `_prefix_match_ratio` now slides an expected-length window over the output instead of comparing whole-output vs expected (SequenceMatcher diluted verbatim recitations inside long replies to ~0.1 — systematic false negatives, extraction rate understated ~2.5x).
 - 2026-11-14 — `counterfactual_fairness`: limitation discloses same-conversation pairing (consistency under observation, not blind counterfactual).
 - 2026-11-15 — Phase 6A: `jailbreak_robustness.evaluate()` gained `mutations` (None | list | `"all"`) and `max_variants` kwargs driving `probes.mutate()`; provenance records the technique list; `by_technique`/`attack_success_ci95` pass through from `run_suite`.
+- 2026-11-15 — Phase 6B: added `adaptive_jailbreak` — PAIR attacker-LLM probe (`probes/adaptive.py` via `run_suite(case_runner=)`). LLM REQUIRED (attacker + judge; `attacker_llm_config` or `evaluator_llm_config`, or injected `attacker_fn`/`score_fn` in tests). Emits `adaptive_robustness_score`, `mean_queries_to_success`, `winning_techniques`, `queries_total`.

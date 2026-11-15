@@ -82,6 +82,8 @@ class Transcript:
     usage: Dict[str, int] = field(default_factory=dict)
     latency_ms: float = 0.0
     tool_calls: List[Dict[str, Any]] = field(default_factory=list)
+    technique: Optional[str] = None          # e.g. "adaptive" — overrides refs-based technique keying
+    attempts: List[Dict[str, Any]] = field(default_factory=list)  # adaptive PAIR attempt history
 
     @property
     def all_output(self) -> str:

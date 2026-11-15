@@ -1,0 +1,16 @@
+name: adaptive_jailbreak
+version: 1.0.0
+description: Attacker-LLM PAIR probing — iterative jailbreak refinement scored by a judge (OWASP LLM01).
+author: AI Compliance Team
+framework: ADAPTIVE_JAILBREAK
+category: Security
+enabled: true
+tags:
+  - adaptive
+  - pair
+  - jailbreak
+  - llm01
+  - probe
+  - security
+dependencies: []
+supported_models: []

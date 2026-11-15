@@ -137,8 +137,10 @@ class Check:                          # ≈ @vf.reward(weight); weight=0 ≈ @vf
   (10 deterministic transforms — garak Buffs / PyRIT converters pattern), `ProbeCase.history`
   for many-shot/prefill attacks (DeepTeam `enhance()` pattern), `by_technique` ASR +
   Wilson `attack_success_ci95` in `run_suite`, `jailbreak_robustness` `mutations`/`max_variants` kwargs.
-- [ ] **6B — Adaptive PAIR attacker** (`probes/adaptive.py`; PAIR, arXiv 2310.08419):
+- [x] **6B — Adaptive PAIR attacker** (`probes/adaptive.py`; PAIR, arXiv 2310.08419):
   attacker-LLM iteratively rewrites the probe against target responses instead of static turns.
+  Shipped as the `adaptive_jailbreak` plugin; `run_suite` accepts `case_runner=`;
+  transcripts carry `technique`/`attempts` (queries-to-success, winning technique).
 - [ ] **6C — Evolutionary attack search** (`probes/attack_search.py`; AutoDAN-style GA):
   population of variants, fitness = existing checks, winners harvested back into the corpus.
 - [ ] **6D — Corpus conversion script** (garak / JBB-Behaviors → `ProbeCase` JSONL;
@@ -180,3 +182,4 @@ static SBOM/supply-chain scanning; ASI07/08/10 (need multi-agent targets); nativ
 
 - 2026-11-13 — Eval-integrity overhaul on branch fix/eval-integrity: axis-aware aggregation (attack vs benign separated, skipped checks excluded from denominators), judge hardening (all-tokens decoding, multilingual refusals, tool-aware injection checks, judge-less checks skip instead of fabricating 50), guaranteed-FP fixes (tool_poisoning/misuse/code_execution/memory_poisoning now only score declared forbidden tools), dead checks fixed (vector_embedding doc-canary), score-direction normalization via metadata.score_higher_is_better, hallucination_checker signature fixed, generic_compliance log leak removed, parse failures raise, systems.py iterations/concurrency implemented + empty-response fails + self-judge flag, system_tests.py asyncpg-on-SQLAlchemy fixed, plugins/statistics route unshadowed, dead broken files deleted, provenance binding (target/judge/git_sha/corpus_sha256). Verified live: deepseek target + gemini judge through real harness (tool_poisoning, jailbreak_robustness).
 - 2026-11-15 — Phase 6A landed on feature/attack-mutations: `probes/mutations.py` (10 deterministic transforms), `ProbeCase.history` (many-shot/prefill, never scored), hex canary decoding, StrongREJECT judges `refs.original_request`, `run_suite` emits `by_technique`/`attack_success_ci95`/`usage_total`, `jailbreak_robustness` gained `mutations`/`max_variants` kwargs. `test_probe_mutations.py` = 16 tests.
+- 2026-11-15 — Phase 6B landed on feature/attack-mutations: `probes/adaptive.py` — `run_adaptive_case` PAIR loop (score-branched, best-attempt transcript, summed usage), `make_attacker` (nonce-tagged untrusted history) + `make_score_fn` (reuses `llm_judge` hardening). `Transcript.technique`/`attempts`, `run_suite(case_runner=)`, `by_technique` keys on `transcript.technique`. New plugin `adaptive_jailbreak` (6 goal cases, `adaptive_robustness_score`, `mean_queries_to_success`, `winning_techniques`, `queries_total`). `test_probe_adaptive.py` = 11 tests.
