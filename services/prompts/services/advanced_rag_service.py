@@ -4,6 +4,8 @@ Supports multiple RAG models, vector databases, and retrieval strategies
 """
 
 import os
+import ast
+import json
 import asyncio
 import numpy as np
 from typing import Dict, List, Any, Optional, Union, Tuple
@@ -11,6 +13,19 @@ from datetime import datetime
 from enum import Enum
 import structlog
 from dataclasses import dataclass
+
+
+def _parse_metadata(raw: Any) -> Dict[str, Any]:
+    """Parse a stored metadata string safely (JSON first, then Python literal)."""
+    if not isinstance(raw, str):
+        return raw if isinstance(raw, dict) else {}
+    try:
+        return json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        try:
+            return ast.literal_eval(raw)
+        except (ValueError, SyntaxError):
+            return {}
 
 try:
     import chromadb
@@ -309,7 +324,7 @@ class MilvusVectorStore(VectorStore):
                 chunk = DocumentChunk(
                     chunk_id=str(hit.id),
                     content=hit.entity.get("content"),
-                    metadata=eval(hit.entity.get("metadata", "{}")),
+                    metadata=_parse_metadata(hit.entity.get("metadata", "{}")),
                     score=hit.score
                 )
                 chunks.append(chunk)

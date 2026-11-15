@@ -31,3 +31,4 @@ Prompt generation and optimization ("J1"): RL-based and genetic-algorithm prompt
 
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
+- 2026-11-14 — Security hardening: `advanced_rag_service.py` Milvus metadata now parses via `json.loads` with `ast.literal_eval` fallback.
