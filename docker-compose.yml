@@ -63,7 +63,7 @@ services:
       context: .
       dockerfile: services/compliance/Dockerfile
     ports:
-      - "8001:8000"
+      - "127.0.0.1:8001:8000"
     environment:
       - PYTHON_ENV=production
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
@@ -76,6 +76,7 @@ services:
       - API_KEY_ENCRYPTION_KEY=${API_KEY_ENCRYPTION_KEY}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ALGORITHM=HS256
+      # - ALLOW_PRIVATE_OUTBOUND_URLS=true  # opt-in for private endpoints (ollama/vLLM/webhooks); deny-by-default
     depends_on:
       - postgres
       - redis
@@ -101,7 +102,7 @@ services:
       context: .
       dockerfile: services/prompts/Dockerfile
     ports:
-      - "8002:8000"
+      - "127.0.0.1:8002:8000"
     environment:
       - PYTHON_ENV=development
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
@@ -128,7 +129,7 @@ services:
       context: .
       dockerfile: services/documents/Dockerfile
     ports:
-      - "8003:8000"
+      - "127.0.0.1:8003:8000"
     environment:
       - PYTHON_ENV=development
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
@@ -153,7 +154,7 @@ services:
       context: .
       dockerfile: services/tests/Dockerfile
     ports:
-      - "8004:8000"
+      - "127.0.0.1:8004:8000"
     environment:
       - PYTHON_ENV=development
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
@@ -177,7 +178,7 @@ services:
       context: .
       dockerfile: services/analytics/Dockerfile
     ports:
-      - "8005:8000"
+      - "127.0.0.1:8005:8000"
     environment:
       - PYTHON_ENV=development
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/ai_compliance
@@ -199,7 +200,7 @@ services:
   postgres:
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_DB=ai_compliance
       - POSTGRES_USER=postgres
@@ -219,7 +220,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -230,8 +231,8 @@ services:
     image: milvusdb/milvus:v2.3.0
     command: ["milvus", "run", "standalone"]
     ports:
-      - "19530:19530"
-      - "9091:9091"
+      - "127.0.0.1:19530:19530"
+      - "127.0.0.1:9091:9091"
     environment:
       - ETCD_ENDPOINTS=etcd:2379
       - MINIO_ADDRESS=minio:9000
@@ -262,11 +263,12 @@ services:
     # shortcut: pgsty/silo is the maintained MinIO fork; switch back if minio resumes publishing images
     image: pgsty/silo:RELEASE.2026-10-26T00-00-00Z
     environment:
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
+      # Dev defaults - set MINIO_ACCESS_KEY/MINIO_SECRET_KEY in .env to override; console is loopback-only below.
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - minio_data:/data
     command: minio server /data --console-address ":9001"

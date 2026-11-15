@@ -27,3 +27,4 @@ Database schema and infra setup for the docker-compose stack.
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-11 — Added `./plugins:/app/plugins` volume to compliance-service in docker-compose.yml — plugin evaluators were unreachable in-container without it.
+- 2026-11-14 — Compose hardening: postgres/redis/milvus/minio and services 8001-8005 now publish on `127.0.0.1` only (gateway 8000 and frontend 3000 unchanged). `docker-compose.simple.yml` requires `JWT_SECRET` (`:?` — dev default removed). MinIO keeps `minioadmin` defaults overridable via `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY` (`.env` lacks them); both compose files document `ALLOW_PRIVATE_OUTBOUND_URLS` commented-out on compliance-service.
