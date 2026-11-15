@@ -399,7 +399,15 @@ AI Compliance Platform
     
     async def _send_webhook(self, webhook_url: str, payload: Dict[str, Any]) -> bool:
         """Send a single webhook with retry logic."""
-        
+
+        try:
+            from services.shared.url_safety import validate_outbound_url
+            validate_outbound_url(webhook_url)
+        except ValueError as e:
+            logger.warning("Webhook URL failed outbound-URL validation, skipping",
+                           error=str(e))
+            return False
+
         for attempt in range(self.webhook_config["retry_attempts"]):
             try:
                 response = await self.http_client.post(

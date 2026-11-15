@@ -3,7 +3,7 @@
 
 # Document generation specific libraries
 reportlab>=4.0.0  # PDF generation
-weasyprint>=60.0  # HTML to PDF conversion
+weasyprint>=61.2   # HTML to PDF conversion
 docxtpl>=0.16.0  # Advanced Word document templating
 
 # File format conversions

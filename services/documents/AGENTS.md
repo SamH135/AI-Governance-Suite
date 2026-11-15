@@ -31,3 +31,4 @@ Generates compliance documents/reports from templates, with approval workflows, 
 
 ## Change Log
 - 2026-11-11 — AGENTS.md created (baseline).
+- 2026-11-14 — Security hardening: all three Jinja environments (`template_processor`, `document_service`, `industry_templates_service`) use `jinja2.sandbox.SandboxedEnvironment`; template routes already required `require_admin`. Webhook URLs in `notification_service._send_webhook` are validated via `services.shared.url_safety` before sending. Floors bumped: `jinja2>=3.1.6`, `weasyprint>=61.2`.

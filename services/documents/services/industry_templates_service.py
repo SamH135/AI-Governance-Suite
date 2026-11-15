@@ -9,7 +9,8 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 from pathlib import Path
 import structlog
-from jinja2 import Environment, DictLoader, select_autoescape
+from jinja2.sandbox import SandboxedEnvironment
+from jinja2 import DictLoader, select_autoescape
 
 from ...shared.exceptions import ValidationError, NotFoundError
 from .document_service import document_service
@@ -293,7 +294,7 @@ class IndustryTemplatesService:
             
             # Initialize Jinja2 environment
             try:
-                self.jinja_env = Environment(
+                self.jinja_env = SandboxedEnvironment(
                     loader=DictLoader({}),
                     autoescape=select_autoescape(['html', 'xml'])
                 )

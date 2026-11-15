@@ -7,7 +7,8 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 from pathlib import Path
 import structlog
-from jinja2 import Environment, DictLoader, select_autoescape
+from jinja2.sandbox import SandboxedEnvironment
+from jinja2 import DictLoader, select_autoescape
 
 from ...shared.models import AISystem, DocumentTemplate, GeneratedDocument
 from ...shared.schemas import DocumentFormat
@@ -53,7 +54,7 @@ class DocumentService:
                 logger.warning("Unified API not available - LLM enhancement disabled")
             
             # Initialize Jinja2 environment
-            self.jinja_env = Environment(
+            self.jinja_env = SandboxedEnvironment(
                 loader=DictLoader({}),
                 autoescape=select_autoescape(['html', 'xml']),
                 trim_blocks=True,

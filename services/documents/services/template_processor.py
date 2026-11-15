@@ -4,7 +4,8 @@ import json
 from typing import Dict, Any, List
 from datetime import datetime
 import structlog
-from jinja2 import Environment, DictLoader, select_autoescape, Template
+from jinja2.sandbox import SandboxedEnvironment
+from jinja2 import DictLoader, select_autoescape, Template
 
 from ...shared.models import DocumentTemplate, AISystem
 from ...shared.exceptions import ValidationError
@@ -26,7 +27,7 @@ class TemplateProcessor:
         
         try:
             # Initialize Jinja2 environment
-            self.jinja_env = Environment(
+            self.jinja_env = SandboxedEnvironment(
                 loader=DictLoader({}),
                 autoescape=select_autoescape(['html', 'xml']),
                 trim_blocks=True,
