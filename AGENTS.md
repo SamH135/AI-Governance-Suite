@@ -11,7 +11,7 @@ Enterprise-grade AI compliance platform for testing, documenting, and managing r
 gateway/              FastAPI API gateway — auth, routing, WebSocket (port 8000). slowapi limits enforced: 200/min default, 5/min on auth login/register, `/health` exempt.
 services/
   compliance/         AI evaluation engine — runs evaluators, manages frameworks (port 8001)
-  prompts/            RL-based prompt optimization & generation (port 8002)
+  prompts/            Genetic-algorithm prompt optimization & generation (port 8002)
   documents/          Template & compliance report generation (port 8003)
   tests/              Test execution & orchestration service (port 8004) — not the pytest suite
   analytics/          Metrics aggregation & dashboard data (port 8005)

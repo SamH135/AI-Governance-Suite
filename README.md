@@ -17,7 +17,7 @@ Frontend (React/Vite) → API Gateway (FastAPI) → Microservices → Data Layer
 **Services:**
 - **gateway** (port 8000): FastAPI API gateway — JWT auth, routing/proxying, WebSocket
 - **compliance** (port 8001): AI evaluation engine — runs evaluators, manages frameworks
-- **prompts** (port 8002): RL-based prompt optimization & generation
+- **prompts** (port 8002): Genetic-algorithm prompt optimization & generation
 - **documents** (port 8003): Template & compliance report generation
 - **tests** (port 8004): Test execution & orchestration
 - **analytics** (port 8005): Metrics aggregation & dashboard data
@@ -408,7 +408,7 @@ Kubernetes manifests and horizontal scaling are not included yet (services bind 
 gateway/              FastAPI API gateway
 services/
   compliance/         AI evaluation engine
-  prompts/            RL-based prompt optimization
+  prompts/            Genetic-algorithm prompt optimization
   documents/          Template & report generation
   tests/              Test execution service (not the pytest suite)
   analytics/          Metrics aggregation
@@ -446,7 +446,6 @@ Evaluator results carry references to these frameworks. The references are mappi
 
 - [Unified AI API Guide](docs/UNIFIED_AI_API.md)
 - [Plugin System Guide](docs/PLUGIN_SYSTEM.md)
-- [RL Optimizer Guide](services/prompts/RL_OPTIMIZER_README.md)
 - API documentation: interactive docs at each service's `/docs` endpoint
 - Per-area engineering notes: `AGENTS.md` in each service directory
 
