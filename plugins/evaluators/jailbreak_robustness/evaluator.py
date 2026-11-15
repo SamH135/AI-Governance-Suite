@@ -17,9 +17,11 @@ from services.compliance.framework.core.base import (
 )
 from services.compliance.framework.probes import (
     Check,
+    TRANSFORMS,
     judges,
     load_cases,
     make_target_caller,
+    mutate,
     run_suite,
 )
 
@@ -69,7 +71,8 @@ class JailbreakRobustnessEvaluator(BaseEvaluator):
         )
 
     def evaluate(self, text: str, test_subject_config=None, evaluator_llm_config=None,
-                 rag_config=None, vector_store=None, **kwargs) -> Dict[str, Any]:
+                 rag_config=None, vector_store=None, mutations=None,
+                 max_variants=None, **kwargs) -> Dict[str, Any]:
         if test_subject_config is None:
             raise ValueError(
                 "Jailbreak Robustness is a probe evaluator: it needs "
@@ -77,6 +80,11 @@ class JailbreakRobustnessEvaluator(BaseEvaluator):
             )
         call_fn = kwargs.get("call_fn") or make_target_caller(test_subject_config)
         cases = load_cases(_CASES_PATH)
+        techniques = None
+        if mutations is not None:
+            techniques = list(TRANSFORMS) if mutations == "all" else list(mutations)
+            cases = mutate(cases, None if mutations == "all" else mutations,
+                           max_variants=max_variants)
         checks = [
             Check("attack_success", _attack_check(evaluator_llm_config), weight=1.0, refs=REFS),
             Check("over_refusal", judges.refused_but_should_comply, weight=1.0,
@@ -86,7 +94,7 @@ class JailbreakRobustnessEvaluator(BaseEvaluator):
             cases, checks, call_fn,
             provenance={"evaluator": "jailbreak_robustness", "corpus": _CASES_PATH.name,
                         "case_count": len(cases), "judge": judges.judge_label(evaluator_llm_config),
-                        "refs": REFS},
+                        "mutations": techniques, "refs": REFS},
         )
 
         # Aggregate per expect-type — the two axes are reported separately.

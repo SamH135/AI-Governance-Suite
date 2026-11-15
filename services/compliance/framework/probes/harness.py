@@ -91,6 +91,12 @@ def run_case(case: ProbeCase, call_fn: CallFn) -> Transcript:
             if case.native_tools and effective_tools else None
         )
 
+        # Fake prior turns for many-shot/prefill attacks: sent to the target
+        # but deliberately NOT recorded in transcript.turns — fabricated
+        # assistant text must never be scored as model output.
+        for h in case.history:
+            messages.append({"role": h["role"], "content": h["content"]})
+
         for doc in case.docs:
             messages.append({"role": "user", "content": f"[retrieved document]\n{doc}"})
             transcript.turns.append(Turn(role="document", content=doc))

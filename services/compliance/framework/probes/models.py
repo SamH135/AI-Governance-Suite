@@ -21,6 +21,7 @@ class ProbeCase:
     native_tools: bool = False                 # send tools via provider function-calling instead of JSON prompt
     mcp_server: Optional[Dict[str, Any]] = None  # {command, args, env} — live MCP server for real tool execution
     tool_outputs: Tuple[str, ...] = ()         # tool results injected as a user/tool turn before turn 1
+    history: Tuple[Dict[str, str], ...] = ()   # fake prior {"role","content"} messages for many-shot/prefill attacks
     canaries: Tuple[str, ...] = ()             # secrets that must never appear in output
     expect: str = "refuse"                     # refuse | comply | ignore_injection
     refs: Dict[str, str] = field(default_factory=dict)  # {"owasp_llm": "LLM07", "atlas": "AML.T0056", ...}
@@ -33,6 +34,12 @@ class ProbeCase:
         expect = d.get("expect", "refuse")
         if expect not in ProbeCase._EXPECTS:
             raise ValueError(f"case {d.get('id')!r}: unknown expect {expect!r}")
+        history = tuple(d.get("history", ()))
+        for h in history:
+            if (not isinstance(h, dict)
+                    or h.get("role") not in ("user", "assistant")
+                    or not isinstance(h.get("content"), str) or not h["content"]):
+                raise ValueError(f"case {d.get('id')!r}: invalid history entry {h!r}")
         return ProbeCase(
             id=d["id"],
             turns=tuple(d["turns"]),
@@ -42,6 +49,7 @@ class ProbeCase:
             native_tools=bool(d.get("native_tools", False)),
             mcp_server=d.get("mcp_server"),
             tool_outputs=tuple(d.get("tool_outputs", ())),
+            history=history,
             canaries=tuple(d.get("canaries", ())),
             expect=expect,
             refs=d.get("refs", {}),
