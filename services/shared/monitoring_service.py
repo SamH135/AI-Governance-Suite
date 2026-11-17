@@ -11,6 +11,7 @@ from dataclasses import dataclass, asdict
 import structlog
 from collections import defaultdict, deque
 
+from .async_utils import spawn
 from .redis_client import redis_client
 from .database import db_manager
 from .exceptions import ValidationError
@@ -95,9 +96,9 @@ class MonitoringService:
             await self._register_default_collectors()
             
             # Start background tasks
-            asyncio.create_task(self._metrics_collection_loop())
-            asyncio.create_task(self._health_check_loop())
-            asyncio.create_task(self._alert_evaluation_loop())
+            spawn(self._metrics_collection_loop())
+            spawn(self._health_check_loop())
+            spawn(self._alert_evaluation_loop())
             
             self.initialized = True
             logger.info("Monitoring Service initialized successfully")

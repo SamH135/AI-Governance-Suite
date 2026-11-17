@@ -25,6 +25,7 @@ except ImportError:
     DOCKER_AVAILABLE = False
     docker = None
 
+from .async_utils import spawn
 from .database import db_manager
 from .exceptions import ValidationError, ExternalServiceError
 from .audit_logging_service import audit_logging_service, AuditEventType, AuditSeverity, AuditStatus
@@ -147,7 +148,7 @@ class PluginManager:
             await self._load_plugins()
             
             # Start monitoring task
-            asyncio.create_task(self._plugin_monitoring_task())
+            spawn(self._plugin_monitoring_task())
             
             self.initialized = True
             logger.info("Plugin system initialized", plugin_count=len(self.plugins))
@@ -266,7 +267,7 @@ class PluginManager:
                 )
             else:
                 # For async/batch/streaming modes, start execution and return immediately
-                asyncio.create_task(self._execute_plugin_async(
+                spawn(self._execute_plugin_async(
                     plugin, input_data, execution_context, execution_id
                 ))
                 result = {"status": "started", "execution_id": execution_id}

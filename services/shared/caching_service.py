@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 import structlog
 
+from .async_utils import spawn
 from .redis_client import redis_client
 from .exceptions import ValidationError
 
@@ -69,8 +70,8 @@ class CachingService:
             await self._setup_default_configs()
             
             # Start background tasks
-            asyncio.create_task(self._cache_maintenance_loop())
-            asyncio.create_task(self._stats_collection_loop())
+            spawn(self._cache_maintenance_loop())
+            spawn(self._stats_collection_loop())
             
             self.initialized = True
             logger.info("Caching Service initialized successfully")

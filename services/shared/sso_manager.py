@@ -321,23 +321,12 @@ class SSOManager:
         saml_response = callback_data.get("SAMLResponse")
         if not saml_response:
             raise AuthenticationError("Missing SAML response")
-        
-        # Decode SAML response
-        decoded_response = base64.b64decode(saml_response).decode()
-        
-        # Parse XML
-        root = ET.fromstring(decoded_response)
-        
-        # Extract user attributes (simplified)
-        user_info = {
-            "email": self._extract_saml_attribute(root, "email"),
-            "name": self._extract_saml_attribute(root, "name"),
-            "first_name": self._extract_saml_attribute(root, "first_name"),
-            "last_name": self._extract_saml_attribute(root, "last_name"),
-            "groups": self._extract_saml_attribute(root, "groups", multiple=True)
-        }
-        
-        return user_info
+
+        # shortcut: SAML disabled until signed-assertion validation (e.g. python3-saml/signxml) is added
+        raise AuthenticationError(
+            "SAML signature validation is not implemented; "
+            "SAML login is disabled"
+        )
     
     async def _handle_oauth_callback(
         self,
