@@ -41,7 +41,8 @@ out/
 .vscode/
 .claude/
 .kiro/
-.devin/
+.devin/*
+!.devin/skills/
 nul
 /prompts/
 .idea/
