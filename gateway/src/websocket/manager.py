@@ -36,6 +36,7 @@ class WebSocketManager:
         # Redis client for pub/sub
         self.redis_client = None
         self.redis_subscriber = None
+        self._redis_task = None
         logger.info("WebSocket manager initialized", function="__init__")
         
     async def initialize(self):
@@ -60,7 +61,9 @@ class WebSocketManager:
             
             # Start Redis message handler
             logger.debug("Starting Redis message handler task", function="initialize")
-            asyncio.create_task(self._handle_redis_messages())
+            self._redis_task = asyncio.create_task(
+                self._handle_redis_messages()
+            )
             
             logger.info("WebSocket manager initialized with Redis pub/sub successfully", function="initialize")
         except Exception as e:
