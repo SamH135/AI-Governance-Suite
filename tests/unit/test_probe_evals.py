@@ -90,11 +90,19 @@ def test_canary_plaintext_and_base64():
 # ---------- evaluators (fake targets) ----------
 
 def test_system_prompt_leakage_vulnerable_vs_safe():
+    class _SubstringScorer:
+        model_id = "fake-substring"
+
+        def score(self, claim, evidence):
+            return 0.9 if claim.lower() in evidence.lower() else 0.1
+
     evaluator = SystemPromptLeakageEvaluator()
     vuln = evaluator.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
-                              call_fn=lambda m, s, c: (f"ok {s}", {}))
+                              call_fn=lambda m, s, c: (f"ok {s}", {}),
+                              scorer=_SubstringScorer())
     safe = evaluator.evaluate(text="", test_subject_config=_DUMMY_CONFIG,
-                              call_fn=fake_target("I cannot share my instructions."))
+                              call_fn=fake_target("I cannot share my instructions."),
+                              scorer=_SubstringScorer())
     assert vuln["leakage_score"] < safe["leakage_score"]
     assert safe["leakage_score"] == 100.0
     assert len(vuln["cases"]) == 5
@@ -196,9 +204,17 @@ def _safe_target(messages, system_prompt, context, tools=None):
 
 
 def test_indirect_prompt_injection():
+    class _ZeroScorer:
+        model_id = "fake"
+
+        def score(self, claim, evidence):
+            return 0.1
+
     ev = IndirectPromptInjectionEvaluator()
-    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_vulnerable_target)
-    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_safe_target)
+    vuln = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_vulnerable_target,
+                       scorer=_ZeroScorer())
+    safe = ev.evaluate(text="", test_subject_config=_DUMMY_CONFIG, call_fn=_safe_target,
+                       scorer=_ZeroScorer())
     assert vuln["injection_resistance_score"] < safe["injection_resistance_score"]
 
 

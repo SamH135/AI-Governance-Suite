@@ -53,7 +53,7 @@ flowchart LR
         LOOP{"turn loop<br/>single or multi-turn"}
         TOOLS{"tool call?<br/>native_tools / simulated / mcp_server"}
         MCP["MCPToolset<br/>stdio MCP server<br/>tools/list · tools/call"]
-        JUDGE["Judges<br/>canary · refusal ·<br/>StrongREJECT · exfil"]
+        JUDGE["Checks<br/>deterministic: canary · refusal · exfil<br/>NLI grounding scorer<br/>LLM judge: StrongREJECT · paraphrase"]
     end
 
     subgraph "Unified API (shared/unified_api)"
@@ -85,6 +85,8 @@ flowchart LR
 ```
 
 Key: the **target model** and the **judge model** are both reached through the same Unified API — configure them as separate model configs to avoid self-grading. Tool calls resolve three ways depending on the case: `native_tools` (provider function calling), the simulated JSON protocol, or a real `mcp_server` subprocess.
+
+Checks run in three tiers by cost and verifiability: **deterministic** (canary presence, refusal, tool-call and exfil gating — near-free, ground truth), then a **local NLI grounding scorer** (`probes/grounding.py`, ~300ms–1.5s/claim on CPU, no data leaves the host) that scores whether response claims are entailed by `case.docs` — used for claim-grounding, paraphrase-leak fact conveyance, and injected-payload attribution — then the **hardened LLM judge** for the semantic remainder. Scorer failures raise; they never downgrade to a pass.
 
 ### Unified AI API
 
@@ -122,6 +124,7 @@ The platform ships probe-based security evaluators that run multi-turn, tool-cal
 | `multilingual_robustness` | OWASP LLM01 / ATLAS T0054 (per-language attack success) |
 | `model_extraction` | ATLAS T0024 (verbatim memorization only) |
 | `counterfactual_fairness` | EU AI Act Art. 9/10, NIST AI RMF fairness (demographic-swap pairs) |
+| `claim_grounding` | grounded factuality / faithfulness (NLI-scored claim entailment) |
 
 Plus passive text evaluators: `prompt_injection`, `pii_leakage`, `insecure_output`, `hallucination_checker`, and `generic_compliance` (LLM-rubric checks referencing GDPR/HIPAA). Built-in framework evaluators: `bias_detection`, `safety_analysis`.
 
@@ -129,6 +132,7 @@ Probe capabilities:
 - **Multi-turn conversations, RAG document injection, simulated tool protocols** via `services/compliance/framework/probes/`
 - **Native provider tool calling** — `ModelRequest.tools`/`ModelResponse.tool_calls` translated to Gemini function declarations, OpenAI `tools`, and Anthropic `tool_use`
 - **MCP client layer** (`shared/unified_api/mcp_client.py`) — connects to real MCP servers over stdio, pulls live tool manifests, and executes real tool calls inside probes (dependency-free JSON-RPC; HTTP transport not yet implemented)
+- **Tier-2 grounding scorer** (`probes/grounding.py`) — local NLI checkpoint (`GROUNDING_MODEL_ID`, default `ynie/roberta-large-...-nli` chosen via 6-model bake-off, `tests/manual/grounding_bakeoff.py`) checks claim entailment against case evidence; also powers `fact_leak_nli` (paraphrase leak conveyance) and `payload_grounded` (injection attribution). Model weights persist in the `hf_cache` compose volume
 - Every result carries per-case evidence, transcripts, token usage, provenance, and OWASP/ATLAS/NIST references — designed for audit artifacts
 
 > **Note:** The plugin system is the extension point: drop a custom evaluator into `plugins/evaluators/` and it's discovered and loaded automatically at startup. Shipped corpora are small (4–8 cases per evaluator) — `probes/benchmarks.py` loads HarmBench/JailbreakBench/XSTest/AgentDojo-style files for statistical power.
