@@ -84,6 +84,10 @@ docker-compose -f docker-compose.simple.yml up --build      # no Milvus/MinIO/et
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build  # hot-reload
 docker-compose down -v                                      # tear down + clean volumes
 
+docker compose --profile scan up -d sonarqube                 # SonarQube UI on :9000 (set SONAR_TOKEN in .env, then run scanner below)
+docker run --rm --network ai-governance-suite_ai-compliance-network -v "$PWD:/usr/src" \
+  -e SONAR_HOST_URL=http://sonarqube:9000 -e SONAR_TOKEN=$SONAR_TOKEN sonarsource/sonar-scanner-cli
+
 cd frontend && npm install && npm run dev                   # UI only (5173); also lint, lint:fix, format, test
 pytest tests/unit/ -v                                       # integration: tests/integration/ (needs infra)
 black services/ gateway/ && isort services/ gateway/ && flake8 services/ gateway/ && mypy services/ gateway/
