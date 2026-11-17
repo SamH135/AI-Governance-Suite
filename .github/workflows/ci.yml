@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+env:
+  # Compose files hard-require JWT_SECRET (":?"); CI has no secrets — dummy is fine.
+  JWT_SECRET: ci-not-a-real-secret
+
 jobs:
   compose-validate:
     runs-on: ubuntu-latest
