@@ -91,7 +91,7 @@ jspm_packages/
 .yarn-integrity
 
 # Docker
-.dockerignore
+!.dockerignore
 
 # Database
 *.db
@@ -114,4 +114,4 @@ temp/
 .terraform/
 
 # Kubernetes secrets
-secrets/
+secrets/.scannerwork/

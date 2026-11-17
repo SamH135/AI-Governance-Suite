@@ -34,8 +34,8 @@ services:
   # API Gateway (Python FastAPI)
   gateway:
     build:
-      context: ./gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: gateway/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -101,6 +101,7 @@ services:
       - ./shared:/app/shared
       - ./plugins:/app/plugins
       - ./tests:/app/tests
+      - hf_cache:/root/.cache/huggingface
     networks:
       - ai-compliance-network
 
@@ -205,13 +206,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
-      - REACT_APP_WS_URL=ws://localhost:8000
+      - GATEWAY_HOST=gateway
     depends_on:
       - gateway
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     networks:
       - ai-compliance-network
 
@@ -219,6 +216,7 @@ volumes:
   postgres_data:
   redis_data:
   document_storage:
+  hf_cache:
 
 networks:
   ai-compliance-network:
