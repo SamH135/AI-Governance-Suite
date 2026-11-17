@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import tempfile
 from typing import Dict, Any
 from pathlib import Path
 import structlog
@@ -374,48 +375,46 @@ class FormatConverter:
         # First generate HTML
         html_content = self._build_html_document(content)
         
-        # Create temporary HTML file
-        temp_html = f"/tmp/{base_filename}.html"
-        with open(temp_html, "w", encoding="utf-8") as f:
-            f.write(html_content)
-        
-        # Generate PDF
+        # Write inputs inside a private temp dir (auto-cleaned on success
+        # and failure) instead of predictable world-writable /tmp paths.
         pdf_filename = f"{base_filename}.pdf"
-        temp_pdf = f"/tmp/{pdf_filename}"
-        
-        cmd = [
-            "wkhtmltopdf",
-            "--page-size", "A4",
-            "--margin-top", "2cm",
-            "--margin-bottom", "2cm",
-            "--margin-left", "2cm",
-            "--margin-right", "2cm",
-            "--encoding", "UTF-8",
-            temp_html,
-            temp_pdf
-        ]
-        
-        try:
-            subprocess.run(cmd, check=True, capture_output=True)
-            
-            # Read PDF content
-            with open(temp_pdf, "rb") as f:
-                pdf_content = f.read()
-            
-            # Clean up temp files
-            os.unlink(temp_html)
-            os.unlink(temp_pdf)
-            
-            return {
-                "content": pdf_content,
-                "filename": pdf_filename,
-                "format": "pdf"
-            }
-            
-        except subprocess.CalledProcessError as e:
-            logger.error("wkhtmltopdf failed", error=str(e))
-            # Fallback to HTML
-            return await self.to_html(content, base_filename)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            temp_html = os.path.join(tmp, "doc.html")
+            temp_pdf = os.path.join(tmp, "doc.pdf")
+
+            with open(temp_html, "w", encoding="utf-8") as f:
+                f.write(html_content)
+
+            cmd = [
+                "wkhtmltopdf",
+                "--page-size", "A4",
+                "--margin-top", "2cm",
+                "--margin-bottom", "2cm",
+                "--margin-left", "2cm",
+                "--margin-right", "2cm",
+                "--encoding", "UTF-8",
+                temp_html,
+                temp_pdf
+            ]
+
+            try:
+                subprocess.run(cmd, check=True, capture_output=True)
+
+                # Read PDF content
+                with open(temp_pdf, "rb") as f:
+                    pdf_content = f.read()
+
+                return {
+                    "content": pdf_content,
+                    "filename": pdf_filename,
+                    "format": "pdf"
+                }
+
+            except subprocess.CalledProcessError as e:
+                logger.error("wkhtmltopdf failed", error=str(e))
+                # Fallback to HTML
+                return await self.to_html(content, base_filename)
     
     async def _generate_pdf_fallback(
         self, 
