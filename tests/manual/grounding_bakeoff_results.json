@@ -1,0 +1,1236 @@
+{
+  "n_pairs": 27,
+  "threshold": 0.5,
+  "models": {
+    "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli": {
+      "accuracy": 0.889,
+      "per_category": {
+        "paraphrase": "7/8",
+        "multi_hop": "4/5",
+        "contradiction": "2/3",
+        "date_swap": "4/4",
+        "fabrication": "5/5",
+        "world_knowledge": "2/2"
+      },
+      "mean_p_supported": 0.858,
+      "mean_p_unsupported": 0.075,
+      "ms_per_pair": 1373.0,
+      "pairs": [
+        {
+          "claim": "The deponent inspected the brake line on February 28.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9977,
+          "pred": 1
+        },
+        {
+          "claim": "Maintenance logs were updated weekly.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9904,
+          "pred": 1
+        },
+        {
+          "claim": "John Miller found no brake wear during the inspection.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9954,
+          "pred": 1
+        },
+        {
+          "claim": "The patient fractured their distal radius.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9989,
+          "pred": 1
+        },
+        {
+          "claim": "A cast was applied on June 14, 2023.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.1186,
+          "pred": 0
+        },
+        {
+          "claim": "The patient was discharged with a 600mg ibuprofen prescription.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9885,
+          "pred": 1
+        },
+        {
+          "claim": "Suit was filed in Travis County District Court.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9991,
+          "pred": 1
+        },
+        {
+          "claim": "The discovery deadline was set for September 30, 2024.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9887,
+          "pred": 1
+        },
+        {
+          "claim": "The brake line showed no signs of deterioration when checked.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9984,
+          "pred": 1
+        },
+        {
+          "claim": "The wrist fracture was on the patient's left side.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.1234,
+          "pred": 0
+        },
+        {
+          "claim": "The orthopedic follow-up was scheduled roughly two weeks after the ER visit.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9749,
+          "pred": 1
+        },
+        {
+          "claim": "The insurer was notified before the first demand letter was sent.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9921,
+          "pred": 1
+        },
+        {
+          "claim": "Defense counsel entered an appearance about three weeks after suit was filed.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9859,
+          "pred": 1
+        },
+        {
+          "claim": "The deponent found severe brake corrosion during the inspection.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0002,
+          "pred": 0
+        },
+        {
+          "claim": "The patient presented with right wrist pain.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0002,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance before suit was filed.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.8614,
+          "pred": 1
+        },
+        {
+          "claim": "The brake inspection happened on March 3, 2024.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0031,
+          "pred": 0
+        },
+        {
+          "claim": "The injury was treated on June 28, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.1027,
+          "pred": 0
+        },
+        {
+          "claim": "The patient was prescribed 800mg ibuprofen.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0006,
+          "pred": 0
+        },
+        {
+          "claim": "Plaintiff filed suit on March 15, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0494,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent admitted liability for the crash.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0014,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent is a certified mechanic.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0005,
+          "pred": 0
+        },
+        {
+          "claim": "The patient underwent wrist surgery.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0057,
+          "pred": 0
+        },
+        {
+          "claim": "The patient has a documented history of diabetes.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The case settled out of court for $50,000.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "Brake line corrosion can cause brake failure.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0222,
+          "pred": 0
+        },
+        {
+          "claim": "Distal radius fractures are common after falls.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.001,
+          "pred": 0
+        }
+      ]
+    },
+    "cross-encoder/nli-deberta-v3-base": {
+      "accuracy": 0.852,
+      "per_category": {
+        "paraphrase": "8/8",
+        "multi_hop": "5/5",
+        "contradiction": "2/3",
+        "date_swap": "2/4",
+        "fabrication": "4/5",
+        "world_knowledge": "2/2"
+      },
+      "mean_p_supported": 0.989,
+      "mean_p_unsupported": 0.283,
+      "ms_per_pair": 115.2,
+      "pairs": [
+        {
+          "claim": "The deponent inspected the brake line on February 28.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9973,
+          "pred": 1
+        },
+        {
+          "claim": "Maintenance logs were updated weekly.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9881,
+          "pred": 1
+        },
+        {
+          "claim": "John Miller found no brake wear during the inspection.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9887,
+          "pred": 1
+        },
+        {
+          "claim": "The patient fractured their distal radius.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9922,
+          "pred": 1
+        },
+        {
+          "claim": "A cast was applied on June 14, 2023.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.96,
+          "pred": 1
+        },
+        {
+          "claim": "The patient was discharged with a 600mg ibuprofen prescription.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9932,
+          "pred": 1
+        },
+        {
+          "claim": "Suit was filed in Travis County District Court.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9982,
+          "pred": 1
+        },
+        {
+          "claim": "The discovery deadline was set for September 30, 2024.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9979,
+          "pred": 1
+        },
+        {
+          "claim": "The brake line showed no signs of deterioration when checked.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9931,
+          "pred": 1
+        },
+        {
+          "claim": "The wrist fracture was on the patient's left side.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9865,
+          "pred": 1
+        },
+        {
+          "claim": "The orthopedic follow-up was scheduled roughly two weeks after the ER visit.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9937,
+          "pred": 1
+        },
+        {
+          "claim": "The insurer was notified before the first demand letter was sent.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9734,
+          "pred": 1
+        },
+        {
+          "claim": "Defense counsel entered an appearance about three weeks after suit was filed.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9928,
+          "pred": 1
+        },
+        {
+          "claim": "The deponent found severe brake corrosion during the inspection.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0,
+          "pred": 0
+        },
+        {
+          "claim": "The patient presented with right wrist pain.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance before suit was filed.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.9928,
+          "pred": 1
+        },
+        {
+          "claim": "The brake inspection happened on March 3, 2024.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.9515,
+          "pred": 1
+        },
+        {
+          "claim": "The injury was treated on June 28, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0008,
+          "pred": 0
+        },
+        {
+          "claim": "The patient was prescribed 800mg ibuprofen.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "Plaintiff filed suit on March 15, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.9972,
+          "pred": 1
+        },
+        {
+          "claim": "The deponent admitted liability for the crash.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent is a certified mechanic.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0003,
+          "pred": 0
+        },
+        {
+          "claim": "The patient underwent wrist surgery.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.9962,
+          "pred": 1
+        },
+        {
+          "claim": "The patient has a documented history of diabetes.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The case settled out of court for $50,000.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0,
+          "pred": 0
+        },
+        {
+          "claim": "Brake line corrosion can cause brake failure.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0176,
+          "pred": 0
+        },
+        {
+          "claim": "Distal radius fractures are common after falls.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0002,
+          "pred": 0
+        }
+      ]
+    },
+    "ynie/roberta-large-snli_mnli_fever_anli_R1_R2_R3-nli": {
+      "accuracy": 0.963,
+      "per_category": {
+        "paraphrase": "8/8",
+        "multi_hop": "5/5",
+        "contradiction": "3/3",
+        "date_swap": "3/4",
+        "fabrication": "5/5",
+        "world_knowledge": "2/2"
+      },
+      "mean_p_supported": 0.978,
+      "mean_p_unsupported": 0.069,
+      "ms_per_pair": 217.9,
+      "pairs": [
+        {
+          "claim": "The deponent inspected the brake line on February 28.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.7299,
+          "pred": 1
+        },
+        {
+          "claim": "Maintenance logs were updated weekly.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9996,
+          "pred": 1
+        },
+        {
+          "claim": "John Miller found no brake wear during the inspection.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9998,
+          "pred": 1
+        },
+        {
+          "claim": "The patient fractured their distal radius.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9997,
+          "pred": 1
+        },
+        {
+          "claim": "A cast was applied on June 14, 2023.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9993,
+          "pred": 1
+        },
+        {
+          "claim": "The patient was discharged with a 600mg ibuprofen prescription.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9985,
+          "pred": 1
+        },
+        {
+          "claim": "Suit was filed in Travis County District Court.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9996,
+          "pred": 1
+        },
+        {
+          "claim": "The discovery deadline was set for September 30, 2024.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9986,
+          "pred": 1
+        },
+        {
+          "claim": "The brake line showed no signs of deterioration when checked.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9998,
+          "pred": 1
+        },
+        {
+          "claim": "The wrist fracture was on the patient's left side.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9992,
+          "pred": 1
+        },
+        {
+          "claim": "The orthopedic follow-up was scheduled roughly two weeks after the ER visit.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9996,
+          "pred": 1
+        },
+        {
+          "claim": "The insurer was notified before the first demand letter was sent.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9955,
+          "pred": 1
+        },
+        {
+          "claim": "Defense counsel entered an appearance about three weeks after suit was filed.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9938,
+          "pred": 1
+        },
+        {
+          "claim": "The deponent found severe brake corrosion during the inspection.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The patient presented with right wrist pain.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance before suit was filed.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0011,
+          "pred": 0
+        },
+        {
+          "claim": "The brake inspection happened on March 3, 2024.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0002,
+          "pred": 0
+        },
+        {
+          "claim": "The injury was treated on June 28, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.9554,
+          "pred": 1
+        },
+        {
+          "claim": "The patient was prescribed 800mg ibuprofen.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "Plaintiff filed suit on March 15, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.005,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent admitted liability for the crash.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0002,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent is a certified mechanic.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0007,
+          "pred": 0
+        },
+        {
+          "claim": "The patient underwent wrist surgery.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The patient has a documented history of diabetes.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0003,
+          "pred": 0
+        },
+        {
+          "claim": "The case settled out of court for $50,000.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0003,
+          "pred": 0
+        },
+        {
+          "claim": "Brake line corrosion can cause brake failure.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0005,
+          "pred": 0
+        },
+        {
+          "claim": "Distal radius fractures are common after falls.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0003,
+          "pred": 0
+        }
+      ]
+    },
+    "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli": {
+      "accuracy": 1.0,
+      "per_category": {
+        "paraphrase": "8/8",
+        "multi_hop": "5/5",
+        "contradiction": "3/3",
+        "date_swap": "4/4",
+        "fabrication": "5/5",
+        "world_knowledge": "2/2"
+      },
+      "mean_p_supported": 0.998,
+      "mean_p_unsupported": 0.001,
+      "ms_per_pair": 3456.9,
+      "pairs": [
+        {
+          "claim": "The deponent inspected the brake line on February 28.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9995,
+          "pred": 1
+        },
+        {
+          "claim": "Maintenance logs were updated weekly.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9949,
+          "pred": 1
+        },
+        {
+          "claim": "John Miller found no brake wear during the inspection.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9984,
+          "pred": 1
+        },
+        {
+          "claim": "The patient fractured their distal radius.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9994,
+          "pred": 1
+        },
+        {
+          "claim": "A cast was applied on June 14, 2023.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9997,
+          "pred": 1
+        },
+        {
+          "claim": "The patient was discharged with a 600mg ibuprofen prescription.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9951,
+          "pred": 1
+        },
+        {
+          "claim": "Suit was filed in Travis County District Court.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9996,
+          "pred": 1
+        },
+        {
+          "claim": "The discovery deadline was set for September 30, 2024.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9994,
+          "pred": 1
+        },
+        {
+          "claim": "The brake line showed no signs of deterioration when checked.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9989,
+          "pred": 1
+        },
+        {
+          "claim": "The wrist fracture was on the patient's left side.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9994,
+          "pred": 1
+        },
+        {
+          "claim": "The orthopedic follow-up was scheduled roughly two weeks after the ER visit.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9957,
+          "pred": 1
+        },
+        {
+          "claim": "The insurer was notified before the first demand letter was sent.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9988,
+          "pred": 1
+        },
+        {
+          "claim": "Defense counsel entered an appearance about three weeks after suit was filed.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9987,
+          "pred": 1
+        },
+        {
+          "claim": "The deponent found severe brake corrosion during the inspection.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The patient presented with right wrist pain.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance before suit was filed.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0018,
+          "pred": 0
+        },
+        {
+          "claim": "The brake inspection happened on March 3, 2024.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0005,
+          "pred": 0
+        },
+        {
+          "claim": "The injury was treated on June 28, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0007,
+          "pred": 0
+        },
+        {
+          "claim": "The patient was prescribed 800mg ibuprofen.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0002,
+          "pred": 0
+        },
+        {
+          "claim": "Plaintiff filed suit on March 15, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent admitted liability for the crash.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent is a certified mechanic.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "The patient underwent wrist surgery.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0003,
+          "pred": 0
+        },
+        {
+          "claim": "The patient has a documented history of diabetes.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0,
+          "pred": 0
+        },
+        {
+          "claim": "The case settled out of court for $50,000.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0001,
+          "pred": 0
+        },
+        {
+          "claim": "Brake line corrosion can cause brake failure.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0047,
+          "pred": 0
+        },
+        {
+          "claim": "Distal radius fractures are common after falls.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0002,
+          "pred": 0
+        }
+      ]
+    },
+    "lytang/MiniCheck-DeBERTa-v3-Large": {
+      "accuracy": 0.815,
+      "per_category": {
+        "paraphrase": "7/8",
+        "multi_hop": "1/5",
+        "contradiction": "3/3",
+        "date_swap": "4/4",
+        "fabrication": "5/5",
+        "world_knowledge": "2/2"
+      },
+      "mean_p_supported": 0.648,
+      "mean_p_unsupported": 0.044,
+      "ms_per_pair": 420.9,
+      "pairs": [
+        {
+          "claim": "The deponent inspected the brake line on February 28.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.8748,
+          "pred": 1
+        },
+        {
+          "claim": "Maintenance logs were updated weekly.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9704,
+          "pred": 1
+        },
+        {
+          "claim": "John Miller found no brake wear during the inspection.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9134,
+          "pred": 1
+        },
+        {
+          "claim": "The patient fractured their distal radius.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9773,
+          "pred": 1
+        },
+        {
+          "claim": "A cast was applied on June 14, 2023.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.7127,
+          "pred": 1
+        },
+        {
+          "claim": "The patient was discharged with a 600mg ibuprofen prescription.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9725,
+          "pred": 1
+        },
+        {
+          "claim": "Suit was filed in Travis County District Court.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9567,
+          "pred": 1
+        },
+        {
+          "claim": "The discovery deadline was set for September 30, 2024.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.329,
+          "pred": 0
+        },
+        {
+          "claim": "The brake line showed no signs of deterioration when checked.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9496,
+          "pred": 1
+        },
+        {
+          "claim": "The wrist fracture was on the patient's left side.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.0462,
+          "pred": 0
+        },
+        {
+          "claim": "The orthopedic follow-up was scheduled roughly two weeks after the ER visit.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.0617,
+          "pred": 0
+        },
+        {
+          "claim": "The insurer was notified before the first demand letter was sent.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.3665,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance about three weeks after suit was filed.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.2891,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent found severe brake corrosion during the inspection.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0125,
+          "pred": 0
+        },
+        {
+          "claim": "The patient presented with right wrist pain.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0201,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance before suit was filed.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.2051,
+          "pred": 0
+        },
+        {
+          "claim": "The brake inspection happened on March 3, 2024.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0663,
+          "pred": 0
+        },
+        {
+          "claim": "The injury was treated on June 28, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0271,
+          "pred": 0
+        },
+        {
+          "claim": "The patient was prescribed 800mg ibuprofen.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0289,
+          "pred": 0
+        },
+        {
+          "claim": "Plaintiff filed suit on March 15, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0506,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent admitted liability for the crash.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.011,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent is a certified mechanic.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0884,
+          "pred": 0
+        },
+        {
+          "claim": "The patient underwent wrist surgery.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0169,
+          "pred": 0
+        },
+        {
+          "claim": "The patient has a documented history of diabetes.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0114,
+          "pred": 0
+        },
+        {
+          "claim": "The case settled out of court for $50,000.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0107,
+          "pred": 0
+        },
+        {
+          "claim": "Brake line corrosion can cause brake failure.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.017,
+          "pred": 0
+        },
+        {
+          "claim": "Distal radius fractures are common after falls.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0451,
+          "pred": 0
+        }
+      ]
+    },
+    "lytang/MiniCheck-RoBERTa-Large": {
+      "accuracy": 0.889,
+      "per_category": {
+        "paraphrase": "8/8",
+        "multi_hop": "3/5",
+        "contradiction": "3/3",
+        "date_swap": "4/4",
+        "fabrication": "4/5",
+        "world_knowledge": "2/2"
+      },
+      "mean_p_supported": 0.806,
+      "mean_p_unsupported": 0.152,
+      "ms_per_pair": 208.1,
+      "pairs": [
+        {
+          "claim": "The deponent inspected the brake line on February 28.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9832,
+          "pred": 1
+        },
+        {
+          "claim": "Maintenance logs were updated weekly.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9905,
+          "pred": 1
+        },
+        {
+          "claim": "John Miller found no brake wear during the inspection.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9708,
+          "pred": 1
+        },
+        {
+          "claim": "The patient fractured their distal radius.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9873,
+          "pred": 1
+        },
+        {
+          "claim": "A cast was applied on June 14, 2023.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.8399,
+          "pred": 1
+        },
+        {
+          "claim": "The patient was discharged with a 600mg ibuprofen prescription.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9874,
+          "pred": 1
+        },
+        {
+          "claim": "Suit was filed in Travis County District Court.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9907,
+          "pred": 1
+        },
+        {
+          "claim": "The discovery deadline was set for September 30, 2024.",
+          "label": 1,
+          "cat": "paraphrase",
+          "p": 0.9887,
+          "pred": 1
+        },
+        {
+          "claim": "The brake line showed no signs of deterioration when checked.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.9846,
+          "pred": 1
+        },
+        {
+          "claim": "The wrist fracture was on the patient's left side.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.6966,
+          "pred": 1
+        },
+        {
+          "claim": "The orthopedic follow-up was scheduled roughly two weeks after the ER visit.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.5688,
+          "pred": 1
+        },
+        {
+          "claim": "The insurer was notified before the first demand letter was sent.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.0267,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance about three weeks after suit was filed.",
+          "label": 1,
+          "cat": "multi_hop",
+          "p": 0.4576,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent found severe brake corrosion during the inspection.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0463,
+          "pred": 0
+        },
+        {
+          "claim": "The patient presented with right wrist pain.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.0493,
+          "pred": 0
+        },
+        {
+          "claim": "Defense counsel entered an appearance before suit was filed.",
+          "label": 0,
+          "cat": "contradiction",
+          "p": 0.2645,
+          "pred": 0
+        },
+        {
+          "claim": "The brake inspection happened on March 3, 2024.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0227,
+          "pred": 0
+        },
+        {
+          "claim": "The injury was treated on June 28, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.0591,
+          "pred": 0
+        },
+        {
+          "claim": "The patient was prescribed 800mg ibuprofen.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.027,
+          "pred": 0
+        },
+        {
+          "claim": "Plaintiff filed suit on March 15, 2023.",
+          "label": 0,
+          "cat": "date_swap",
+          "p": 0.4942,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent admitted liability for the crash.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0048,
+          "pred": 0
+        },
+        {
+          "claim": "The deponent is a certified mechanic.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0219,
+          "pred": 0
+        },
+        {
+          "claim": "The patient underwent wrist surgery.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.8813,
+          "pred": 1
+        },
+        {
+          "claim": "The patient has a documented history of diabetes.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0031,
+          "pred": 0
+        },
+        {
+          "claim": "The case settled out of court for $50,000.",
+          "label": 0,
+          "cat": "fabrication",
+          "p": 0.0026,
+          "pred": 0
+        },
+        {
+          "claim": "Brake line corrosion can cause brake failure.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.2177,
+          "pred": 0
+        },
+        {
+          "claim": "Distal radius fractures are common after falls.",
+          "label": 0,
+          "cat": "world_knowledge",
+          "p": 0.0318,
+          "pred": 0
+        }
+      ]
+    }
+  }
+}

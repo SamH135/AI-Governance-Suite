@@ -1,0 +1,15 @@
+name: claim_grounding
+version: 1.0.0
+description: Tier-2 faithfulness check — a local NLI model scores whether each response claim is entailed by the evidence documents.
+author: AI Compliance Team
+framework: CLAIM_GROUNDING
+category: Quality
+enabled: true
+tags:
+  - groundedness
+  - faithfulness
+  - nli
+  - hallucination
+  - probe
+dependencies: []
+supported_models: []

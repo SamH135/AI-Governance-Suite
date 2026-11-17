@@ -38,7 +38,8 @@ async def test_discover_plugins():
         "multilingual_robustness",
         "model_extraction",
         "code_execution",
-        "adaptive_jailbreak"
+        "adaptive_jailbreak",
+        "claim_grounding"
     ]
     for expected in expected_plugins:
         assert expected in plugins, f"Plugin '{expected}' should be discovered"

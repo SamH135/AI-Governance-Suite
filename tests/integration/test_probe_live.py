@@ -46,6 +46,7 @@ PROBE_EVALUATORS = [
     "model_extraction",
     "code_execution",
     "adaptive_jailbreak",
+    "claim_grounding",
 ]
 
 ENABLED = os.environ.get("RUN_LIVE_EVALS") == "1"
