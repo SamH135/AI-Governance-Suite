@@ -369,23 +369,20 @@ class SSOManager:
         
         tokens = token_response.json()
         access_token = tokens.get("access_token")
-        id_token = tokens.get("id_token")
-        
-        # Get user info
-        if id_token:
-            # Decode JWT (simplified - should verify signature in production)
-            user_info = jwt.decode(id_token, options={"verify_signature": False})
-        else:
-            # Use userinfo endpoint
-            userinfo_response = await self.http_client.get(
-                config["userinfo_endpoint"],
-                headers={"Authorization": f"Bearer {access_token}"}
-            )
-            
-            if userinfo_response.status_code != 200:
-                raise AuthenticationError("Failed to get user info")
-            
-            user_info = userinfo_response.json()
+        if not access_token:
+            raise AuthenticationError("Missing access token")
+
+        # Always fetch claims from the userinfo endpoint; never trust
+        # unverified id_token claims (they are attacker-controlled).
+        userinfo_response = await self.http_client.get(
+            config["userinfo_endpoint"],
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+
+        if userinfo_response.status_code != 200:
+            raise AuthenticationError("Failed to get user info")
+
+        user_info = userinfo_response.json()
         
         return {
             "email": user_info.get("email"),

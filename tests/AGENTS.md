@@ -10,7 +10,7 @@ Python test suite for all backend code. Each area's `AGENTS.md` names the specif
 ## Layout and tiers
 | Dir | Runs in CI | Needs | Notes |
 |---|---|---|---|
-| `unit/` | yes | nothing (intended) | Offline also: `test_security_hardening`, `test_eval_integrity`. **Known issue:** `test_auth.py`, `test_model_config.py`, `test_systems_api.py`, `test_no_fallbacks.py` call `localhost` and need the live stack. Offline today: `test_evaluator`, `test_compliance`, `test_evaluator_plugins`, `test_probe_evals`, `test_probe_mutations`, `test_probe_adaptive`, `test_saved_api_keys`, `test_unified_api`. |
+| `unit/` | yes | nothing (intended) | Offline also: `test_security_hardening`, `test_eval_integrity`. **Known issue:** `test_auth.py`, `test_model_config.py`, `test_systems_api.py`, `test_no_fallbacks.py` call `localhost` and need the live stack. Offline today: `test_evaluator`, `test_compliance`, `test_evaluator_plugins`, `test_probe_evals`, `test_probe_mutations`, `test_probe_adaptive`, `test_saved_api_keys`, `test_unified_api`, `test_shared_sso_manager`. |
 | `integration/` | when stack is up | `docker-compose up`; some need provider keys in env | Cross-service and real-provider tests |
 | `manual/` | no | stack + keys | Ad-hoc scripts, not assertions-based |
 
@@ -43,3 +43,4 @@ Python test suite for all backend code. Each area's `AGENTS.md` names the specif
 - 2026-11-16 — Added `test_grounding.py` (7 tests, offline): claim splitting/abstention filter, unsupported-claim scoring, skip semantics (no docs/no claims/refusal), fail-loud scorer errors, lazy scorer init, `claim_grounding` plugin e2e with scripted dict scorer + fake target. `claim_grounding` added to `expected_plugins` and `PROBE_EVALUATORS` (note: live run triggers a ~400MB HF download on first use).
 - 2026-11-16 — `manual/grounding_bakeoff.py` (manual, not pytest): 6-model grounding bake-off on 27 hand-labeled legal/medical pairs via the production `NLIGroundingScorer` path; results in `manual/grounding_bakeoff_results.json`. Finding: purpose-built MiniCheck-DeBERTa scored lowest (81.5%, weak on multi-hop); default switched to `ynie/roberta-large` (96.3%, ~1.5s/pair).
 - 2026-11-16 — `test_grounding.py` +2 (fact-leak conveyance scoring, refusal-scores-0/skip-no-prompt). `test_probe_evals.py`: leakage + indirect-injection tests now inject fake scorers (required — plugins' NLI checks would otherwise download the real model in unit tests).
+- 2026-11-17 — Added `test_shared_sso_manager.py` (3 tests, offline): forged unsigned `id_token` ignored in favour of userinfo claims, missing `access_token` and userinfo non-200 both raise `AuthenticationError`. Stubs `redis` in `sys.modules` when not installed (local env lacks it).
