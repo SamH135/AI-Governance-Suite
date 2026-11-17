@@ -1,7 +1,8 @@
 import axios from 'axios';
 import logger from '../utils/logger.js';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Empty default = same-origin; dev server and the prod nginx image both proxy /api to the gateway.
+const API_URL = import.meta.env.VITE_API_URL || '';
 logger.info(`Auth service initialized with API URL: ${API_URL}`, 'authService.js', 'init');
 
 const api = axios.create({
