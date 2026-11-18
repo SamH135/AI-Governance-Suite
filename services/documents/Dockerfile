@@ -20,7 +20,7 @@ COPY services/ services/
 COPY shared/ shared/
 
 # Create directories
-RUN mkdir -p logs storage
+RUN mkdir -p logs storage && useradd -m appuser && chown -R appuser:appuser /app
 
 # Set Python path
 ENV PYTHONPATH=/app
@@ -33,4 +33,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application
+USER appuser
+
 CMD ["python", "-m", "uvicorn", "services.documents.main:app", "--host", "0.0.0.0", "--port", "8000"]
