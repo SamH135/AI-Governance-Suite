@@ -2,7 +2,7 @@
 
 import asyncio
 import time
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 from datetime import datetime, timedelta
 from enum import Enum
 import structlog
