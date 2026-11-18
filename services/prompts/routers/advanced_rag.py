@@ -1,6 +1,7 @@
 """Advanced RAG (Retrieval-Augmented Generation) endpoints."""
 
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 import structlog
@@ -325,7 +326,7 @@ async def test_rag_system(
                     })
             
             test_results[config_name] = {
-                "total_queries": len(test_queries),
+                "total_queries": len(request.test_queries),
                 "successful_queries": len([r for r in config_results if r["success"]]),
                 "failed_queries": len([r for r in config_results if not r["success"]]),
                 "results": config_results
@@ -333,7 +334,7 @@ async def test_rag_system(
         
         logger.info("RAG system test completed", 
                    user_id=current_user.user_id,
-                   queries_count=len(test_queries),
+                   queries_count=len(request.test_queries),
                    configs_tested=len(config_names))
         
         return ApiResponse(

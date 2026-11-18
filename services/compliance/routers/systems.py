@@ -25,6 +25,8 @@ from services.shared.models import AIModelConfig
 from ..services.compliance_service import ComplianceService
 from ..services.evaluator_factory import EvaluatorFactory
 
+logger = structlog.get_logger()
+
 # Import unified API system (consistent with model_configs.py)
 try:
     from shared.unified_api import get_unified_api, ModelConfig
@@ -33,7 +35,6 @@ except ImportError as e:
     logger.warning(f"Unified API not available: {e}")
     UNIFIED_API_AVAILABLE = False
 
-logger = structlog.get_logger()
 router = APIRouter()
 
 @router.get("/systems", response_model=ApiResponse[List[AISystemResponse]])
