@@ -34,6 +34,10 @@ jobs:
           done
       - name: Run unit tests inside compliance container
         run: docker compose -f docker-compose.simple.yml exec -T compliance-service python -m pytest tests/unit/ -q
+      - name: Run gateway tests inside gateway container
+        run: |
+          docker compose -f docker-compose.simple.yml exec -T gateway python -m pip install -q pytest
+          docker compose -f docker-compose.simple.yml exec -T gateway python -m pytest /repo/tests/unit/test_gateway_proxy.py /repo/tests/unit/test_gateway_cors_order.py -q
       - name: Smoke-check core endpoints
         run: |
           TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \

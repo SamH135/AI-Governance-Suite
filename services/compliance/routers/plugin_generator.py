@@ -7,6 +7,7 @@ import structlog
 
 from ...shared.auth import get_current_active_user, require_admin
 from ...shared.schemas import UserResponse, ApiResponse
+from ..services.plugin_generator_service import plugin_generator
 # Plugin generator functionality moved to framework
 
 logger = structlog.get_logger()

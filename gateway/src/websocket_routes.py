@@ -408,7 +408,7 @@ async def broadcast_notification(
         message = notification_data.get("message", "")
         data = notification_data.get("data", {})
         
-        await websocket_notifier.broadcast_system_notification(message, data)
+        await websocket_manager.broadcast_system_notification(message, data)
         
         return {
             "success": True,
