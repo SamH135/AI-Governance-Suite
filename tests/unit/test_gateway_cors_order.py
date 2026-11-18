@@ -8,12 +8,20 @@ import ast
 import sys
 from pathlib import Path
 
+import pytest
+
 root_path = str(Path(__file__).resolve().parent.parent.parent)
 if root_path not in sys.path:
     sys.path.insert(0, root_path)
 
 GATEWAY_MAIN = Path(root_path) / "gateway" / "main.py"
 WS_MANAGER = Path(root_path) / "gateway" / "src" / "websocket" / "manager.py"
+
+# CI runs unit tests inside the compliance container, which has no gateway/.
+pytestmark = pytest.mark.skipif(
+    not (GATEWAY_MAIN.exists() and WS_MANAGER.exists()),
+    reason="gateway source not present in this environment",
+)
 
 
 def _is_create_task_call(node):
