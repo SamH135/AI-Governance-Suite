@@ -27,7 +27,7 @@ React 18 + Vite SPA for managing AI systems, model configs, compliance tests/res
 
 ## Verification
 - `npm run lint` must pass with **0 warnings** (`--max-warnings 0`).
-- `npm run test` (vitest). **No frontend tests exist yet.** A new component, hook or context needs a test using `@testing-library/react` (already installed). Put it next to the file as `*.test.jsx`.
+- `npm run test` = `vitest` (watch); CI/single runs use `npx vitest run`. First test: `src/services/authService.test.js` (axios interceptors via injected `api.defaults.adapter`). Environment is **happy-dom** (jsdom 31 needs Node ≥22.12 for `require(ESM)`). A new component, hook or context needs a test using `@testing-library/react`; put it next to the file as `*.test.jsx`.
 - `npm run build` must succeed.
 - Manual: run against the gateway with `docker-compose up` and click through the affected route.
 
@@ -35,6 +35,7 @@ React 18 + Vite SPA for managing AI systems, model configs, compliance tests/res
 - The auth token lives in `localStorage('token')` (read in 3 places). It's readable from JS if an XSS bug exists. Changing this needs a decision on cookie-based auth with the gateway.
 
 ## Change Log
+- 2026-11-17 — First frontend test (`src/services/authService.test.js`, vitest + happy-dom via `vite.config.js` `test.environment`). `authService.js`: removed a debug line that dumped the full axios request config (Authorization bearer header + request body) into console logs.
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-12 — Security upgrade: node:18-alpine -> node:22-alpine, react-router-dom 6 -> 7, vite 5 -> 6.4.6, vitest 1 -> 5, package-lock.json added (builds were non-reproducible), `overrides` pins for dompurify/postcss-selector-parser/esbuild<0.26/tinypool CVE fixes. Removed `zod` (unused). eslint config still references missing @typescript-eslint — pre-existing, lint was already broken.
 - 2026-11-12 — `ApiKeysPage` shows env-sourced provider keys in a read-only "Environment Keys" section (`apiKeysService.getEnvApiKeys` → `GET /api-keys/env`). Managed keys remain editable.

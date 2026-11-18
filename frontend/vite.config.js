@@ -33,6 +33,9 @@ export default defineConfig({
       }
     }
   },
+  test: {
+    environment: 'happy-dom'
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,
