@@ -49,3 +49,58 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose -f docker-compose.simple.yml down -v
+
+  python-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install flake8 black isort mypy
+      - name: Fatal lint (syntax errors, undefined names)
+        run: flake8 services/ gateway/ shared/ plugins/ --select=E9,F63,F7,F82
+      - name: Full style report (informational)
+        continue-on-error: true
+        run: flake8 services/ gateway/ shared/ plugins/ --count --statistics
+      - name: Format/type check (informational)
+        continue-on-error: true
+        run: |
+          black --check services/ gateway/ shared/ plugins/ || true
+          isort --check-only services/ gateway/ shared/ plugins/ || true
+          mypy services/ gateway/ || true
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx vitest run --passWithNoTests
+      - run: npm run build
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pip-audit
+      - name: Python dependency audit (informational until baseline is clean)
+        continue-on-error: true
+        run: pip-audit -r services/requirements.txt -r gateway/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: npm audit (informational until baseline is clean)
+        continue-on-error: true
+        run: cd frontend && npm audit --audit-level=high
