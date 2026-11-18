@@ -315,10 +315,9 @@ class WebSocketManager:
         # Cancel Redis subscriber task
         if self._subscriber_task:
             self._subscriber_task.cancel()
-            try:
-                await self._subscriber_task
-            except asyncio.CancelledError:
-                pass
+            # wait() doesn't propagate the task's CancelledError, so an
+            # external cancellation of THIS coroutine still surfaces.
+            await asyncio.wait([self._subscriber_task], timeout=5)
         
         # Close Redis subscriber
         if self._redis_subscriber:

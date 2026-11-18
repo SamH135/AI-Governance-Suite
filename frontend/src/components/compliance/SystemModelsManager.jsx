@@ -329,7 +329,9 @@ const ModelFormModal = ({ isOpen, onClose, onSave, model, availableTemplates, sy
                         ? 'border-brand-500 bg-brand-50'
                         : 'border-neutral-200 hover:border-neutral-300'
                     }`}
-                    onClick={() => handleTemplateSelect(template)}
+                    onClick={() => handleTemplateSelect(template)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTemplateSelect(template); } }}
+                              role="button"
+                              tabIndex={0}
                   >
                     <div className="flex items-center gap-2">
                       <Copy className="w-4 h-4 text-neutral-500" />

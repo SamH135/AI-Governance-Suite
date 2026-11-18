@@ -202,7 +202,9 @@ const PromptEngineeringPage = () => {
                   <div
                     key={index}
                     className="p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors"
-                    onClick={() => setPrompt(template.template)}
+                    onClick={() => setPrompt(template.template)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPrompt(template.template); } }}
+                              role="button"
+                              tabIndex={0}
                   >
                     <div className="flex items-center mb-1">
                       <Code className="w-4 h-4 mr-2 text-brand-600" />

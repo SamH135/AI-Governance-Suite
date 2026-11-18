@@ -1,5 +1,6 @@
 """Plugin management endpoints."""
 
+import asyncio
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -392,9 +393,12 @@ async def update_plugin_config(
         
         config_file = Path(plugin_manager.plugins_dir) / "configs" / f"{plugin_name}.yaml"
         config_file.parent.mkdir(exist_ok=True)
-        
-        with open(config_file, 'w', encoding='utf-8') as f:
-            yaml.dump(config_request.config, f, default_flow_style=False)
+
+        def _write():
+            with open(config_file, 'w', encoding='utf-8') as f:
+                yaml.dump(config_request.config, f, default_flow_style=False)
+
+        await asyncio.to_thread(_write)
         
         # Update in-memory config
         plugin_manager.plugin_configs[plugin_name] = config_request.config
