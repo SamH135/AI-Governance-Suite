@@ -164,10 +164,10 @@ const QueryInterface = ({ documents, onRunQuery, queryResult, loading }) => {
       <Card.Content className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <label htmlFor="ragtes-field-167" className="block text-sm font-medium text-neutral-700 mb-2">
               Query
             </label>
-            <textarea
+            <textarea id="ragtes-field-167"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Enter your question about the uploaded documents..."
@@ -179,10 +179,10 @@ const QueryInterface = ({ documents, onRunQuery, queryResult, loading }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
+              <label htmlFor="ragtes-field-182" className="block text-sm font-medium text-neutral-700 mb-1">
                 Model
               </label>
-              <select
+              <select id="ragtes-field-182"
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
                 className="input"
@@ -195,10 +195,10 @@ const QueryInterface = ({ documents, onRunQuery, queryResult, loading }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
+              <label htmlFor="ragtes-field-198" className="block text-sm font-medium text-neutral-700 mb-1">
                 Top K Results
               </label>
-              <input
+              <input id="ragtes-field-198"
                 type="number"
                 value={retrievalSettings.topK}
                 onChange={(e) => setRetrievalSettings(prev => ({

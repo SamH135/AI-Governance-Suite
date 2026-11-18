@@ -309,10 +309,10 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
           />
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+            <label htmlFor="templa-field-313" className="block text-sm font-medium text-neutral-700 mb-1">
               Description
             </label>
-            <textarea
+            <textarea id="templa-field-313"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Describe the purpose and scope of this template..."
@@ -323,10 +323,10 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+            <label htmlFor="templa-field-327" className="block text-sm font-medium text-neutral-700 mb-1">
               Industry
             </label>
-            <select
+            <select id="templa-field-327"
               value={formData.industry}
               onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
               className="input"
@@ -347,10 +347,10 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
           />
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+            <label htmlFor="templa-field-351" className="block text-sm font-medium text-neutral-700 mb-1">
               Template Content
             </label>
-            <textarea
+            <textarea id="templa-field-351"
               value={formData.content}
               onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
               placeholder="Enter the template content in markdown format..."

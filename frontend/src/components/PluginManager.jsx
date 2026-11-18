@@ -350,8 +350,8 @@ const PluginGenerator = ({ onPluginGenerated }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Plugin Name</label>
-              <input
+              <label htmlFor="pm-plugin-name" className="block text-sm font-medium mb-2">Plugin Name</label>
+              <input id="pm-plugin-name"
                 type="text"
                 className="w-full p-2 border rounded-md"
                 value={formData.plugin_name}
@@ -361,8 +361,8 @@ const PluginGenerator = ({ onPluginGenerated }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-2">Framework Name</label>
-              <input
+              <label htmlFor="plugin-framework-name" className="block text-sm font-medium mb-2">Framework Name</label>
+              <input id="plugin-framework-name"
                 type="text"
                 className="w-full p-2 border rounded-md"
                 value={formData.framework_name}
@@ -373,8 +373,8 @@ const PluginGenerator = ({ onPluginGenerated }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
-            <textarea
+            <label htmlFor="plugin-description" className="block text-sm font-medium mb-2">Description</label>
+            <textarea id="plugin-description"
               className="w-full p-2 border rounded-md"
               rows={3}
               value={formData.description}
@@ -385,8 +385,8 @@ const PluginGenerator = ({ onPluginGenerated }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Author</label>
-              <input
+              <label htmlFor="plugin-author" className="block text-sm font-medium mb-2">Author</label>
+              <input id="plugin-author"
                 type="text"
                 className="w-full p-2 border rounded-md"
                 value={formData.author}
@@ -395,8 +395,8 @@ const PluginGenerator = ({ onPluginGenerated }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <select
+              <label htmlFor="plugin-category" className="block text-sm font-medium mb-2">Category</label>
+              <select id="plugin-category"
                 className="w-full p-2 border rounded-md"
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -473,8 +473,8 @@ const PluginInstaller = ({ onPluginInstalled }) => {
       <CardContent>
         <form onSubmit={handleInstall} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Plugin File</label>
-            <input
+            <label htmlFor="pm-plugin-file" className="block text-sm font-medium mb-2">Plugin File</label>
+            <input id="pm-plugin-file"
               type="file"
               accept=".zip,.py"
               className="w-full p-2 border rounded-md"
@@ -484,8 +484,8 @@ const PluginInstaller = ({ onPluginInstalled }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Plugin Name (Optional)</label>
-            <input
+            <label htmlFor="pm-plugin-name-opt" className="block text-sm font-medium mb-2">Plugin Name (Optional)</label>
+            <input id="pm-plugin-name-opt"
               type="text"
               className="w-full p-2 border rounded-md"
               value={pluginName}

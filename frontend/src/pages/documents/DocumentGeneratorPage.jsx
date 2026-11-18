@@ -41,10 +41,10 @@ const ProjectInfoStep = ({ data, onChange }) => (
       />
       
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor="docume-field-44" className="block text-sm font-medium text-neutral-700 mb-1">
           Industry
         </label>
-        <select
+        <select id="docume-field-44"
           value={data.industry}
           onChange={(e) => onChange({ industry: e.target.value })}
           className="input"
@@ -60,10 +60,10 @@ const ProjectInfoStep = ({ data, onChange }) => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor="docume-field-63" className="block text-sm font-medium text-neutral-700 mb-1">
           ML/LLM System Description
         </label>
-        <textarea
+        <textarea id="docume-field-63"
           value={data.systemDescription}
           onChange={(e) => onChange({ systemDescription: e.target.value })}
           placeholder="Describe your ML/LLM system, its purpose, and key features..."
@@ -73,10 +73,10 @@ const ProjectInfoStep = ({ data, onChange }) => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor="docume-field-76" className="block text-sm font-medium text-neutral-700 mb-1">
           Operating Countries
         </label>
-        <input
+        <input id="docume-field-76"
           type="text"
           value={data.operatingCountries}
           onChange={(e) => onChange({ operatingCountries: e.target.value })}
@@ -95,9 +95,9 @@ const DataModelStep = ({ data, onChange }) => (
     </Card.Header>
     <Card.Content className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <span className="block text-sm font-medium text-neutral-700 mb-1">
           Data Types
-        </label>
+        </span>
         <div className="space-y-2">
           {['Personal Data', 'Health Data', 'Financial Data', 'Biometric Data', 'Location Data'].map((type) => (
             <label key={type} className="flex items-center">
@@ -119,10 +119,10 @@ const DataModelStep = ({ data, onChange }) => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor="docume-field-122" className="block text-sm font-medium text-neutral-700 mb-1">
           Data Sources
         </label>
-        <textarea
+        <textarea id="docume-field-122"
           value={data.dataSources}
           onChange={(e) => onChange({ dataSources: e.target.value })}
           placeholder="Describe your data sources, collection methods, and storage..."
@@ -132,10 +132,10 @@ const DataModelStep = ({ data, onChange }) => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor="docume-field-135" className="block text-sm font-medium text-neutral-700 mb-1">
           Model Architecture
         </label>
-        <select
+        <select id="docume-field-135"
           value={data.modelArchitecture}
           onChange={(e) => onChange({ modelArchitecture: e.target.value })}
           className="input"
@@ -166,9 +166,9 @@ const ComplianceInfoStep = ({ data, onChange }) => (
     </Card.Header>
     <Card.Content className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <span className="block text-sm font-medium text-neutral-700 mb-1">
           Regulatory Frameworks
-        </label>
+        </span>
         <div className="space-y-2">
           {['GDPR', 'HIPAA', 'SOX', 'PCI DSS', 'CCPA', 'FDA', 'FTC'].map((framework) => (
             <label key={framework} className="flex items-center">
@@ -190,10 +190,10 @@ const ComplianceInfoStep = ({ data, onChange }) => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor="docume-field-193" className="block text-sm font-medium text-neutral-700 mb-1">
           Risk Assessment Level
         </label>
-        <select
+        <select id="docume-field-193"
           value={data.riskLevel}
           onChange={(e) => onChange({ riskLevel: e.target.value })}
           className="input"
@@ -207,10 +207,10 @@ const ComplianceInfoStep = ({ data, onChange }) => (
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor="docume-field-210" className="block text-sm font-medium text-neutral-700 mb-1">
           Audit Requirements
         </label>
-        <textarea
+        <textarea id="docume-field-210"
           value={data.auditRequirements}
           onChange={(e) => onChange({ auditRequirements: e.target.value })}
           placeholder="Describe any specific audit requirements or compliance standards..."

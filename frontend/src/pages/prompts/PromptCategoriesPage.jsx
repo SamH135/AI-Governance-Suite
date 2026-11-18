@@ -176,10 +176,10 @@ const CreateCategoryModal = ({ isOpen, onClose, onSave }) => {
           />
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+            <label htmlFor="prompt-field-180" className="block text-sm font-medium text-neutral-700 mb-1">
               Description
             </label>
-            <textarea
+            <textarea id="prompt-field-180"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Describe the purpose and use cases for this category..."
@@ -190,10 +190,10 @@ const CreateCategoryModal = ({ isOpen, onClose, onSave }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+            <label htmlFor="prompt-field-194" className="block text-sm font-medium text-neutral-700 mb-1">
               Framework
             </label>
-            <select
+            <select id="prompt-field-194"
               value={formData.framework}
               onChange={(e) => setFormData(prev => ({ ...prev, framework: e.target.value }))}
               className="input"

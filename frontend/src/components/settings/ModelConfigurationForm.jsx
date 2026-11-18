@@ -282,10 +282,10 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
           />
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-700">
+            <label htmlFor="modelc-field-287" className="block text-sm font-medium text-neutral-700">
               Description
             </label>
-            <textarea
+            <textarea id="modelc-field-287"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Describe the intended use case for this model configuration"
@@ -300,10 +300,10 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
           <h3 className="text-lg font-medium text-neutral-900">Provider Configuration</h3>
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-700">
+            <label htmlFor="modelc-field-305" className="block text-sm font-medium text-neutral-700">
               AI Provider
             </label>
-            <select
+            <select id="modelc-field-305"
               value={formData.provider}
               onChange={(e) => handleProviderChange(e.target.value)}
               className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -317,10 +317,10 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-700">
+            <label htmlFor="modelc-field-322" className="block text-sm font-medium text-neutral-700">
               Model ID
             </label>
-            <Input
+            <Input id="modelc-field-322"
               value={formData.model_id}
               onChange={(e) => handleInputChange('model_id', e.target.value)}
               placeholder="Enter the exact model ID from your provider's documentation"
@@ -333,7 +333,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
 
           {currentProvider?.requiredFields.includes('api_key') && (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-neutral-700">
+              <label htmlFor="mcf-api-key" className="block text-sm font-medium text-neutral-700">
                 API Key
                 {getProviderApiKeys().length > 0 && (
                   <span className="ml-2 text-xs text-neutral-500">
@@ -344,7 +344,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
               
               <div className="relative">
                 <div className="relative">
-                  <input
+                  <input id="mcf-api-key"
                     type={showApiKey ? 'text' : 'password'}
                     value={isUsingSavedKey() ? '' : formData.api_key}
                     onChange={(e) => handleApiKeyInputChange(e.target.value)}
@@ -486,10 +486,10 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {currentProvider?.supportedParams.includes('temperature') && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700">
+                <label htmlFor="mcf-temperature" className="block text-sm font-medium text-neutral-700">
                   Temperature ({formData.temperature})
                 </label>
-                <input
+                <input id="mcf-temperature"
                   type="range"
                   min="0"
                   max="2"
@@ -519,10 +519,10 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
 
             {currentProvider?.supportedParams.includes('top_p') && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700">
+                <label htmlFor="mcf-top-p" className="block text-sm font-medium text-neutral-700">
                   Top P ({formData.top_p})
                 </label>
-                <input
+                <input id="mcf-top-p"
                   type="range"
                   min="0"
                   max="1"
@@ -536,10 +536,10 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
 
             {currentProvider?.supportedParams.includes('frequency_penalty') && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700">
+                <label htmlFor="mcf-frequency-penalty" className="block text-sm font-medium text-neutral-700">
                   Frequency Penalty ({formData.frequency_penalty})
                 </label>
-                <input
+                <input id="mcf-frequency-penalty"
                   type="range"
                   min="-2"
                   max="2"
@@ -553,10 +553,10 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
 
             {currentProvider?.supportedParams.includes('presence_penalty') && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-neutral-700">
+                <label htmlFor="mcf-presence-penalty" className="block text-sm font-medium text-neutral-700">
                   Presence Penalty ({formData.presence_penalty})
                 </label>
-                <input
+                <input id="mcf-presence-penalty"
                   type="range"
                   min="-2"
                   max="2"

@@ -482,8 +482,8 @@ const SystemsListPage = () => {
               void handleCreateSubmit(systemData);            }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">System Name</label>
-                  <input
+                  <label htmlFor="system-system-name" className="block text-sm font-medium text-neutral-700 mb-1">System Name</label>
+                  <input id="system-system-name"
                     name="name"
                     type="text"
                     required
@@ -492,8 +492,8 @@ const SystemsListPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
-                  <textarea
+                  <label htmlFor="system-description" className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
+                  <textarea id="system-description"
                     name="description"
                     className="input w-full"
                     rows="3"
@@ -501,8 +501,8 @@ const SystemsListPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">System Type</label>
-                  <select name="system_type" className="input w-full">
+                  <label htmlFor="system-system-type" className="block text-sm font-medium text-neutral-700 mb-1">System Type</label>
+                  <select id="system-system-type" name="system_type" className="input w-full">
                     <option value="llm">Large Language Model</option>
                     <option value="ml_model">Machine Learning Model</option>
                     <option value="decision_system">Decision System</option>
@@ -510,8 +510,8 @@ const SystemsListPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Industry</label>
-                  <select name="industry" className="input w-full">
+                  <label htmlFor="system-industry" className="block text-sm font-medium text-neutral-700 mb-1">Industry</label>
+                  <select id="system-industry" name="industry" className="input w-full">
                     <option value="healthcare">Healthcare</option>
                     <option value="finance">Finance</option>
                     <option value="technology">Technology</option>
@@ -520,8 +520,8 @@ const SystemsListPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Compliance Frameworks</label>
-                  <input
+                  <label htmlFor="system-compliance-frameworks" className="block text-sm font-medium text-neutral-700 mb-1">Compliance Frameworks</label>
+                  <input id="system-compliance-frameworks"
                     name="frameworks"
                     type="text"
                     className="input w-full"

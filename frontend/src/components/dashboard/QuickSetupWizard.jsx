@@ -155,8 +155,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
-              <select
+              <label htmlFor="quicks-provider" className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
+              <select id="quicks-provider"
                 value={apiKeyData.provider}
                 onChange={(e) => setApiKeyData(prev => ({ ...prev, provider: e.target.value }))}
                 className="input w-full"
@@ -169,8 +169,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
-              <Input
+              <label htmlFor="quicks-name" className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
+              <Input id="quicks-name"
                 value={apiKeyData.name}
                 onChange={(e) => setApiKeyData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g., OpenAI Production Key"
@@ -178,8 +178,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">API Key</label>
-              <Input
+              <label htmlFor="quicks-api-key" className="block text-sm font-medium text-neutral-700 mb-1">API Key</label>
+              <Input id="quicks-api-key"
                 type="password"
                 value={apiKeyData.key_value}
                 onChange={(e) => setApiKeyData(prev => ({ ...prev, key_value: e.target.value }))}
@@ -188,8 +188,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Description (Optional)</label>
-              <textarea
+              <label htmlFor="quicks-description-optional" className="block text-sm font-medium text-neutral-700 mb-1">Description (Optional)</label>
+              <textarea id="quicks-description-optional"
                 value={apiKeyData.description}
                 onChange={(e) => setApiKeyData(prev => ({ ...prev, description: e.target.value }))}
                 className="input w-full"
@@ -216,8 +216,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
-              <select
+              <label htmlFor="quicks-provider-2" className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
+              <select id="quicks-provider-2"
                 value={modelData.provider}
                 onChange={(e) => setModelData(prev => ({ ...prev, provider: e.target.value }))}
                 className="input w-full"
@@ -230,8 +230,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Model ID</label>
-              <Input
+              <label htmlFor="quicks-model-id" className="block text-sm font-medium text-neutral-700 mb-1">Model ID</label>
+              <Input id="quicks-model-id"
                 value={modelData.model_id}
                 onChange={(e) => setModelData(prev => ({ ...prev, model_id: e.target.value }))}
                 placeholder="e.g., gpt-4, claude-3-opus"
@@ -239,8 +239,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Configuration Name</label>
-              <Input
+              <label htmlFor="quicks-configuration-name" className="block text-sm font-medium text-neutral-700 mb-1">Configuration Name</label>
+              <Input id="quicks-configuration-name"
                 value={modelData.name}
                 onChange={(e) => setModelData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g., GPT-4 Production"
@@ -248,8 +248,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Description (Optional)</label>
-              <textarea
+              <label htmlFor="quicks-description-optional-2" className="block text-sm font-medium text-neutral-700 mb-1">Description (Optional)</label>
+              <textarea id="quicks-description-optional-2"
                 value={modelData.description}
                 onChange={(e) => setModelData(prev => ({ ...prev, description: e.target.value }))}
                 className="input w-full"
@@ -260,8 +260,8 @@ const QuickSetupWizard = ({ onClose }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Temperature</label>
-                <Input
+                <label htmlFor="quicks-temperature" className="block text-sm font-medium text-neutral-700 mb-1">Temperature</label>
+                <Input id="quicks-temperature"
                   type="number"
                   step="0.1"
                   min="0"
@@ -271,8 +271,8 @@ const QuickSetupWizard = ({ onClose }) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Max Tokens</label>
-                <Input
+                <label htmlFor="quicks-max-tokens" className="block text-sm font-medium text-neutral-700 mb-1">Max Tokens</label>
+                <Input id="quicks-max-tokens"
                   type="number"
                   min="1"
                   value={modelData.max_tokens}
@@ -299,8 +299,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">System Name</label>
-              <Input
+              <label htmlFor="quicks-system-name" className="block text-sm font-medium text-neutral-700 mb-1">System Name</label>
+              <Input id="quicks-system-name"
                 value={systemData.name}
                 onChange={(e) => setSystemData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g., Customer Support Chatbot"
@@ -308,8 +308,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
-              <textarea
+              <label htmlFor="quicks-description" className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
+              <textarea id="quicks-description"
                 value={systemData.description}
                 onChange={(e) => setSystemData(prev => ({ ...prev, description: e.target.value }))}
                 className="input w-full"
@@ -319,8 +319,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">System Type</label>
-              <select
+              <label htmlFor="quicks-system-type" className="block text-sm font-medium text-neutral-700 mb-1">System Type</label>
+              <select id="quicks-system-type"
                 value={systemData.system_type}
                 onChange={(e) => setSystemData(prev => ({ ...prev, system_type: e.target.value }))}
                 className="input w-full"
@@ -333,8 +333,8 @@ const QuickSetupWizard = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Industry</label>
-              <select
+              <label htmlFor="quicks-industry" className="block text-sm font-medium text-neutral-700 mb-1">Industry</label>
+              <select id="quicks-industry"
                 value={systemData.industry}
                 onChange={(e) => setSystemData(prev => ({ ...prev, industry: e.target.value }))}
                 className="input w-full"
