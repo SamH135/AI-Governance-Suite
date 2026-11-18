@@ -35,8 +35,7 @@ const SettingsPage = () => {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    navigate(`/settings/${tabId}`);
-  };
+    void navigate(`/settings/${tabId}`);  };
 
   // Update active tab when URL changes
   useEffect(() => {

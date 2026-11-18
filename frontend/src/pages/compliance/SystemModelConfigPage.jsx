@@ -40,8 +40,7 @@ const SystemModelConfigPage = () => {
         if (error.status === 404 || error.status === 500 || error.message?.includes('404') || error.message?.includes('500')) {
           // System likely deleted, redirect to systems list
           console.log('System not found, redirecting to systems list');
-          navigate('/compliance/systems', { 
-            replace: true,
+          void navigate('/compliance/systems', {             replace: true,
             state: { message: 'The requested AI system was not found. It may have been deleted.' }
           });
           return;
@@ -53,26 +52,22 @@ const SystemModelConfigPage = () => {
       }
     };
 
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
+    void fetchData();  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, [systemId]);
 
 
   const handleTestModel = (model) => {
     // Navigate to test configuration with specific model pre-selected
-    navigate(`/compliance/test/configure/${systemId}`, {
-      state: { selectedModelId: model.config_id || model.id }
+    void navigate(`/compliance/test/configure/${systemId}`, {      state: { selectedModelId: model.config_id || model.id }
     });
   };
 
   const handleContinueToTests = () => {
     // Navigate to test configuration for this system
-    navigate(`/compliance/test/configure/${systemId}`);
-  };
+    void navigate(`/compliance/test/configure/${systemId}`);  };
 
   const handleBackToSystems = () => {
-    navigate('/compliance/systems');
-  };
+    void navigate('/compliance/systems');  };
 
   if (loading) {
     return (

@@ -83,13 +83,11 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
     }
     
     // Load API keys when component mounts or provider changes
-    loadApiKeys();
-  }, [config]);
+    void loadApiKeys();  }, [config]);
 
   // Load API keys when provider changes
   useEffect(() => {
-    loadApiKeys();
-  }, [formData.provider]);
+    void loadApiKeys();  }, [formData.provider]);
 
   const loadApiKeys = async () => {
     try {
@@ -497,7 +495,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
                   max="2"
                   step="0.1"
                   value={formData.temperature}
-                  onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value))}
+                  onChange={(e) => handleInputChange('temperature', Number.parseFloat(e.target.value))}
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-neutral-500">
@@ -512,7 +510,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
                 label="Max Tokens"
                 type="number"
                 value={formData.max_tokens}
-                onChange={(e) => handleInputChange('max_tokens', parseInt(e.target.value))}
+                onChange={(e) => handleInputChange('max_tokens', Number.parseInt(e.target.value))}
                 min="1"
                 max="32000"
                 placeholder="1000"
@@ -530,7 +528,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
                   max="1"
                   step="0.1"
                   value={formData.top_p}
-                  onChange={(e) => handleInputChange('top_p', parseFloat(e.target.value))}
+                  onChange={(e) => handleInputChange('top_p', Number.parseFloat(e.target.value))}
                   className="w-full"
                 />
               </div>
@@ -547,7 +545,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
                   max="2"
                   step="0.1"
                   value={formData.frequency_penalty}
-                  onChange={(e) => handleInputChange('frequency_penalty', parseFloat(e.target.value))}
+                  onChange={(e) => handleInputChange('frequency_penalty', Number.parseFloat(e.target.value))}
                   className="w-full"
                 />
               </div>
@@ -564,7 +562,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
                   max="2"
                   step="0.1"
                   value={formData.presence_penalty}
-                  onChange={(e) => handleInputChange('presence_penalty', parseFloat(e.target.value))}
+                  onChange={(e) => handleInputChange('presence_penalty', Number.parseFloat(e.target.value))}
                   className="w-full"
                 />
               </div>
@@ -575,7 +573,7 @@ const ModelConfigurationForm = ({ config = null, onSave, onCancel, onTest }) => 
             label="Timeout (seconds)"
             type="number"
             value={formData.timeout}
-            onChange={(e) => handleInputChange('timeout', parseInt(e.target.value))}
+            onChange={(e) => handleInputChange('timeout', Number.parseInt(e.target.value))}
             min="5"
             max="300"
             placeholder="30"

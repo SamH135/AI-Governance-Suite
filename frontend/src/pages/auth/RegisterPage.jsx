@@ -77,8 +77,7 @@ const RegisterPage = () => {
         type: 'success',
         message: 'Account created successfully!'
       });
-      navigate('/');
-    } catch (err) {
+      void navigate('/');    } catch (err) {
       addNotification({
         type: 'error',
         message: err.message || 'Registration failed'

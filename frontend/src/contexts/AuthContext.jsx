@@ -80,8 +80,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    initAuth();
-  }, []);
+    void initAuth();  }, []);
 
   const login = async (credentials) => {
     logger.info(`Login attempt for user: ${credentials.username || credentials.email}`, 'AuthContext.jsx', 'login');

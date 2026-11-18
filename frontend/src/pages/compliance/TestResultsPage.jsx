@@ -13,7 +13,7 @@ const StatusBadge = ({ status, score }) => {
     return { class: 'status-info', text: 'Running' };
   };
 
-  const { class: statusClass, text } = getStatusInfo(status, score);
+  const { class: statusClass, text } = getStatusInfo(status);
 
   return (
     <div className="flex items-center space-x-2">
@@ -201,8 +201,7 @@ const TestResultsPage = () => {
       }
     };
 
-    fetchResults();
-  }, [testId, location.state]);
+    void fetchResults();  }, [testId, location.state]);
 
   const filteredResults = results.filter(result => {
     const matchesSearch = result.system_name.toLowerCase().includes(searchTerm.toLowerCase());

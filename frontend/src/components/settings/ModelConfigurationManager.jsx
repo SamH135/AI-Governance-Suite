@@ -19,8 +19,7 @@ const ModelConfigurationManager = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadModels();
-  }, []);
+    void loadModels();  }, []);
 
   const loadModels = async () => {
     logger.info('Loading model configurations', 'ModelConfigurationManager.jsx', 'loadModels');

@@ -18,8 +18,7 @@ const SetupProgressTracker = ({ onQuickSetup }) => {
   });
 
   useEffect(() => {
-    checkSetupStatus();
-  }, []);
+    void checkSetupStatus();  }, []);
 
   const checkSetupStatus = async () => {
     try {
@@ -227,8 +226,6 @@ const SetupProgressTracker = ({ onQuickSetup }) => {
                 className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                   isComplete
                     ? 'bg-green-50 border-green-200'
-                    : isIncomplete
-                    ? 'bg-neutral-50 border-neutral-200'
                     : 'bg-neutral-50 border-neutral-200'
                 }`}
               >

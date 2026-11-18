@@ -156,8 +156,7 @@ const SystemsListPage = () => {
       }
     };
 
-    fetchSystems();
-  }, []);
+    void fetchSystems();  }, []);
 
   // Check for messages from navigation state
   useEffect(() => {
@@ -480,8 +479,7 @@ const SystemsListPage = () => {
                 industry: formData.get('industry'),
                 compliance_frameworks: formData.get('frameworks').split(',').map(f => f.trim()).filter(f => f)
               };
-              handleCreateSubmit(systemData);
-            }}>
+              void handleCreateSubmit(systemData);            }}>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">System Name</label>

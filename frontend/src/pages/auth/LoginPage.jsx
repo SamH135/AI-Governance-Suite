@@ -62,8 +62,7 @@ const LoginPage = () => {
         type: 'success',
         message: 'Successfully logged in!'
       });
-      navigate('/');
-    } catch (err) {
+      void navigate('/');    } catch (err) {
       logger.error(`LoginPage: Login failed: ${err.message}`, 'LoginPage.jsx', 'handleSubmit');
       addNotification({
         type: 'error',
