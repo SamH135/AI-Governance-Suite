@@ -274,7 +274,7 @@ services:
 
   # SonarQube — opt-in static analysis: docker compose --profile scan up -d sonarqube
   sonarqube:
-    image: sonarqube:community
+    image: sonarqube:community@sha256:65541accbdb92e27fe770fc6ba99988a3dd5a0c71ffafd67f88abfad366996fa
     profiles: [scan]
     ports:
       - "127.0.0.1:9000:9000"
