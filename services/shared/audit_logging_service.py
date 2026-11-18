@@ -26,6 +26,7 @@ except ImportError:
     elasticsearch = None
     AsyncElasticsearch = None
 
+from .async_utils import spawn
 from .database import db_manager
 from .exceptions import ValidationError, ExternalServiceError
 
@@ -153,9 +154,9 @@ class AuditLoggingService:
             await self._initialize_elasticsearch()
             
             # Start background tasks
-            asyncio.create_task(self._elasticsearch_sync_task())
-            asyncio.create_task(self._cleanup_task())
-            asyncio.create_task(self._risk_monitoring_task())
+            spawn(self._elasticsearch_sync_task())
+            spawn(self._cleanup_task())
+            spawn(self._risk_monitoring_task())
             
             self.initialized = True
             logger.info("Audit logging service initialized")

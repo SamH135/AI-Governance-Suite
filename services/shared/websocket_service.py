@@ -306,6 +306,7 @@ class WebSocketManager:
         
         except asyncio.CancelledError:
             logger.info("Redis message handler cancelled")
+            raise
         except Exception as e:
             logger.error("Redis message handler error", error=str(e))
     

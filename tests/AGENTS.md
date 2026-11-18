@@ -10,7 +10,7 @@ Python test suite for all backend code. Each area's `AGENTS.md` names the specif
 ## Layout and tiers
 | Dir | Runs in CI | Needs | Notes |
 |---|---|---|---|
-| `unit/` | yes | nothing (intended) | Offline also: `test_security_hardening`, `test_eval_integrity`. **Known issue:** `test_auth.py`, `test_model_config.py`, `test_systems_api.py`, `test_no_fallbacks.py` call `localhost` and need the live stack. Offline today: `test_evaluator`, `test_compliance`, `test_evaluator_plugins`, `test_probe_evals`, `test_probe_mutations`, `test_probe_adaptive`, `test_saved_api_keys`, `test_unified_api`, `test_shared_sso_manager`, `test_documents_format_converter`. |
+| `unit/` | yes | nothing (intended) | Offline also: `test_security_hardening`, `test_eval_integrity`. **Known issue:** `test_auth.py`, `test_model_config.py`, `test_systems_api.py`, `test_no_fallbacks.py` call `localhost` and need the live stack. Offline today: `test_evaluator`, `test_compliance`, `test_evaluator_plugins`, `test_probe_evals`, `test_probe_mutations`, `test_probe_adaptive`, `test_saved_api_keys`, `test_unified_api`, `test_shared_sso_manager`, `test_documents_format_converter`, `test_shared_task_refs_saml`. |
 | `integration/` | when stack is up | `docker-compose up`; some need provider keys in env | Cross-service and real-provider tests |
 | `manual/` | no | stack + keys | Ad-hoc scripts, not assertions-based |
 
@@ -45,3 +45,4 @@ Python test suite for all backend code. Each area's `AGENTS.md` names the specif
 - 2026-11-16 — `test_grounding.py` +2 (fact-leak conveyance scoring, refusal-scores-0/skip-no-prompt). `test_probe_evals.py`: leakage + indirect-injection tests now inject fake scorers (required — plugins' NLI checks would otherwise download the real model in unit tests).
 - 2026-11-17 — Added `test_shared_sso_manager.py` (3 tests, offline): forged unsigned `id_token` ignored in favour of userinfo claims, missing `access_token` and userinfo non-200 both raise `AuthenticationError`. Stubs `redis` in `sys.modules` when not installed (local env lacks it).
 - 2026-11-17 — Added `test_documents_format_converter.py` (2 tests, offline): wkhtmltopdf success path returns fake PDF bytes from a private `TemporaryDirectory` (no predictable `/tmp/<base>` paths, dir cleaned up), `CalledProcessError` falls back to HTML with no leaked files. Stubs `markdown` in `sys.modules` when not installed.
+- 2026-11-17 — Added `test_shared_task_refs_saml.py` (5 tests, offline): `_handle_saml_callback` fail-closed with/without SAMLResponse, `async_utils.spawn` strong-ref lifecycle, websocket `_redis_message_handler` re-raises `CancelledError` (AST check — module needs fastapi/redis to import).

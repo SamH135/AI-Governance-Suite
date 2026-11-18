@@ -31,6 +31,7 @@ except ImportError:
     LDAP_AVAILABLE = False
     ldap3 = None
 
+from .async_utils import spawn
 from .database import db_manager
 from .models import User
 from .exceptions import ValidationError, AuthenticationError, AuthorizationError
@@ -232,7 +233,7 @@ class EnterpriseAuthService:
             await self._initialize_sso_providers()
             
             # Start session cleanup task
-            asyncio.create_task(self._session_cleanup_task())
+            spawn(self._session_cleanup_task())
             
             self.initialized = True
             logger.info("Enterprise auth service initialized")
