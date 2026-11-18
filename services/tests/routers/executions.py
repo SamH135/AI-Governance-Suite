@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import structlog
+from datetime import datetime
 
 from services.shared.database import db_manager
 from services.shared.auth import get_current_active_user

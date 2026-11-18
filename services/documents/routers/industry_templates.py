@@ -9,6 +9,7 @@ from ...shared.auth import get_current_active_user, require_admin
 from ...shared.schemas import UserResponse, ApiResponse
 from ...shared.exceptions import ValidationError, NotFoundError
 from ..services.industry_templates_service import industry_templates_service
+from ..services.document_service import document_service
 
 logger = structlog.get_logger()
 router = APIRouter()

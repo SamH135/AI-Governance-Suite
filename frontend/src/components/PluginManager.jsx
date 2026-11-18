@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import api from '../services/authService';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -30,8 +31,7 @@ const PluginManager = () => {
 
   const fetchPlugins = async () => {
     try {
-      const response = await fetch('/api/plugins/');
-      const data = await response.json();
+      const { data } = await api.get('/plugins/');
       if (data.success) {
         setPlugins(data.data);
       }
@@ -44,8 +44,7 @@ const PluginManager = () => {
 
   const fetchStatistics = async () => {
     try {
-      const response = await fetch('/api/plugins/statistics');
-      const data = await response.json();
+      const { data } = await api.get('/plugins/statistics');
       if (data.success) {
         setStatistics(data.data);
       }
@@ -56,11 +55,8 @@ const PluginManager = () => {
 
   const handlePluginAction = async (pluginName, action) => {
     try {
-      const response = await fetch(`/api/plugins/${pluginName}/${action}`, {
-        method: 'POST'
-      });
-      const data = await response.json();
-      
+      const { data } = await api.post(`/plugins/${pluginName}/${action}`);
+
       if (data.success) {
         fetchPlugins();
         fetchStatistics();
@@ -69,7 +65,7 @@ const PluginManager = () => {
       }
     } catch (error) {
       console.error(`Failed to ${action} plugin:`, error);
-      alert(`Failed to ${action} plugin`);
+      alert(`Failed to ${action} plugin: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -321,15 +317,7 @@ const PluginGenerator = ({ onPluginGenerated }) => {
     setGenerating(true);
 
     try {
-      const response = await fetch('/api/plugin-generator/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
+      const { data } = await api.post('/plugin-generator/generate', formData);
       
       if (data.success) {
         alert('Plugin generated successfully!');
@@ -459,12 +447,7 @@ const PluginInstaller = ({ onPluginInstalled }) => {
     }
 
     try {
-      const response = await fetch('/api/plugins/install', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
+      const { data } = await api.post('/plugins/install', formData);
       
       if (data.success) {
         alert('Plugin installed successfully!');
@@ -542,8 +525,7 @@ const PluginDetailsModal = ({ plugin, onClose }) => {
 
   const fetchPluginConfig = async () => {
     try {
-      const response = await fetch(`/api/plugins/${plugin.name}/config`);
-      const data = await response.json();
+      const { data } = await api.get(`/plugins/${plugin.name}/config`);
       if (data.success) {
         setConfig(data.data.config);
       }
