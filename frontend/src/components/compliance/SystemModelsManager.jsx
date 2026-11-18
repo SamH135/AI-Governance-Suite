@@ -12,8 +12,7 @@ const SystemModelsManager = ({ systemId, system, availableTemplates, onTestModel
   const [editingModel, setEditingModel] = useState(null);
 
   useEffect(() => {
-    fetchSystemModels();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
+    void fetchSystemModels();  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, [systemId]);
 
   const fetchSystemModels = async () => {
@@ -240,8 +239,7 @@ const ModelFormModal = ({ isOpen, onClose, onSave, model, availableTemplates, sy
         setLoadingKeys(false);
       }
     };
-    loadKeys();
-  }, [isOpen]);
+    void loadKeys();  }, [isOpen]);
 
   const providers = [
     { value: 'openai', label: 'OpenAI' },
@@ -450,7 +448,7 @@ const ModelFormModal = ({ isOpen, onClose, onSave, model, availableTemplates, sy
               label="Temperature"
               type="number"
               value={formData.temperature}
-              onChange={(e) => setFormData({ ...formData, temperature: parseFloat(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, temperature: Number.parseFloat(e.target.value) })}
               min="0"
               max="2"
               step="0.1"
@@ -459,7 +457,7 @@ const ModelFormModal = ({ isOpen, onClose, onSave, model, availableTemplates, sy
               label="Max Tokens"
               type="number"
               value={formData.max_tokens}
-              onChange={(e) => setFormData({ ...formData, max_tokens: parseInt(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, max_tokens: Number.parseInt(e.target.value) })}
               min="1"
               max="8000"
             />
@@ -467,7 +465,7 @@ const ModelFormModal = ({ isOpen, onClose, onSave, model, availableTemplates, sy
               label="Timeout (s)"
               type="number"
               value={formData.timeout}
-              onChange={(e) => setFormData({ ...formData, timeout: parseInt(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, timeout: Number.parseInt(e.target.value) })}
               min="5"
               max="300"
             />

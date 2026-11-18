@@ -203,7 +203,7 @@ const QueryInterface = ({ documents, onRunQuery, queryResult, loading }) => {
                 value={retrievalSettings.topK}
                 onChange={(e) => setRetrievalSettings(prev => ({
                   ...prev,
-                  topK: parseInt(e.target.value)
+                  topK: Number.parseInt(e.target.value)
                 }))}
                 min="1"
                 max="20"
@@ -399,7 +399,7 @@ const RAGTestPage = () => {
         </Card>
         <Card className="text-center">
           <div className="text-2xl font-bold text-blue-600">
-            {documents.reduce((sum, doc) => sum + parseInt(doc.pages), 0)}
+            {documents.reduce((sum, doc) => sum + Number.parseInt(doc.pages), 0)}
           </div>
           <div className="text-sm text-neutral-600">Total Pages</div>
         </Card>

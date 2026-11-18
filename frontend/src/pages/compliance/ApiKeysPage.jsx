@@ -30,9 +30,7 @@ const ApiKeysPage = () => {
   const [loadingKeyValue, setLoadingKeyValue] = useState(new Set());
 
   useEffect(() => {
-    loadApiKeys();
-    loadSupportedProviders();
-  }, []);
+    void loadApiKeys();    void loadSupportedProviders();  }, []);
 
   useEffect(() => {
     if (error || success) {

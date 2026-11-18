@@ -99,8 +99,7 @@ const DashboardPage = () => {
       }
     };
 
-    fetchMetrics();
-  }, []);
+    void fetchMetrics();  }, []);
 
   if (loading) {
     logger.debug('DashboardPage: Showing loading state', 'DashboardPage.jsx', 'DashboardPage');

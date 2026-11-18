@@ -25,8 +25,8 @@ const PluginManager = () => {
   const [statistics, setStatistics] = useState(null);
 
   useEffect(() => {
-    fetchPlugins();
-    fetchStatistics();
+    void fetchPlugins();
+    void fetchStatistics();
   }, []);
 
   const fetchPlugins = async () => {
@@ -58,8 +58,8 @@ const PluginManager = () => {
       const { data } = await api.post(`/plugins/${pluginName}/${action}`);
 
       if (data.success) {
-        fetchPlugins();
-        fetchStatistics();
+        void fetchPlugins();
+        void fetchStatistics();
       } else {
         alert(`Failed to ${action} plugin: ${data.message}`);
       }
@@ -519,7 +519,7 @@ const PluginDetailsModal = ({ plugin, onClose }) => {
   const [, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPluginConfig();
+    void fetchPluginConfig();
   // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, [plugin]);
 

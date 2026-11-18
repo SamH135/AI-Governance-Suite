@@ -25,8 +25,7 @@ export const useApi = (apiCall, dependencies = []) => {
       }
     };
 
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
+    void fetchData();  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only effect
   }, dependencies);
 
   const refetch = async () => {
