@@ -186,6 +186,10 @@ async def forward_request(service_url: str, path: str, method: str, **kwargs) ->
         result = response.json()
         logger.info("Successfully processed microservice response", function="forward_request", url=url)
         return result
+    except HTTPException:
+        # The >=400 branch above raises HTTPException to pass the service's
+        # status through — don't let the catch-all mask it as 500.
+        raise
     except httpx.HTTPError as e:
         logger.error("Service request failed", function="forward_request", service_url=service_url, path=path, method=method, error=str(e))
         raise HTTPException(status_code=500, detail="Service unavailable")

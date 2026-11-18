@@ -66,6 +66,11 @@ services:
       - ./gateway:/app
       - ./shared:/app/shared
       - ./services:/app/services
+      # Repo layout for the pytest suite (CI runs gateway tests here)
+      - ./tests:/repo/tests
+      - ./gateway:/repo/gateway
+      - ./services:/repo/services
+      - ./shared:/repo/shared
     networks:
       - ai-compliance-network
 
