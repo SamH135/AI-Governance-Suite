@@ -112,7 +112,7 @@ export const systemsService = {
       // 404 means already deleted - treat as success
       if (error.response?.status === 404) {
         logger.info('System already deleted (404), treating as success', 'apiService.js', 'deleteSystem');
-        return { success: true, message: 'System already deleted', deleted_id: parseInt(id) };
+        return { success: true, message: 'System already deleted', deleted_id: Number.parseInt(id) };
       }
       
       // For other errors, throw to let calling code handle

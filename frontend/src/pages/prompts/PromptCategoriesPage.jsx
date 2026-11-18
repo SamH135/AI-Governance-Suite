@@ -68,8 +68,7 @@ const CategoryCard = ({ category, onEdit, onDelete, onView }) => {
                   </button>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(JSON.stringify(category, null, 2));
-                      setShowMenu(false);
+                      void navigator.clipboard.writeText(JSON.stringify(category, null, 2)).catch(err => console.error('Copy failed:', err));                      setShowMenu(false);
                     }}
                     className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
                   >

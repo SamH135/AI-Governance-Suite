@@ -115,8 +115,7 @@ const AnalyticsPage = () => {
       }
     };
 
-    fetchAnalytics();
-  }, [timeRange]);
+    void fetchAnalytics();  }, [timeRange]);
 
   if (loading) {
     return (

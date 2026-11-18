@@ -34,8 +34,7 @@ const PromptEngineeringPage = () => {
   };
 
   const handleCopyPrompt = () => {
-    navigator.clipboard.writeText(prompt);
-  };
+    void navigator.clipboard.writeText(prompt).catch(err => console.error('Copy failed:', err));  };
 
   const templates = [
     {
@@ -165,7 +164,7 @@ const PromptEngineeringPage = () => {
                 label="Temperature"
                 type="number"
                 value={settings.temperature}
-                onChange={(e) => setSettings(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                onChange={(e) => setSettings(prev => ({ ...prev, temperature: Number.parseFloat(e.target.value) }))}
                 min="0"
                 max="2"
                 step="0.1"
@@ -175,7 +174,7 @@ const PromptEngineeringPage = () => {
                 label="Max Tokens"
                 type="number"
                 value={settings.maxTokens}
-                onChange={(e) => setSettings(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                onChange={(e) => setSettings(prev => ({ ...prev, maxTokens: Number.parseInt(e.target.value) }))}
                 min="1"
                 max="4000"
               />
@@ -184,7 +183,7 @@ const PromptEngineeringPage = () => {
                 label="Top P"
                 type="number"
                 value={settings.topP}
-                onChange={(e) => setSettings(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                onChange={(e) => setSettings(prev => ({ ...prev, topP: Number.parseFloat(e.target.value) }))}
                 min="0"
                 max="1"
                 step="0.1"

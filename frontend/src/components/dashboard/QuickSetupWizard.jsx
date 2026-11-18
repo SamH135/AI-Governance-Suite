@@ -134,8 +134,7 @@ const QuickSetupWizard = ({ onClose }) => {
   };
 
   const handleFinish = () => {
-    navigate('/compliance/systems');
-    if (onClose) onClose();
+    void navigate('/compliance/systems');    if (onClose) onClose();
   };
 
   const renderStepContent = () => {
@@ -268,7 +267,7 @@ const QuickSetupWizard = ({ onClose }) => {
                   min="0"
                   max="2"
                   value={modelData.temperature}
-                  onChange={(e) => setModelData(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                  onChange={(e) => setModelData(prev => ({ ...prev, temperature: Number.parseFloat(e.target.value) }))}
                 />
               </div>
               <div>
@@ -277,7 +276,7 @@ const QuickSetupWizard = ({ onClose }) => {
                   type="number"
                   min="1"
                   value={modelData.max_tokens}
-                  onChange={(e) => setModelData(prev => ({ ...prev, max_tokens: parseInt(e.target.value) }))}
+                  onChange={(e) => setModelData(prev => ({ ...prev, max_tokens: Number.parseInt(e.target.value) }))}
                 />
               </div>
             </div>

@@ -202,8 +202,7 @@ const TestConfigPage = () => {
         // If we can't load the system, we can't continue
         if (!error.message.includes('Evaluators')) {
           setTimeout(() => {
-            navigate('/compliance/systems');
-          }, 3000);
+            void navigate('/compliance/systems');          }, 3000);
         }
       } finally {
         setLoading(false);
@@ -211,8 +210,7 @@ const TestConfigPage = () => {
     };
 
     if (systemId) {
-      fetchData();
-    } else {
+      void fetchData();    } else {
       setError('No system ID provided');
       setLoading(false);
     }
@@ -236,7 +234,7 @@ const TestConfigPage = () => {
     
     let modelId = null;
     if (selectedValue && selectedValue !== '') {
-      modelId = parseInt(selectedValue, 10);
+      modelId = Number.parseInt(selectedValue, 10);
       console.log('Parsed evaluator model ID:', modelId);
     }
     
@@ -261,7 +259,7 @@ const TestConfigPage = () => {
     
     let modelId = null;
     if (selectedValue && selectedValue !== '') {
-      modelId = parseInt(selectedValue, 10);
+      modelId = Number.parseInt(selectedValue, 10);
     }
     
     setTestConfig(currentConfig => ({
@@ -402,8 +400,7 @@ const TestConfigPage = () => {
       });
       
       // Immediate redirect since test is now synchronous
-      navigate(`/compliance/results/${result.testId}?systemId=${systemId}`, { state: { systemId, result } });
-      
+      void navigate(`/compliance/results/${result.testId}?systemId=${systemId}`, { state: { systemId, result } });      
     } catch (error) {
       // Error is already handled by safeApiCall and shown in toast
       console.error('Test execution failed:', error);
@@ -773,7 +770,7 @@ const TestConfigPage = () => {
                   type="number"
                   value={testConfig.test_subject_params?.max_tokens || testConfig.maxTokens}
                   onChange={(e) => {
-                    const value = parseInt(e.target.value);
+                    const value = Number.parseInt(e.target.value);
                     setTestConfig(prev => ({ 
                       ...prev, 
                       maxTokens: value,  // Legacy field
@@ -791,7 +788,7 @@ const TestConfigPage = () => {
                   type="number"
                   value={testConfig.test_subject_params?.temperature || testConfig.temperature}
                   onChange={(e) => {
-                    const value = parseFloat(e.target.value);
+                    const value = Number.parseFloat(e.target.value);
                     setTestConfig(prev => ({ 
                       ...prev, 
                       temperature: value,  // Legacy field
@@ -809,7 +806,7 @@ const TestConfigPage = () => {
                   label="Iterations"
                   type="number"
                   value={testConfig.iterations}
-                  onChange={(e) => setTestConfig(prev => ({ ...prev, iterations: parseInt(e.target.value) }))}
+                  onChange={(e) => setTestConfig(prev => ({ ...prev, iterations: Number.parseInt(e.target.value) }))}
                   min="1"
                   max="10"
                 />

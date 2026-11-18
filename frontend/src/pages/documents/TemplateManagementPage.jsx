@@ -86,8 +86,7 @@ const TemplateCard = ({ template, onEdit, onDelete, onView, onEnhance }) => {
               </button>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(template.content);
-                  setShowMenu(false);
+                  void navigator.clipboard.writeText(template.content).catch(err => console.error('Copy failed:', err));                  setShowMenu(false);
                 }}
                 className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
               >
@@ -473,7 +472,7 @@ const TemplateManagementPage = () => {
       // Apply enhancements
       const enhancedTemplate = {
         ...template,
-        version: `${parseFloat(template.version) + 0.1}`,
+        version: `${Number.parseFloat(template.version) + 0.1}`,
         updatedAt: new Date().toISOString(),
         content: template.content + '\n\n<!-- AI Enhanced Content -->'
       };
