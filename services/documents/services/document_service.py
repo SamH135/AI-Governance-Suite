@@ -273,12 +273,14 @@ Return only the enhanced content, no additional commentary."""
             
             # Save to storage
             file_path = self.storage_path / result["filename"]
-            
-            with open(file_path, "wb" if format == DocumentFormat.PDF else "w", 
-                     encoding=None if format == DocumentFormat.PDF else "utf-8") as f:
-                f.write(result["content"])
-            
-            file_size = file_path.stat().st_size
+
+            def _save() -> int:
+                with open(file_path, "wb" if format == DocumentFormat.PDF else "w",
+                         encoding=None if format == DocumentFormat.PDF else "utf-8") as f:
+                    f.write(result["content"])
+                return file_path.stat().st_size
+
+            file_size = await asyncio.to_thread(_save)
             
             return {
                 "file_path": str(file_path),

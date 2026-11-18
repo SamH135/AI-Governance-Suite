@@ -505,7 +505,9 @@ const TestConfigPage = () => {
                         ? 'border-brand-500 bg-brand-50'
                         : 'border-neutral-200 hover:border-neutral-300'
                     }`}
-                    onClick={() => handleEvaluatorToggle(evaluator.id)}
+                    onClick={() => handleEvaluatorToggle(evaluator.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEvaluatorToggle(evaluator.id); } }}
+                              role="button"
+                              tabIndex={0}
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -744,7 +746,9 @@ const TestConfigPage = () => {
                                   ? 'border-brand-500 bg-brand-50'
                                   : 'border-neutral-200 hover:border-neutral-300 bg-white'
                               }`}
-                              onClick={() => handleIndividualPromptToggle(prompt)}
+                              onClick={() => handleIndividualPromptToggle(prompt)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleIndividualPromptToggle(prompt); } }}
+                              role="button"
+                              tabIndex={0}
                             >
                               <div className="flex items-start space-x-2">
                                 <input

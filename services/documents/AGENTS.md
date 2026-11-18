@@ -36,3 +36,4 @@ Generates compliance documents/reports from templates, with approval workflows, 
 - 2026-11-17 — `format_converter._generate_pdf_with_wkhtmltopdf`: predictable `/tmp/<base>.{html,pdf}` paths replaced by `tempfile.TemporaryDirectory()` with fixed `doc.html`/`doc.pdf` names inside (python:S5443); temp files now cleaned up on wkhtmltopdf failure too, not just success. Returned `filename` still `<base>.pdf`; HTML fallback on `CalledProcessError` unchanged.
 - 2026-11-18 — `format_converter`: blocking `subprocess.run`/`open()` inside async methods moved off the event loop via `asyncio.to_thread` (`initialize`, `_generate_pdf_with_wkhtmltopdf` → sync `_render_pdf_wkhtmltopdf`). Sonar S7493/S7487.
 - 2026-11-18 — Report HTML templates: `<html>` → `<html lang="en">` on all 14 industry templates (Web:S5254).
+- 2026-11-18 — `_generate_formatted_document` file save+stat moved to `asyncio.to_thread` (S7493).

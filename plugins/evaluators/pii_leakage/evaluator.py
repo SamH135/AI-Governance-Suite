@@ -224,7 +224,7 @@ class PIILeakageEvaluator(BaseEvaluator):
 
         # Student ID
         patterns["student_id"] = (
-            re.compile(r'\b[Ss]tudent\s+ID\s*:?\s*\w{5,12}\b'),
+            re.compile(r'\b[Ss]tudent\s+ID[\s:]{0,3}\w{5,12}\b'),
             "Student ID Number"
         )
 

@@ -29,7 +29,9 @@ const SystemCard = ({ system, onEdit, onDelete, onTest, onViewDetails }) => {
       <div className="flex items-start justify-between">
         <div 
           className="flex-1 cursor-pointer" 
-          onClick={() => onViewDetails(system)}
+          onClick={() => onViewDetails(system)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewDetails(system); } }}
+                              role="button"
+                              tabIndex={0}
         >
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-neutral-900">{system.name}</h3>
