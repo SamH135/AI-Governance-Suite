@@ -20,6 +20,9 @@ from ..base import BaseModelProvider, ModelConfig, ModelRequest, ModelResponse, 
 
 logger = logging.getLogger(__name__)
 
+# Keep strong refs to close-tasks so GC can't kill them mid-run (S7502).
+_close_tasks: set = set()
+
 
 class OpenAIProvider(BaseModelProvider):
     """Provider for OpenAI's GPT models with proper error handling and session management."""
@@ -464,6 +467,8 @@ class OpenAIProvider(BaseModelProvider):
                 pass
         if self.async_client:
             try:
-                asyncio.create_task(self.async_client.close())
+                task = asyncio.create_task(self.async_client.close())
+                _close_tasks.add(task)
+                task.add_done_callback(_close_tasks.discard)
             except Exception:
                 pass

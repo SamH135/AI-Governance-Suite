@@ -15,6 +15,7 @@ from ...shared.database import db_manager
 from ...shared.models import GeneratedDocument, User
 from ...shared.exceptions import ValidationError, NotFoundError
 from ...shared.websocket_service import websocket_manager, real_time_updates
+from ...shared.async_utils import spawn
 from .notification_service import notification_service
 
 logger = structlog.get_logger()
@@ -123,7 +124,7 @@ class DocumentWorkflowService:
             await self._setup_notification_handlers()
             
             # Start background tasks
-            asyncio.create_task(self._escalation_monitor())
+            spawn(self._escalation_monitor())
             
             self.initialized = True
             logger.info("Document workflow service initialized")

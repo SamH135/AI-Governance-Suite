@@ -30,6 +30,7 @@ Generates compliance documents/reports from templates, with approval workflows, 
 - `/plan.md` Phase 4 adds a framework coverage matrix (OWASP/ATLAS/NIST/EU AI Act) to generated reports here.
 
 ## Change Log
+- 2026-11-17 — `workflow_service.py`: escalation monitor spawned via `services.shared.async_utils.spawn` (no bare `create_task`; guard test `tests/unit/test_no_bare_create_task.py`).
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-14 — Security hardening: all three Jinja environments (`template_processor`, `document_service`, `industry_templates_service`) use `jinja2.sandbox.SandboxedEnvironment`; template routes already required `require_admin`. Webhook URLs in `notification_service._send_webhook` are validated via `services.shared.url_safety` before sending. Floors bumped: `jinja2>=3.1.6`, `weasyprint>=61.2`.
 - 2026-11-17 — `format_converter._generate_pdf_with_wkhtmltopdf`: predictable `/tmp/<base>.{html,pdf}` paths replaced by `tempfile.TemporaryDirectory()` with fixed `doc.html`/`doc.pdf` names inside (python:S5443); temp files now cleaned up on wkhtmltopdf failure too, not just success. Returned `filename` still `<base>.pdf`; HTML fallback on `CalledProcessError` unchanged.
