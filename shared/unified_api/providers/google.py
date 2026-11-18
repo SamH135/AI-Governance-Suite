@@ -98,7 +98,9 @@ class GoogleProvider(BaseModelProvider):
         """List available models from Google API."""
         try:
             url = f"{self.DEFAULT_API_URL}"
-            response = requests.get(url, headers={"x-goog-api-key": self.api_key}, timeout=10)
+            response = await asyncio.to_thread(
+                requests.get, url,
+                headers={"x-goog-api-key": self.api_key}, timeout=10)
             response.raise_for_status()
             
             data = response.json()

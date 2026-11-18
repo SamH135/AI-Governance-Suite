@@ -27,7 +27,7 @@ Single public entry point. Handles auth (JWT), CORS, routing/proxying to backend
 - Don't log request bodies (they can contain API keys or PII).
 
 ## Verification
-- No gateway unit tests exist yet. A new route needs a `tests/unit/` test using FastAPI `TestClient` with dependency overrides (no live services). The first one you write sets the pattern.
+- Gateway unit tests live in `tests/unit/test_gateway_*.py` (first: `test_gateway_proxy.py`, `TestClient` + `dependency_overrides`, monkeypatched `main.http_client`; `base_url="http://localhost"` to satisfy TrustedHost). They can't run in the compliance container — CI execs them inside the **gateway** container, where the repo is mounted at `/repo` (`docker-compose.simple.yml`).
 - Integration coverage (needs the stack running): `tests/integration/test_gateway_integration.py`, `tests/integration/test_api.py`.
 - Manual check: `docker-compose up --build`, then `GET http://localhost:8000/health` and `/docs`.
 
@@ -35,6 +35,7 @@ Single public entry point. Handles auth (JWT), CORS, routing/proxying to backend
 - `src/shared/models_service.py` duplicates `services/shared/models_service.py`. Converge before changing either one.
 
 ## Change Log
+- 2026-11-17 — Middleware order corrected: `CORSMiddleware` is now added last (outermost) so SlowAPI 429s carry CORS headers. Websocket manager stores its Redis handler task on `self._redis_task` (S7502). First gateway unit tests added (`test_gateway_proxy.py` + `test_gateway_cors_order.py`), run in CI inside the gateway container via `/repo` mounts.
 - 2026-11-11 — AGENTS.md created (baseline).
 - 2026-11-12 — `src/routes/models.py`: provider catalog routes (`/providers`, `/providers/{name}/models`, `/providers/{name}/refresh`) moved above `/{config_id}` — `GET /api/models/providers` was shadowed by `/{config_id}` and 422'd. Literal routes must precede param routes in this file.
 - 2026-11-12 — Endpoint audit findings: prompts/documents/analytics proxies forward the bare `{path}` segment but those services mount routers under their own names (`/prompts`, `/documents`, `/analytics`, `/reports`, `/dashboards`) — most frontend calls to them 500. `forward_request` doesn't follow 307 redirects and maps service 404s to 500.
@@ -44,3 +45,4 @@ Single public entry point. Handles auth (JWT), CORS, routing/proxying to backend
 - 2026-11-16 — Dockerfile builds from repo root and bakes `gateway/` + `services/shared` + `shared/` into the image (previously `./gateway` context — the `services.shared.*` imports only worked via compose mounts). `--reload` removed from CMD; hot-reload stays via `docker-compose.dev.yml` command override.
 - 2026-11-14 — Security hardening: WebSocket subscriptions are default-deny — `websocket_manager.authorize_channel` allows `test_execution:`/`document:`/`prompt:`/`compliance:` channels only after a DB ownership check (admins bypass), enforced in `handle_message` and `/connect` rooms. `get_current_user_websocket` now verifies the user exists and `is_active` in the DB. Rate limiting is real now: shared `src/shared/limiter.py` (`Limiter`, `default_limits=["200/minute"]`) + `SlowAPIMiddleware`, `5/minute` on `/auth/login` and `/auth/register`, `/health` exempt.
 - 2026-11-17 — `main.py`: `CORSMiddleware` moved to the last `add_middleware` call — Starlette's last-added middleware is outermost, so SlowAPI rate-limit 429s now carry CORS headers (python:S8414; browsers previously saw a CORS error). `src/websocket/manager.py`: Redis message-handler task ref kept on `self._redis_task` instead of a bare `create_task` (python:S7502; class has no shutdown hook to cancel it in).
+- 2026-11-18 — `forward_request` status passthrough actually works now: the `HTTPException` raised for service >=400 responses was swallowed by the generic `except Exception` and masked as 500; it is re-raised before the catch-all. Caught by `test_gateway_proxy.py`.
