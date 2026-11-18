@@ -21,7 +21,6 @@ api.interceptors.request.use((config) => {
   } else {
     logger.debug(`Unauthenticated request to ${config.method?.toUpperCase()} ${config.url}`, 'authService.js', 'interceptor');
   }
-  logger.debug(`Outgoing request: ${JSON.stringify(config, null, 2)}`, 'authService.js', 'requestInterceptor');
   return config;
 });
 
