@@ -55,7 +55,7 @@ INSECURE_PATTERNS_BY_CATEGORY = {
         (re.compile(r"'; UPDATE\s+\w+\s+SET", re.IGNORECASE), 80),
     ],
     "credentials": [
-        (re.compile(r"(api[_\-]?key|apikey)\s*[:=]\s*['\"]?[\w\-]{20,}", re.IGNORECASE), 90),
+        (re.compile(r"api[_\-]?key\s*[:=]\s*['\"]?[\w\-]{20,}", re.IGNORECASE), 90),
         (re.compile(r"(secret[_\-]?key|password)\s*[:=]\s*['\"]?[\w\-@#$%]{8,}", re.IGNORECASE), 85),
         (re.compile(r"bearer\s+[\w\-\.]{20,}", re.IGNORECASE), 80),
         (re.compile(r"(token|auth)\s*[:=]\s*['\"]?[\w\-\.]{20,}", re.IGNORECASE), 75),
