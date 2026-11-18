@@ -131,16 +131,6 @@ logger.info("Application settings loaded successfully", function="main")
 
 # Middleware
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    # Dev loopback on any port (vite dev, preview proxies); env allowlist governs real origins
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=["localhost", "127.0.0.1", "*.localhost"]
 )
@@ -149,6 +139,18 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Required for default_limits to apply to routes without a decorator
 app.add_middleware(SlowAPIMiddleware)
+
+# CORS added last: the last add_middleware is outermost, so rate-limit
+# 429s (raised inside SlowAPIMiddleware) still get CORS headers.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    # Dev loopback on any port (vite dev, preview proxies); env allowlist governs real origins
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Helper functions for service proxying
 async def forward_request(service_url: str, path: str, method: str, **kwargs) -> Dict[str, Any]:
