@@ -330,10 +330,10 @@ const J1DashboardPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-333" className="block text-sm font-medium text-neutral-700 mb-1">
                   Temperature
                 </label>
-                <input
+                <input id="j1dash-field-333"
                   type="range"
                   min="0"
                   max="2"
@@ -347,10 +347,10 @@ const J1DashboardPage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-350" className="block text-sm font-medium text-neutral-700 mb-1">
                   Max Tokens
                 </label>
-                <input
+                <input id="j1dash-field-350"
                   type="number"
                   defaultValue="1000"
                   min="100"
@@ -360,10 +360,10 @@ const J1DashboardPage = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
+              <label htmlFor="j1dash-field-363" className="block text-sm font-medium text-neutral-700 mb-1">
                 Thinking Depth
               </label>
-              <select className="input">
+              <select id="j1dash-field-363" className="input">
                 <option value="shallow">Shallow (Fast)</option>
                 <option value="medium" selected>Medium (Balanced)</option>
                 <option value="deep">Deep (Thorough)</option>
@@ -380,10 +380,10 @@ const J1DashboardPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-383" className="block text-sm font-medium text-neutral-700 mb-1">
                   Population Size
                 </label>
-                <input
+                <input id="j1dash-field-383"
                   type="number"
                   defaultValue="50"
                   min="10"
@@ -392,10 +392,10 @@ const J1DashboardPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-395" className="block text-sm font-medium text-neutral-700 mb-1">
                   Mutation Rate
                 </label>
-                <input
+                <input id="j1dash-field-395"
                   type="range"
                   min="0.01"
                   max="0.5"
@@ -419,10 +419,10 @@ const J1DashboardPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-422" className="block text-sm font-medium text-neutral-700 mb-1">
                   Learning Rate
                 </label>
-                <input
+                <input id="j1dash-field-422"
                   type="range"
                   min="0.001"
                   max="0.1"
@@ -432,10 +432,10 @@ const J1DashboardPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-435" className="block text-sm font-medium text-neutral-700 mb-1">
                   Exploration Rate
                 </label>
-                <input
+                <input id="j1dash-field-435"
                   type="range"
                   min="0.1"
                   max="1.0"
@@ -459,20 +459,20 @@ const J1DashboardPage = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-462" className="block text-sm font-medium text-neutral-700 mb-1">
                   Sensitivity
                 </label>
-                <select className="input">
+                <select id="j1dash-field-462" className="input">
                   <option value="low">Low</option>
                   <option value="medium" selected>Medium</option>
                   <option value="high">High</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="j1dash-field-472" className="block text-sm font-medium text-neutral-700 mb-1">
                   Categories
                 </label>
-                <select className="input" multiple size="3">
+                <select id="j1dash-field-472" className="input" multiple size="3">
                   <option value="gender" selected>Gender</option>
                   <option value="race" selected>Race</option>
                   <option value="age" selected>Age</option>

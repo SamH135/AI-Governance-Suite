@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { clsx } from 'clsx';
 
 const Input = ({
@@ -6,6 +7,8 @@ const Input = ({
   className = '',
   ...props
 }) => {
+  const autoId = useId();
+  const id = props.id || autoId;
   const inputClasses = clsx(
     'input',
     error && 'border-red-300 focus:border-red-500 focus:ring-red-500',
@@ -15,11 +18,12 @@ const Input = ({
   return (
     <div className="space-y-1">
       {label && (
-        <label className="block text-sm font-medium text-neutral-700">
+        <label htmlFor={id} className="block text-sm font-medium text-neutral-700">
           {label}
         </label>
       )}
       <input
+        id={id}
         className={inputClasses}
         {...props}
       />

@@ -146,10 +146,10 @@ const PromptEngineeringPage = () => {
             </Card.Header>
             <Card.Content className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label htmlFor="prompt-field-149" className="block text-sm font-medium text-neutral-700 mb-1">
                   Model
                 </label>
-                <select
+                <select id="prompt-field-149"
                   value={settings.model}
                   onChange={(e) => setSettings(prev => ({ ...prev, model: e.target.value }))}
                   className="input"

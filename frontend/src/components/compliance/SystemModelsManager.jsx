@@ -367,8 +367,8 @@ const ModelFormModal = ({ isOpen, onClose, onSave, model, availableTemplates, sy
 
           {/* Provider Selection */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
-            <select
+            <label htmlFor="system-provider" className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
+            <select id="system-provider"
               value={formData.provider}
               onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
               className="input w-full"
@@ -401,9 +401,9 @@ const ModelFormModal = ({ isOpen, onClose, onSave, model, availableTemplates, sy
 
           {/* Saved API Keys selector */}
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-neutral-700">Use saved API key (optional)</label>
+            <label htmlFor="system-use-saved-api-key-optional" className="block text-sm font-medium text-neutral-700">Use saved API key (optional)</label>
             <div className="flex gap-2">
-              <select
+              <select id="system-use-saved-api-key-optional"
                 className="input flex-1"
                 value={selectedSavedKey}
                 onChange={async (e) => {

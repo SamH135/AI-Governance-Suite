@@ -243,8 +243,8 @@ const ApiKeysPage = () => {
           <Card.Content>
             <form onSubmit={handleCreateApiKey} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
-                <select
+                <label htmlFor="apikey-provider" className="block text-sm font-medium text-neutral-700 mb-1">Provider</label>
+                <select id="apikey-provider"
                   value={newApiKey.provider}
                   onChange={(e) => setNewApiKey(prev => ({ ...prev, provider: e.target.value }))}
                   className="input w-full"
@@ -258,8 +258,8 @@ const ApiKeysPage = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
-                <Input
+                <label htmlFor="apikey-name" className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
+                <Input id="apikey-name"
                   value={newApiKey.name}
                   onChange={(e) => setNewApiKey(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g., OpenAI Production Key"
@@ -267,8 +267,8 @@ const ApiKeysPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">API Key</label>
-                <Input
+                <label htmlFor="apikey-api-key" className="block text-sm font-medium text-neutral-700 mb-1">API Key</label>
+                <Input id="apikey-api-key"
                   type="password"
                   value={newApiKey.key_value}
                   onChange={(e) => setNewApiKey(prev => ({ ...prev, key_value: e.target.value }))}
@@ -277,8 +277,8 @@ const ApiKeysPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Description (Optional)</label>
-                <textarea
+                <label htmlFor="apikey-description-optional" className="block text-sm font-medium text-neutral-700 mb-1">Description (Optional)</label>
+                <textarea id="apikey-description-optional"
                   value={newApiKey.description}
                   onChange={(e) => setNewApiKey(prev => ({ ...prev, description: e.target.value }))}
                   className="input w-full"
@@ -399,7 +399,7 @@ const ApiKeysPage = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="text-xs text-neutral-500 mb-1 block">API Key</label>
+                  <span className="text-xs text-neutral-500 mb-1 block">API Key</span>
                   <div className="font-mono text-sm bg-neutral-100 p-2 rounded border break-all">
                     {viewableKeys.has(key.key_id) && keyValues.has(key.key_id)
                       ? keyValues.get(key.key_id)

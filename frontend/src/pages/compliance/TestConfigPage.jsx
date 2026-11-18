@@ -555,10 +555,10 @@ const TestConfigPage = () => {
                 </div>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-3">
+                  <label htmlFor="testco-field-558" className="block text-sm font-medium text-neutral-700 mb-3">
                     Select Model for Evaluator <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <select id="testco-field-558"
                     value={testConfig.evaluator_model_id?.toString() || testConfig.evaluatorModelId?.toString() || ''}
                     onChange={handleEvaluatorModelSelection}
                     className="input w-full"
@@ -594,10 +594,10 @@ const TestConfigPage = () => {
             </Card.Header>
             <Card.Content>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-3">
+                <label htmlFor="testco-field-597" className="block text-sm font-medium text-neutral-700 mb-3">
                   AI Model to Test
                 </label>
-                <select
+                <select id="testco-field-597"
                   value={testConfig.test_subject_model_id?.toString() || ''}
                   onChange={handleTestSubjectModelSelection}
                   className="input w-full"
@@ -635,7 +635,7 @@ const TestConfigPage = () => {
             <Card.Content className="space-y-4">
               {/* Prompt Mode Toggle */}
               <div className="flex items-center space-x-4 mb-4">
-                <label className="text-sm font-medium text-neutral-700">Prompt Source:</label>
+                <span className="text-sm font-medium text-neutral-700">Prompt Source:</span>
                 <div className="flex items-center space-x-2">
                   <button
                     type="button"
@@ -665,10 +665,10 @@ const TestConfigPage = () => {
               {/* Manual Entry Mode */}
               {promptMode === 'manual' && (
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label htmlFor="testco-field-668" className="block text-sm font-medium text-neutral-700 mb-2">
                     Test Prompts
                   </label>
-                  <textarea
+                  <textarea id="testco-field-668"
                     value={testConfig.test_prompts || testConfig.testPrompts}
                     onChange={(e) => setTestConfig(prev => ({ 
                       ...prev, 
@@ -703,9 +703,9 @@ const TestConfigPage = () => {
 
                   {/* Category Selection */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-neutral-700">
+                    <span className="text-sm font-medium text-neutral-700 block">
                       Select by Category
-                    </label>
+                    </span>
                     <div className="flex flex-wrap gap-2">
                       {promptLibrary.map((category) => {
                         const isCategorySelected = selectedPrompts.some(p => category.prompts.includes(p));
@@ -732,9 +732,9 @@ const TestConfigPage = () => {
 
                   {/* Individual Prompt Selection */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-neutral-700">
+                    <span className="text-sm font-medium text-neutral-700 block">
                       Individual Prompts
-                    </label>
+                    </span>
                     <div className="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-4 bg-neutral-50">
                       {promptLibrary.map((category) => (
                         <div key={category.category} className="space-y-2">
